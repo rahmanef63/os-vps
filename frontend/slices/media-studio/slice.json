@@ -1,0 +1,27 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "media-studio",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Media Studio — photo / image editor",
+  "description": "OS app: a lightweight photo/social studio. Tool rail, a checkerboard canvas stage with live CSS `filter` adjustments and per-layer clip masks, safe-area guides (TikTok/Reels/IG/YouTube), text/shape/sticker/image(URL)/HTML-embed layers, per-layer custom CSS, debounced undo+redo, and JSON/HTML export + import. Client-only, no backend.",
+  "namespace": "@/features/media-studio",
+  "frontend": {
+    "slicePath": "frontend/slices/media-studio",
+    "configExport": "mediaStudioApp"
+  },
+  "convex": null,
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["button", "scroll-area", "separator", "slider", "switch", "segmented", "badge", "tooltip", "input", "textarea"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "media", "image", "editor", "ui"]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "appshell",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/appshell"
+  },
+  "files": [
+    "frontend/slices/appshell/index.ts",
+    "frontend/slices/appshell/provider/app-shell.tsx",
+    "frontend/slices/appshell/registry/types.ts",
+    "frontend/slices/appshell/registry/feature-registry.tsx",
+    "frontend/slices/appshell/registry/brand.tsx",
+    "frontend/slices/appshell/registry/shell-ui.tsx",
+    "frontend/slices/appshell/registry/shell-config.tsx",
+    "frontend/slices/appshell/responsive/use-responsive.ts",
+    "frontend/slices/appshell/responsive/responsive-provider.tsx",
+    "frontend/slices/appshell/responsive/use-container.ts",
+    "frontend/slices/appshell/primitives/app-frame.tsx",
+    "frontend/slices/appshell/primitives/master-detail.tsx",
+    "frontend/slices/appshell/primitives/responsive-toolbar.tsx",
+    "frontend/slices/appshell/primitives/touch-list.tsx",
+    "frontend/slices/appshell/components/desktop.tsx",
+    "frontend/slices/appshell/components/mobile-shell.tsx",
+    "frontend/slices/appshell/lib/store.ts"
+  ]
+}

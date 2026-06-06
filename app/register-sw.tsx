@@ -1,0 +1,132 @@
+"use client";
+
+import { useEffect } from "react";
+import { toast } from "@/features/os-shell";
+
+// One-shot guard (per tab) so recovery never loops.
+const GUARD = "osvps_chunk_recover";
+
+// A failed dynamic import (new deploy → old chunk ref a stale cache/SW still
+// points at) throws ChunkLoadError. Detect it broadly.
+function isChunkError(v: unknown): boolean {
+  const s =
+    typeof v === "string"
+      ? v
+      : v && typeof v === "object"
+        ? `${(v as { name?: string }).name ?? ""} ${(v as { message?: string }).message ?? ""}`
+        : "";
+  return /ChunkLoadError|Loading chunk|Failed to (load|fetch)[^]*chunk|importing a module script failed|dynamically imported module/i.test(
+    s,
+  );
+}
+
+async function clearCaches() {
+  if (!("caches" in window)) return;
+  try {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+  } catch {
+    /* best effort */
+  }
+}
+
+// Wipe caches + service workers, then hard-reload once — recovers a device
+// stuck on stale chunks without the user clearing site data by hand.
+async function recover() {
+  if (sessionStorage.getItem(GUARD)) return;
+  sessionStorage.setItem(GUARD, "1");
+  await clearCaches();
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+  } catch {
+    /* best effort */
+  }
+  location.reload();
+}
+
+// New SW is installed + waiting → offer a one-tap reload. The reload clears
+// caches and activates the waiting SW (SKIP_WAITING → controllerchange).
+function promptUpdate(reg: ServiceWorkerRegistration) {
+  const waiting = reg.waiting;
+  if (!waiting || !navigator.serviceWorker.controller) return;
+  let reloading = false;
+  toast("Versi baru tersedia.", {
+    action: {
+      label: "Reload",
+      onClick: () => {
+        navigator.serviceWorker.addEventListener(
+          "controllerchange",
+          () => {
+            if (reloading) return;
+            reloading = true;
+            void clearCaches().then(() => location.reload());
+          },
+          { once: true },
+        );
+        waiting.postMessage({ type: "SKIP_WAITING" });
+      },
+    },
+  });
+}
+
+// Registers the PWA service worker + update toast + a ChunkLoadError self-heal.
+export function RegisterSW() {
+  useEffect(() => {
+    // Clear the guard after a healthy spell so a later genuine error can recover.
+    const t = setTimeout(() => sessionStorage.removeItem(GUARD), 5000);
+
+    const onError = (e: ErrorEvent) => {
+      if (isChunkError(e.error) || isChunkError(e.message)) void recover();
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      if (isChunkError(e.reason)) void recover();
+    };
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onRejection);
+
+    if ("serviceWorker" in navigator) {
+      // Auto-apply a new deploy: the SW skipWaiting()s, so when it takes control
+      // the controller changes — reload ONCE to pick up fresh assets. Guarded to
+      // an UPDATE (a controller already existed); the first-ever install (no
+      // prior controller) must NOT reload. A one-shot flag prevents any loop.
+      if (navigator.serviceWorker.controller) {
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (refreshing) return;
+          refreshing = true;
+          void clearCaches().then(() => location.reload());
+        });
+      }
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          // Already-queued update from a prior tab session.
+          if (reg.waiting) promptUpdate(reg);
+          // A new SW starts installing → toast once it finishes.
+          reg.addEventListener("updatefound", () => {
+            const sw = reg.installing;
+            if (!sw) return;
+            sw.addEventListener("statechange", () => {
+              if (sw.state === "installed") promptUpdate(reg);
+            });
+          });
+          // Re-check for a new deploy when the tab regains focus.
+          const onVisible = () => {
+            if (document.visibilityState === "visible") void reg.update();
+          };
+          document.addEventListener("visibilitychange", onVisible);
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
+  }, []);
+  return null;
+}

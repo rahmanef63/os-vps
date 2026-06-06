@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+build/
+.env
+.env.local
+.env*.local
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+.vercel
+# os-browser: track the service source, ignore its deps + local dev probes
+os-browser/*
+!os-browser/server.mjs
+!os-browser/package.json
+!os-browser/package-lock.json
+!os-browser/README.md
+convex-backend/
+.os-vps/

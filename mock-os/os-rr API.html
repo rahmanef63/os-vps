@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>os-rr API Reference</title>
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#2f7bf6"/><text x="50" y="44" font-family="monospace" font-size="15" font-weight="800" fill="#fff" text-anchor="middle">API</text><text x="50" y="66" font-family="monospace" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">v1</text></svg>
+</template>
+<style>
+:root{
+  --font-ui:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,system-ui,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Menlo,Monaco,"Cascadia Code",monospace;
+  --accent:#2f7bf6;
+  --bg:#f4f5f8; --panel:#fff; --text:#1c1c1f; --dim:rgba(28,28,31,.6); --faint:rgba(28,28,31,.4);
+  --sep:rgba(0,0,0,.09); --code-bg:#0d0e12; --code-fg:#cfd4de; --inset:rgba(0,0,0,.04);
+  --get:#1f9d57; --post:#2f7bf6; --del:#ff5f57; --stream:#a06bff; --ws:#ff8a3d;
+}
+[data-theme="dark"]{ --bg:#16171b; --panel:#1f2026; --text:#f2f2f5; --dim:rgba(242,242,245,.62); --faint:rgba(242,242,245,.4); --sep:rgba(255,255,255,.1); --inset:rgba(255,255,255,.05); }
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.55;}
+a{color:var(--accent);text-decoration:none;}
+.wrap{display:grid;grid-template-columns:240px 1fr;max-width:1180px;margin:0 auto;}
+/* sidebar */
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;padding:24px 16px;border-right:.5px solid var(--sep);}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+.brand b{width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:-.04em;font-size:14px;}
+.brand .t{font-weight:800;letter-spacing:-.02em;}.brand .v{font-size:11px;color:var(--faint);font-family:var(--font-mono);}
+.nav a{display:block;padding:6px 10px;border-radius:7px;color:var(--dim);font-size:13.5px;font-weight:500;}
+.nav a:hover{background:var(--inset);color:var(--text);}
+.nav .g{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:14px 10px 4px;}
+/* content */
+.main{padding:30px 40px 120px;min-width:0;}
+.hero{padding:26px 28px;border-radius:16px;background:linear-gradient(120deg,#2f7bf6,#7a5cff);color:#fff;margin-bottom:28px;}
+.hero h1{margin:0 0 6px;font-size:26px;letter-spacing:-.02em;}
+.hero p{margin:0;opacity:.92;max-width:620px;}
+.hero code{background:rgba(255,255,255,.18);padding:2px 8px;border-radius:6px;font-family:var(--font-mono);font-size:13px;}
+h2{font-size:21px;letter-spacing:-.02em;margin:40px 0 6px;padding-top:10px;}
+h2:first-of-type{margin-top:6px;}
+.lead{color:var(--dim);margin:0 0 18px;max-width:680px;}
+.ep{border:.5px solid var(--sep);border-radius:13px;background:var(--panel);margin:14px 0;overflow:hidden;}
+.ep-h{display:flex;align-items:center;gap:11px;padding:13px 16px;border-bottom:.5px solid var(--sep);flex-wrap:wrap;}
+.m{font-family:var(--font-mono);font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 8px;border-radius:6px;color:#fff;}
+.m.GET{background:var(--get);}.m.POST{background:var(--post);}.m.DELETE{background:var(--del);}.m.SSE{background:var(--stream);}.m.WS{background:var(--ws);}
+.path{font-family:var(--font-mono);font-size:14px;font-weight:600;}
+.ep-d{padding:13px 16px;color:var(--dim);font-size:13.5px;}
+.ep-d p{margin:0 0 12px;}
+table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:13px;}
+th,td{text-align:left;padding:7px 10px;border-bottom:.5px solid var(--sep);vertical-align:top;}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);font-weight:700;}
+td code,p code,li code{font-family:var(--font-mono);font-size:12.5px;background:var(--inset);padding:1px 6px;border-radius:5px;color:var(--text);}
+.req{color:var(--del);font-weight:700;font-size:11px;}
+pre{margin:0 0 6px;background:var(--code-bg);color:var(--code-fg);border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.6;}
+pre .k{color:#9cdcfe;}pre .s{color:#ce9178;}pre .n{color:#b5cea8;}pre .c{color:#6a9955;}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin:10px 0 5px;}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.toggle{position:absolute;top:24px;right:40px;border:.5px solid var(--sep);background:var(--panel);color:var(--text);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.note{border-left:3px solid var(--accent);background:var(--inset);padding:12px 16px;border-radius:0 10px 10px 0;font-size:13px;color:var(--dim);margin:14px 0;}
+@media(max-width:820px){.wrap{grid-template-columns:1fr;}.side{display:none;}.main{padding:20px;}.cols{grid-template-columns:1fr;}.toggle{right:20px;}}
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">◐ Theme</button>
+<div class="wrap">
+  <aside class="side">
+    <div class="brand"><b>rr</b><div><div class="t">os-rr API</div><div class="v">v1 · REST + SSE</div></div></div>
+    <nav class="nav">
+      <a href="#overview">Overview</a>
+      <a href="#auth">Authentication</a>
+      <div class="g">Resources</div>
+      <a href="#fs">Filesystem</a>
+      <a href="#exec">Exec &amp; Terminal</a>
+      <a href="#sys">System</a>
+      <a href="#render">Render</a>
+      <a href="#apps">Apps</a>
+      <div class="g">Reference</div>
+      <a href="#streaming">Streaming</a>
+      <a href="#errors">Errors</a>
+      <a href="#manifest">App manifest</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="hero">
+      <h1>os-rr Cloud API</h1>
+      <p>The single boundary between the os-rr desktop and your VPS. Everything the OS does — files, processes, renders, app lifecycle — is one of these calls. Base URL <code>https://&lt;vps&gt;/api/v1</code>. JSON in, JSON out, Bearer auth, SSE for progress.</p>
+    </div>
+
+    <h2 id="overview">Overview</h2>
+    <p class="lead">Run the os-rr daemon on your VPS and the desktop's <code>HttpAdapter</code> maps every UI action to the endpoints below. In the prototype, the identical <code>MockAdapter</code> simulates them in-browser — switch in <b>Settings → Server</b>.</p>
+    <table>
+      <tr><th>Concept</th><th>Detail</th></tr>
+      <tr><td>Base</td><td><code>{baseUrl}/api/v1</code></td></tr>
+      <tr><td>Auth</td><td><code>Authorization: Bearer &lt;token&gt;</code> on every request (SSE uses <code>?access_token=</code>)</td></tr>
+      <tr><td>Content</td><td><code>application/json</code> unless multipart (upload) or binary (read/download)</td></tr>
+      <tr><td>Paths</td><td>Absolute within the user root, e.g. <code>/Media/clip.mp4</code></td></tr>
+      <tr><td>Errors</td><td><code>{ "error": { "code", "message", "detail?" } }</code> with matching HTTP status</td></tr>
+      <tr><td>Progress</td><td>Server-Sent Events for render / stats / exec output; WebSocket for interactive PTY</td></tr>
+    </table>
+
+    <h2 id="auth">Authentication</h2>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/auth/token</span></div>
+      <div class="ep-d"><p>Exchange credentials for a bearer token.</p>
+        <div class="cols"><div><div class="lbl">Request</div><pre><span class="k">{</span> <span class="k">"username"</span>: <span class="s">"root"</span>, <span class="k">"password"</span>: <span class="s">"••••"</span> <span class="k">}</span></pre></div>
+        <div><div class="lbl">200</div><pre><span class="k">{</span>
+  <span class="k">"token"</span>: <span class="s">"eyJhbGci…"</span>,
+  <span class="k">"expires_at"</span>: <span class="n">1736900000</span>,
+  <span class="k">"user"</span>: <span class="k">{</span> <span class="k">"name"</span>: <span class="s">"root"</span> <span class="k">}</span>
+<span class="k">}</span></pre></div></div>
+      </div></div>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/auth/me</span></div>
+      <div class="ep-d"><p>Current user + VPS facts. Used by <b>Test connection</b>.</p>
+        <pre><span class="k">{</span> <span class="k">"user"</span>: <span class="k">{</span><span class="k">"name"</span>:<span class="s">"root"</span><span class="k">}</span>, <span class="k">"vps"</span>: <span class="k">{</span><span class="k">"host"</span>:<span class="s">"fra-1"</span>,<span class="k">"cores"</span>:<span class="n">8</span>,<span class="k">"ram"</span>:<span class="s">"16 GB"</span><span class="k">}</span> <span class="k">}</span></pre>
+      </div></div>
+
+    <h2 id="fs">Filesystem</h2>
+    <p class="lead">CRUD over the VPS disk. Drives the Files app, media import, and app packages.</p>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/fs/list</span></div>
+      <div class="ep-d">
+        <table><tr><th>Query</th><th>Type</th><th></th></tr><tr><td><code>path</code></td><td>string</td><td><span class="req">required</span></td></tr></table>
+        <div class="lbl">200</div><pre><span class="k">{</span>
+  <span class="k">"path"</span>: <span class="s">"/Media"</span>,
+  <span class="k">"entries"</span>: <span class="k">[</span>
+    <span class="k">{</span> <span class="k">"name"</span>:<span class="s">"intro.mp4"</span>, <span class="k">"kind"</span>:<span class="s">"file"</span>, <span class="k">"size"</span>:<span class="n">50331648</span>, <span class="k">"ext"</span>:<span class="s">"mp4"</span>, <span class="k">"mime"</span>:<span class="s">"video/mp4"</span>, <span class="k">"mtime"</span>:<span class="n">1736890000</span> <span class="k">}</span>,
+    <span class="k">{</span> <span class="k">"name"</span>:<span class="s">"raw"</span>, <span class="k">"kind"</span>:<span class="s">"dir"</span> <span class="k">}</span>
+  <span class="k">]</span>
+<span class="k">}</span></pre>
+      </div></div>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/fs/read</span> &nbsp;<span class="m GET">GET</span><span class="path">/fs/stat</span> &nbsp;<span class="m GET">GET</span><span class="path">/fs/download</span></div>
+      <div class="ep-d"><p><code>read</code> streams bytes (supports <code>Range</code>); <code>stat</code> returns one entry; <code>download</code> sets <code>Content-Disposition: attachment</code> for the browser. All take <code>?path=</code>.</p></div></div>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/fs/write</span></div>
+      <div class="ep-d"><p>Create or overwrite a text file.</p>
+        <pre><span class="k">{</span> <span class="k">"path"</span>:<span class="s">"/Documents/notes.md"</span>, <span class="k">"content"</span>:<span class="s">"# hi"</span>, <span class="k">"encoding"</span>:<span class="s">"utf8"</span> <span class="k">}</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/fs/upload</span></div>
+      <div class="ep-d"><p><code>multipart/form-data</code> — fields <code>path</code> + repeated <code>files</code>. For very large media, the daemon may instead return a presigned PUT URL. Returns the created entries.</p>
+        <pre><span class="c">// FormData: path=/Media, files=[File, File]</span>
+<span class="k">{</span> <span class="k">"uploaded"</span>: <span class="k">[</span> <span class="k">{</span><span class="k">"name"</span>:<span class="s">"shot.png"</span>,<span class="k">"size"</span>:<span class="n">4200000</span><span class="k">}</span> <span class="k">]</span> <span class="k">}</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/fs/mkdir</span> &nbsp;<span class="m POST">POST</span><span class="path">/fs/move</span> &nbsp;<span class="m POST">POST</span><span class="path">/fs/copy</span> &nbsp;<span class="m DELETE">DELETE</span><span class="path">/fs/delete</span></div>
+      <div class="ep-d"><p><code>mkdir {path}</code> · <code>move {from,to}</code> (also rename) · <code>copy {from,to}</code> · <code>delete {path, toTrash?}</code>. Each returns the affected entry or <code>{ok:true}</code>.</p></div></div>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/fs/usage</span></div>
+      <div class="ep-d"><pre><span class="k">{</span> <span class="k">"used"</span>:<span class="n">289000000000</span>, <span class="k">"total"</span>:<span class="n">460000000000</span> <span class="k">}</span> <span class="c">// bytes</span></pre></div></div>
+
+    <h2 id="exec">Exec &amp; Terminal</h2>
+    <p class="lead">Run scripts and apps; back the Terminal with an interactive shell.</p>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/exec/run</span></div>
+      <div class="ep-d"><p>Spawn a process. Returns a <code>pid</code> immediately; stream output via SSE. Pass <code>wait:true</code> for synchronous <code>{exitCode,stdout,stderr}</code>.</p>
+        <pre><span class="k">{</span> <span class="k">"cmd"</span>:<span class="s">"python"</span>, <span class="k">"args"</span>:<span class="k">[</span><span class="s">"scraper.py"</span><span class="k">]</span>, <span class="k">"cwd"</span>:<span class="s">"/apps"</span>, <span class="k">"env"</span>:<span class="k">{}</span> <span class="k">}</span>
+<span class="c">→</span> <span class="k">{</span> <span class="k">"pid"</span>:<span class="n">418</span>, <span class="k">"state"</span>:<span class="s">"running"</span> <span class="k">}</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m SSE">SSE</span><span class="path">/exec/stream?pid=418</span></div>
+      <div class="ep-d"><pre><span class="k">event:</span> <span class="k">{</span><span class="k">"type"</span>:<span class="s">"stdout"</span>,<span class="k">"data"</span>:<span class="s">"scraping…"</span><span class="k">}</span>
+<span class="k">event:</span> <span class="k">{</span><span class="k">"type"</span>:<span class="s">"exit"</span>,<span class="k">"code"</span>:<span class="n">0</span><span class="k">}</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m WS">WS</span><span class="path">/exec/pty</span> &nbsp;<span class="m POST">POST</span><span class="path">/exec/kill</span></div>
+      <div class="ep-d"><p>Bidirectional WebSocket for an interactive shell: client sends <code>{input}</code> / <code>{resize:{cols,rows}}</code>, server sends <code>{output}</code>. <code>kill {pid}</code> terminates a process.</p></div></div>
+
+    <h2 id="sys">System</h2>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/sys/stats</span> &nbsp;<span class="m SSE">SSE</span><span class="path">/sys/stats/stream</span></div>
+      <div class="ep-d"><p>Live resource usage — powers the System Monitor gauges.</p>
+        <pre><span class="k">{</span>
+  <span class="k">"cpu"</span>: <span class="k">{</span> <span class="k">"pct"</span>:<span class="n">32.4</span>, <span class="k">"cores"</span>:<span class="n">8</span> <span class="k">}</span>,
+  <span class="k">"mem"</span>: <span class="k">{</span> <span class="k">"used"</span>:<span class="n">6400000000</span>, <span class="k">"total"</span>:<span class="n">16000000000</span> <span class="k">}</span>,
+  <span class="k">"disk"</span>: <span class="k">{</span> <span class="k">"used"</span>:<span class="n">289e9</span>, <span class="k">"total"</span>:<span class="n">460e9</span> <span class="k">}</span>,
+  <span class="k">"net"</span>: <span class="k">{</span> <span class="k">"rx"</span>:<span class="n">42.1</span>, <span class="k">"tx"</span>:<span class="n">8.3</span> <span class="k">}</span>, <span class="k">"uptime"</span>:<span class="n">1209600</span>
+<span class="k">}</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/sys/processes</span> &nbsp;<span class="m POST">POST</span><span class="path">/sys/process/kill</span></div>
+      <div class="ep-d"><pre><span class="k">[</span> <span class="k">{</span> <span class="k">"pid"</span>:<span class="n">142</span>, <span class="k">"name"</span>:<span class="s">"reel-render"</span>, <span class="k">"status"</span>:<span class="s">"rendering"</span>, <span class="k">"cpu"</span>:<span class="n">38</span>, <span class="k">"mem"</span>:<span class="n">540</span> <span class="k">}</span> <span class="k">]</span></pre></div></div>
+
+    <h2 id="render">Render</h2>
+    <p class="lead">Remotion render jobs. The Reel Editor calls <code>start</code> then polls <code>status</code> (or subscribes to <code>stream</code>).</p>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/render/start</span></div>
+      <div class="ep-d">
+        <div class="cols"><div><div class="lbl">Request</div><pre><span class="k">{</span>
+  <span class="k">"composition"</span>: <span class="s">"Root"</span>,
+  <span class="k">"project"</span>: <span class="s">"/Projects/launch-promo"</span>,
+  <span class="k">"props"</span>: <span class="k">{}</span>,
+  <span class="k">"format"</span>: <span class="k">{</span> <span class="k">"w"</span>:<span class="n">1920</span>,<span class="k">"h"</span>:<span class="n">1080</span>,<span class="k">"fps"</span>:<span class="n">30</span> <span class="k">}</span>,
+  <span class="k">"range"</span>: <span class="k">[</span><span class="n">0</span>,<span class="n">300</span><span class="k">]</span>
+<span class="k">}</span></pre></div>
+        <div><div class="lbl">202</div><pre><span class="k">{</span> <span class="k">"jobId"</span>:<span class="s">"job_a1b2c3"</span>, <span class="k">"state"</span>:<span class="s">"queued"</span> <span class="k">}</span></pre></div></div></div></div>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/render/status?jobId=…</span> &nbsp;<span class="m SSE">SSE</span><span class="path">/render/stream?jobId=…</span></div>
+      <div class="ep-d"><pre><span class="k">{</span>
+  <span class="k">"jobId"</span>:<span class="s">"job_a1b2c3"</span>, <span class="k">"state"</span>:<span class="s">"rendering"</span>,  <span class="c">// queued|rendering|done|error</span>
+  <span class="k">"progress"</span>:<span class="n">0.62</span>, <span class="k">"frame"</span>:<span class="n">186</span>, <span class="k">"totalFrames"</span>:<span class="n">300</span>,
+  <span class="k">"output"</span>: <span class="s">null</span>  <span class="c">// "/Media/render-….mp4" when done</span>
+<span class="k">}</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/render/cancel</span> &nbsp;<span class="m GET">GET</span><span class="path">/render/jobs</span></div>
+      <div class="ep-d"><p><code>cancel {jobId}</code> stops a job; <code>jobs</code> lists active/recent renders.</p></div></div>
+
+    <h2 id="apps">Apps</h2>
+    <p class="lead">Each app is a folder under <code>/apps/&lt;slug&gt;/</code> with a <code>manifest.json</code>. The daemon reads manifests, serves HTML entry points, and runs other runtimes in a sandbox.</p>
+    <div class="ep"><div class="ep-h"><span class="m GET">GET</span><span class="path">/apps</span> &nbsp;<span class="m GET">GET</span><span class="path">/apps/:slug/manifest</span></div>
+      <div class="ep-d"><pre><span class="k">[</span> <span class="k">{</span> <span class="k">"id"</span>:<span class="s">"color-picker"</span>, <span class="k">"name"</span>:<span class="s">"Color Picker"</span>, <span class="k">"slug"</span>:<span class="s">"color-picker"</span>,
+     <span class="k">"runtime"</span>:<span class="s">"html"</span>, <span class="k">"entry"</span>:<span class="s">"index.html"</span>, <span class="k">"icon"</span>:<span class="k">{</span><span class="k">"glyph"</span>:<span class="s">"grid"</span><span class="k">}</span> <span class="k">}</span> <span class="k">]</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/apps</span></div>
+      <div class="ep-d"><p>Create an app folder from a manifest (Create App flow). Optionally include initial files.</p>
+        <pre><span class="k">{</span> <span class="k">"manifest"</span>: <span class="k">{</span> <span class="k">"name"</span>:<span class="s">"My App"</span>, <span class="k">"runtime"</span>:<span class="s">"html"</span>, <span class="k">"entry"</span>:<span class="s">"index.html"</span> <span class="k">}</span> <span class="k">}</span></pre></div></div>
+    <div class="ep"><div class="ep-h"><span class="m POST">POST</span><span class="path">/apps/:slug/start</span> &nbsp;<span class="m POST">POST</span><span class="path">/apps/:slug/stop</span> &nbsp;<span class="m DELETE">DELETE</span><span class="path">/apps/:slug</span></div>
+      <div class="ep-d"><p><code>start</code> launches the app — HTML apps return a <code>url</code> the desktop loads in a sandboxed iframe; runtime apps return a <code>pid</code>. <code>GET /apps/:slug/serve/*</code> is the static file server for an HTML app's assets.</p></div></div>
+
+    <h2 id="streaming">Streaming</h2>
+    <p class="lead">Long-running operations push updates instead of being polled.</p>
+    <table>
+      <tr><th>Transport</th><th>Used by</th><th>Why</th></tr>
+      <tr><td><span class="m SSE">SSE</span></td><td>render progress, sys stats, exec output</td><td>One-way, auto-reconnect, plain HTTP. Auth via <code>?access_token=</code>.</td></tr>
+      <tr><td><span class="m WS">WS</span></td><td>interactive terminal (PTY)</td><td>Bidirectional — keystrokes up, output down, resize events.</td></tr>
+    </table>
+    <div class="note">Clients should treat SSE as best-effort: if the stream drops, fall back to polling the matching <code>GET …/status</code> endpoint. The prototype's <code>MockAdapter</code> emulates both with timers.</div>
+
+    <h2 id="errors">Errors</h2>
+    <pre><span class="k">{</span> <span class="k">"error"</span>: <span class="k">{</span> <span class="k">"code"</span>:<span class="s">"fs_not_found"</span>, <span class="k">"message"</span>:<span class="s">"No such file"</span>, <span class="k">"detail"</span>:<span class="k">{</span><span class="k">"path"</span>:<span class="s">"/x"</span><span class="k">}</span> <span class="k">}</span> <span class="k">}</span></pre>
+    <table>
+      <tr><th>Status</th><th>Code</th><th>Meaning</th></tr>
+      <tr><td>400</td><td><code>bad_request</code></td><td>Malformed params</td></tr>
+      <tr><td>401</td><td><code>unauthorized</code></td><td>Missing / expired token</td></tr>
+      <tr><td>403</td><td><code>forbidden</code></td><td>Path or action not permitted</td></tr>
+      <tr><td>404</td><td><code>fs_not_found</code></td><td>File / app / job missing</td></tr>
+      <tr><td>409</td><td><code>conflict</code></td><td>Target already exists</td></tr>
+      <tr><td>413</td><td><code>too_large</code></td><td>Upload exceeds quota — use presigned PUT</td></tr>
+      <tr><td>500</td><td><code>internal</code></td><td>Daemon error</td></tr>
+    </table>
+
+    <h2 id="manifest">App manifest</h2>
+    <p class="lead"><code>/apps/&lt;slug&gt;/manifest.json</code> — the contract for a user-created app.</p>
+    <pre><span class="k">{</span>
+  <span class="k">"name"</span>: <span class="s">"My App"</span>,
+  <span class="k">"slug"</span>: <span class="s">"my-app"</span>,
+  <span class="k">"runtime"</span>: <span class="s">"html"</span>,            <span class="c">// html | node | python | shell</span>
+  <span class="k">"entry"</span>: <span class="s">"index.html"</span>,        <span class="c">// served / executed</span>
+  <span class="k">"icon"</span>: <span class="k">{</span> <span class="k">"glyph"</span>:<span class="s">"grid"</span>, <span class="k">"color"</span>:<span class="s">"#7a5cff"</span> <span class="k">}</span>,
+  <span class="k">"window"</span>: <span class="k">{</span> <span class="k">"width"</span>:<span class="n">900</span>, <span class="k">"height"</span>:<span class="n">600</span> <span class="k">}</span>,
+  <span class="k">"env"</span>: <span class="k">{}</span>,
+  <span class="k">"permissions"</span>: <span class="k">[</span> <span class="s">"fs:/Media"</span>, <span class="s">"net"</span> <span class="k">]</span>
+<span class="k">}</span></pre>
+    <div class="note" style="margin-top:30px">This contract is implemented as code in <code>js/api.jsx</code> — <code>HttpAdapter</code> (live) and <code>MockAdapter</code> (simulated) share one shape, so the desktop is wired and ready: stand up a daemon that answers these routes, flip <b>Settings → Server → Live</b>, and point the base URL at it.</div>
+  </main>
+</div>
+</body>
+</html>

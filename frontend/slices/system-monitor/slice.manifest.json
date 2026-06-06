@@ -1,0 +1,23 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "system-monitor",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/system-monitor",
+    "convex": "convex/features/systemMonitor"
+  },
+  "files": [
+    "frontend/slices/system-monitor/index.ts",
+    "frontend/slices/system-monitor/app.tsx",
+    "frontend/slices/system-monitor/lib/format.ts",
+    "frontend/slices/system-monitor/lib/mock.ts",
+    "frontend/slices/system-monitor/components/stat-bar.tsx",
+    "frontend/slices/system-monitor/components/process-list.tsx"
+  ],
+  "convexFiles": [
+    "convex/features/systemMonitor/schema.ts",
+    "convex/features/systemMonitor/queries.ts",
+    "convex/features/systemMonitor/mutations.ts"
+  ]
+}

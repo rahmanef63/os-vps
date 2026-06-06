@@ -1,0 +1,15 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "shell-search",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Shell feature — Search (Spotlight)",
+  "description": "⌘K command palette over apps + actions (+ folder search via the host). An appshell feature: exports `searchFeature` mounting into the `overlay` slot.",
+  "namespace": "@/features/shell-search",
+  "frontend": { "slicePath": "frontend/slices/shell-search", "configExport": "default" },
+  "deps": { "npm": ["lucide-react"], "shadcn": [], "env": [], "peers": [{ "slug": "appshell", "range": "^0.1", "reason": "feature host (slots + registry)" }] },
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["shell", "feature", "search", "command-palette"]
+}

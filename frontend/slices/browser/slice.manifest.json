@@ -1,0 +1,24 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "browser",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/browser"
+  },
+  "files": [
+    "frontend/slices/browser/index.ts",
+    "frontend/slices/browser/app.tsx",
+    "frontend/slices/browser/lib/url.ts",
+    "frontend/slices/browser/lib/storage.ts",
+    "frontend/slices/browser/lib/use-inspector.ts",
+    "frontend/slices/browser/lib/use-remote-browser.ts",
+    "frontend/slices/browser/components/favicon.tsx",
+    "frontend/slices/browser/components/omnibar.tsx",
+    "frontend/slices/browser/components/browser-menu.tsx",
+    "frontend/slices/browser/components/bookmark-bar.tsx",
+    "frontend/slices/browser/components/remote-view.tsx",
+    "frontend/slices/browser/components/history-view.tsx"
+  ],
+  "convexFiles": []
+}

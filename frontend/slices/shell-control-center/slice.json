@@ -1,0 +1,15 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "shell-control-center",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Shell feature — Control Center (mobile)",
+  "description": "iOS-style pull-down quick toggles (appearance / server / search / assistant / windows). An appshell feature: exports `controlCenterFeature` mounting into the `controlCenter` slot. Open state comes from the mobile surface via the ShellUI context.",
+  "namespace": "@/features/shell-control-center",
+  "frontend": { "slicePath": "frontend/slices/shell-control-center", "configExport": "default" },
+  "deps": { "npm": ["lucide-react"], "shadcn": ["sheet"], "env": [], "peers": [{ "slug": "appshell", "range": "^0.1", "reason": "feature host + ShellUI context" }] },
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["shell", "feature", "control-center", "mobile"]
+}

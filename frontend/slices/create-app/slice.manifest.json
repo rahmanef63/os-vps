@@ -1,0 +1,16 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "create-app",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/create-app"
+  },
+  "files": [
+    "frontend/slices/create-app/index.ts",
+    "frontend/slices/create-app/app.tsx",
+    "frontend/slices/create-app/components/icon-preview.tsx",
+    "frontend/slices/create-app/components/glyph-picker.tsx"
+  ],
+  "convexFiles": []
+}

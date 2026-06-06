@@ -1,0 +1,87 @@
+"use client";
+/* iOS Notification Center — the pull-down sheet (swipe down on the LEFT half of
+   the status area; the right half keeps Control Center, like iPhone). Reads the
+   same persistent notification log as the macOS Notification Center (lib/toast).
+   Absolute (not fixed) so it stays inside the phone frame on desktop previews.
+   Opening marks everything read. */
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
+import { BellOff, X } from "lucide-react";
+import {
+  useNotifications,
+  dismissNotification,
+  clearNotifications,
+  markNotificationsRead,
+} from "../lib/toast";
+
+const TONE_DOT: Record<string, string> = {
+  success: "bg-emerald-400",
+  error: "bg-red-400",
+  warning: "bg-amber-400",
+  info: "bg-sky-400",
+};
+
+function rel(ts: number): string {
+  const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+  if (m < 1) return "now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+}
+
+export function MobileNotifications({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const items = useNotifications();
+
+  useEffect(() => {
+    if (open) markNotificationsRead();
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="absolute inset-0 z-[40] flex flex-col [animation:appOpen_.22s_cubic-bezier(.2,.8,.2,1)]" style={{ background: "rgba(20,22,38,.62)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)" }}>
+      <header className="flex items-center px-5 pb-2 pt-10 text-white">
+        <h2 className="text-[22px] font-bold">Notifications</h2>
+        {items.length > 0 && (
+          <Button type="button" variant="ghost" onClick={clearNotifications} className="h-auto p-0 font-normal hover:bg-transparent ml-auto rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
+            Clear All
+          </Button>
+        )}
+      </header>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-3.5 pb-4">
+        {items.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-white/60">
+            <BellOff className="size-7" />
+            <span className="text-sm">No notifications</span>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {items.map((n) => (
+              <div key={n.id} className="flex items-start gap-2.5 rounded-2xl bg-white/12 p-3 text-white">
+                <span className={cn(`mt-1 size-2 shrink-0 rounded-full ${TONE_DOT[n.tone] ?? "bg-white/50"}`)} />
+                <div className="min-w-0 flex-1">
+                  <div className="line-clamp-2 text-[13px] font-medium">{n.message}</div>
+                  <div className="mt-0.5 text-[11px] text-white/60">{rel(n.ts)}</div>
+                </div>
+                <Button type="button" variant="ghost"
+                  aria-label="Dismiss"
+                  onClick={() => dismissNotification(n.id)}
+                  className="h-auto p-0 font-normal hover:bg-transparent rounded-full bg-white/15 p-1 text-white/80"
+                >
+                  <X className="size-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* swipe-up affordance — tap closes (parity with the home indicator) */}
+      <Button type="button" variant="ghost" aria-label="Close notifications" onClick={onClose} className="h-auto p-0 font-normal hover:bg-transparent flex justify-center pb-2 pt-1">
+        <span className="h-[5px] w-[134px] rounded-full bg-white/75" />
+      </Button>
+    </div>
+  );
+}

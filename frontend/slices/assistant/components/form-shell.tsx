@@ -1,0 +1,67 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+// Two-pane editor chrome: scrollable form on the left, sticky preview + save on
+// the right. Reused by the Skill / Agent / Automation editors.
+export function FormShell({
+  title,
+  editing,
+  preview,
+  children,
+  onClose,
+  onSave,
+}: {
+  title: string;
+  editing: boolean;
+  preview: ReactNode;
+  children: ReactNode;
+  onClose: () => void;
+  onSave: () => void;
+}) {
+  return (
+    <div className="flex h-full w-full bg-background">
+      <ScrollArea className="min-w-0 flex-1">
+        <div className="p-6">
+          <div className="mb-4 flex items-center">
+            <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+            <Button variant="ghost" size="sm" className="ml-auto" onClick={onClose}>
+              Cancel
+            </Button>
+          </div>
+          {children}
+        </div>
+      </ScrollArea>
+      <div className="glass flex w-56 flex-none flex-col border-l border-border bg-card/40 p-5 @max-[700px]:hidden">
+        <div className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Preview
+        </div>
+        {preview}
+        <Button className="mt-auto" onClick={onSave}>
+          {editing ? "Save changes" : "Create"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="mb-4 max-w-xl">
+      <div className="text-[13px] font-semibold">{label}</div>
+      {hint ? <div className="mb-1.5 mt-0.5 text-[11px] text-muted-foreground">{hint}</div> : null}
+      {!hint ? <div className="mb-1.5" /> : null}
+      {children}
+    </div>
+  );
+}

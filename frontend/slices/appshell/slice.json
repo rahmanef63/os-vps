@@ -1,0 +1,24 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "appshell",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "AppShell — manifest-driven desktop + mobile shell",
+  "description": "Generic, brand-free OS-style shell framework. One <AppShell manifest> wrapper provider gives a project a macOS-style window manager AND an iOS-style mobile surface, driven entirely by a manifest (brand, apps, features, surface regions, capabilities, persistence, keymap). Features (search, settings, widgets, control-center, inspector, notifications) plug in via extension points. Responsiveness is a single provider + shared primitives. Imports no apps or brand strings — the consumer injects everything.",
+  "namespace": "@/features/appshell",
+  "frontend": {
+    "slicePath": "frontend/slices/appshell",
+    "configExport": "appshellConfig"
+  },
+  "deps": {
+    "npm": ["lucide-react", "class-variance-authority", "clsx", "tailwind-merge", "vaul"],
+    "shadcn": ["button", "tooltip", "scroll-area", "sheet", "drawer", "dialog", "alert-dialog", "dropdown-menu"],
+    "env": [],
+    "peers": []
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["shell", "window-manager", "desktop", "mobile", "responsive", "framework", "ui"]
+}

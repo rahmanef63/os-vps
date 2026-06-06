@@ -1,0 +1,177 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Dark is driven by [data-theme=dark] (os-rr convention), so shadcn `dark:`
+   utilities key off the same attribute. */
+@custom-variant dark (&:is([data-theme=dark] *));
+
+/* ── os-rr design tokens (light / aqua default) ─────────────────────── */
+:root {
+  --font-ui: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Notch / home-bar safe areas — read by the AppShell ResponsiveProvider and
+     by primitives (AppFrame body padding). Resolve to 0 off-device. */
+  --sai-top: env(safe-area-inset-top, 0px);
+  --sai-right: env(safe-area-inset-right, 0px);
+  --sai-bottom: env(safe-area-inset-bottom, 0px);
+  --sai-left: env(safe-area-inset-left, 0px);
+
+  --accent: #2f7bf6;
+  --accent-text: #ffffff;
+
+  --text: #1c1c1f;
+  --text-dim: rgba(28, 28, 31, 0.62);
+  --text-faint: rgba(28, 28, 31, 0.38);
+  --sep: rgba(0, 0, 0, 0.1);
+  --sep-strong: rgba(0, 0, 0, 0.16);
+
+  --glass-bar: rgba(250, 250, 252, 0.62);
+  --glass-panel: rgba(252, 252, 254, 0.78);
+  --glass-menu: rgba(252, 252, 254, 0.86);
+  --window-bg: rgba(248, 248, 251, 0.86);
+  --surface: #f4f4f7;
+  --window-head: rgba(255, 255, 255, 0.55);
+  --sidebar: rgba(244, 244, 248, 0.7);
+  --field: rgba(255, 255, 255, 0.7);
+  --hover: rgba(0, 0, 0, 0.05);
+  --hover-strong: rgba(0, 0, 0, 0.09);
+  --inset: rgba(0, 0, 0, 0.04);
+
+  --blur: 30px;
+  --radius: 0.625rem;
+  --radius-win: 12px;
+  --radius-icon: 22%;
+  --shadow-win: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 24px 60px -12px rgba(0, 0, 0, 0.42), 0 8px 22px -10px rgba(0, 0, 0, 0.3);
+  --shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 14px 38px -8px rgba(0, 0, 0, 0.32);
+  --dock-bg: rgba(255, 255, 255, 0.34);
+
+  /* shadcn token bridge → os-rr palette */
+  --background: var(--surface);
+  --foreground: var(--text);
+  --card: var(--window-bg);
+  --card-foreground: var(--text);
+  --popover: var(--glass-menu);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-text);
+  --secondary: var(--field);
+  --secondary-foreground: var(--text);
+  --muted: var(--inset);
+  --muted-foreground: var(--text-dim);
+  --accent-bg: var(--hover);
+  --accent-foreground: var(--text);
+  --destructive: #ff5f57;
+  --success: #34c759;
+  --border: var(--sep);
+  --input: var(--sep-strong);
+  --ring: var(--accent);
+}
+
+[data-theme="dark"] {
+  --text: #f2f2f5;
+  --text-dim: rgba(242, 242, 245, 0.64);
+  --text-faint: rgba(242, 242, 245, 0.4);
+  --sep: rgba(255, 255, 255, 0.1);
+  --sep-strong: rgba(255, 255, 255, 0.18);
+
+  --glass-bar: rgba(28, 28, 32, 0.6);
+  --glass-panel: rgba(34, 34, 40, 0.74);
+  --glass-menu: rgba(40, 40, 46, 0.86);
+  --window-bg: rgba(34, 34, 40, 0.82);
+  --surface: #1b1b20;
+  --window-head: rgba(60, 60, 68, 0.5);
+  --sidebar: rgba(28, 28, 33, 0.6);
+  --field: rgba(255, 255, 255, 0.08);
+  --hover: rgba(255, 255, 255, 0.08);
+  --hover-strong: rgba(255, 255, 255, 0.14);
+  --inset: rgba(0, 0, 0, 0.25);
+
+  --shadow-win: 0 0 0 0.5px rgba(0, 0, 0, 0.6), 0 28px 70px -12px rgba(0, 0, 0, 0.7), 0 8px 22px -10px rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 16px 40px -8px rgba(0, 0, 0, 0.6);
+  --dock-bg: rgba(40, 40, 48, 0.42);
+}
+
+/* shell style presets (dir) */
+.dir-graphite { --radius-win: 9px; --radius-icon: 26%; --blur: 22px; }
+.dir-vivid { --radius-win: 18px; --radius-icon: 30%; --blur: 34px; }
+.reduce-glass { --blur: 0px; }
+
+@theme inline {
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent-bg);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+* { box-sizing: border-box; border-color: var(--color-border); }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font-ui);
+  color: var(--text);
+  background: var(--surface);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+/* glass helper — applied alongside theme tokens, never raw hex in components */
+.glass {
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+  backdrop-filter: blur(var(--blur)) saturate(180%);
+}
+
+/* wallpapers (os-rr) */
+.wp-aurora { background:
+  radial-gradient(120% 120% at 18% 12%, #6a8dff 0%, rgba(106,141,255,0) 46%),
+  radial-gradient(120% 110% at 86% 22%, #ff7ac4 0%, rgba(255,122,196,0) 42%),
+  radial-gradient(120% 120% at 70% 88%, #5be0c8 0%, rgba(91,224,200,0) 48%),
+  linear-gradient(160deg, #2a2f6b 0%, #1b2050 60%, #141738 100%); }
+.wp-dusk { background:
+  radial-gradient(130% 120% at 80% 8%, #ffb066 0%, rgba(255,176,102,0) 45%),
+  radial-gradient(120% 120% at 12% 30%, #ff6f91 0%, rgba(255,111,145,0) 42%),
+  linear-gradient(160deg, #5a2a55 0%, #2e1b46 55%, #16122e 100%); }
+.wp-mist { background:
+  radial-gradient(120% 120% at 22% 18%, #c9d4e6 0%, rgba(201,212,230,0) 50%),
+  radial-gradient(120% 120% at 86% 80%, #aebfd6 0%, rgba(174,191,214,0) 50%),
+  linear-gradient(160deg, #eef1f6 0%, #dde3ee 60%, #cfd7e6 100%); }
+.wp-graphite { background:
+  radial-gradient(120% 120% at 30% 20%, #3a3f4b 0%, rgba(58,63,75,0) 55%),
+  linear-gradient(160deg, #23262e 0%, #16181d 70%, #0e0f13 100%); }
+.wp-noir { background: linear-gradient(160deg, #121316 0%, #0a0a0c 100%); }
+/* Per-OS flavours — the "auto" wallpaper resolves to the active shell's pick
+   (ShellDescriptor.wallpaper); these are also selectable as plain presets. */
+.wp-win11    { background: radial-gradient(90% 75% at 50% 35%, #3b82f6 0%, #1e40af 42%, #0b1f4a 100%); }
+.wp-material { background: linear-gradient(150deg, #cfe0ff 0%, #e8def8 55%, #ffd8e4 100%); }
+.dark .wp-material { background: linear-gradient(150deg, #1f2c47 0%, #322c4b 55%, #46263a 100%); }
+.wp-ios      { background: linear-gradient(165deg, #0f2a6b 0%, #5b3bb4 48%, #c84fa0 100%); }
+/* "auto" swatch in pickers — a hue ring that reads as "follows the OS". */
+.wp-auto     { background: conic-gradient(from 220deg at 50% 50%, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #10b981, #3b82f6); }
+
+@keyframes appOpen { from { transform: translateY(14px) scale(0.985); } to { transform: none; } }
+@keyframes bootPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: 0.85; } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }

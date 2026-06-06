@@ -1,0 +1,35 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "os-shell",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/os-shell",
+    "convex": "convex/features/windows"
+  },
+  "files": [
+    "frontend/slices/os-shell/index.ts",
+    "frontend/slices/os-shell/config.ts",
+    "frontend/slices/os-shell/lib/types.ts",
+    "frontend/slices/os-shell/lib/store.ts",
+    "frontend/slices/os-shell/lib/registry.tsx",
+    "frontend/slices/os-shell/hooks/use-shell.ts",
+    "frontend/slices/os-shell/hooks/use-window-drag.ts",
+    "frontend/slices/os-shell/hooks/use-persist-layout.ts",
+    "frontend/slices/os-shell/components/desktop.tsx",
+    "frontend/slices/os-shell/components/window.tsx",
+    "frontend/slices/os-shell/components/window-content.tsx",
+    "frontend/slices/os-shell/components/traffic-lights.tsx",
+    "frontend/slices/os-shell/components/menu-bar.tsx",
+    "frontend/slices/os-shell/components/dock.tsx",
+    "frontend/slices/os-shell/components/app-icon.tsx",
+    "frontend/slices/os-shell/components/app-launcher.tsx",
+    "frontend/slices/os-shell/components/wallpaper.tsx",
+    "frontend/slices/os-shell/components/mobile-shell.tsx"
+  ],
+  "convexFiles": [
+    "convex/features/windows/schema.ts",
+    "convex/features/windows/queries.ts",
+    "convex/features/windows/mutations.ts"
+  ]
+}

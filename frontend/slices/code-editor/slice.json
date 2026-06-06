@@ -1,0 +1,31 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "code-editor",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Code — overlay syntax editor",
+  "description": "OS app: a lightweight code editor with a line-number gutter, transparent-textarea-over-highlighted-pre overlay, regex tokenizer for JS/TS/JSON, and best-effort read/write against the OsApi `fs` contract (lib/os-api).",
+  "namespace": "@/features/code-editor",
+  "frontend": {
+    "slicePath": "frontend/slices/code-editor",
+    "configExport": "codeEditorApp"
+  },
+  "convex": {
+    "schemaPath": "",
+    "tablesExport": "",
+    "rootPaths": []
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["button", "textarea", "badge", "input", "scroll-area"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "editor", "code", "ui"]
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "app-store",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "App Store — discover & install apps",
+  "description": "OS app store browsing a mock catalog of installable apps with search, category filter and a glossy card grid. Install state is tracked in local component state (no backend).",
+  "namespace": "@/features/app-store",
+  "frontend": {
+    "slicePath": "frontend/slices/app-store",
+    "configExport": "appStoreApp"
+  },
+  "convex": null,
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["button", "scroll-area", "separator", "input", "segmented", "badge", "card", "tooltip"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "store", "apps", "ui"]
+}

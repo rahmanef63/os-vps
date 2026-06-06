@@ -1,0 +1,27 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "create-app",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "frontend",
+  "title": "Create App — author an os-rr app from a manifest",
+  "description": "OS app that authors a new app: pick a name, runtime (html/node/python/shell) that autofills the entry point, a glyph and CSS-gradient accent, with a live glossy icon preview and read-only manifest.json. Persists via api.features.apps.mutations.create so the shell shows it live in the dock.",
+  "namespace": "@/features/create-app",
+  "frontend": {
+    "slicePath": "frontend/slices/create-app",
+    "configExport": "createAppApp"
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["button", "input", "segmented", "separator", "badge", "scroll-area"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" },
+      { "slug": "app-store", "range": "^0.1", "reason": "shares glyph keys + icon resolver" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "apps", "create", "ui"]
+}

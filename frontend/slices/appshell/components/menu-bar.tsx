@@ -1,0 +1,73 @@
+"use client";
+
+import {
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+} from "@/components/ui/dropdown-menu";
+import { useApps } from "../lib/registry";
+import { useBrand } from "../registry/brand";
+import { useFocused } from "../hooks/use-shell";
+import { shellStore, openWindow, closeWindow, toggleMaximize } from "../lib/store";
+import { StatusCluster } from "./menu-bar-status";
+import { AppMenus, DefaultMenus, WindowMenu, HelpMenu, Menu } from "./menu-bar-menus";
+
+// macOS-style menu bar: logo · app menus · right status cluster (sys + clock).
+export function MenuBar() {
+  const apps = useApps();
+  const brand = useBrand();
+  const signOut = async () => {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    location.reload();
+  };
+  const focusedId = useFocused();
+  const focusedApp = apps.find(
+    (a) => a.id === (focusedId ? shellStore.getWindow(focusedId)?.app : null),
+  );
+  const appName = focusedApp?.title ?? brand.idleAppName ?? brand.name;
+  const closeFocused = () => focusedId && closeWindow(focusedId);
+  const maximizeFocused = () => focusedId && toggleMaximize(focusedId);
+
+  return (
+    <header
+      className="glass absolute inset-x-0 top-0 z-[900] flex h-[30px] items-center gap-0.5 border-b border-border px-2.5 text-[13px] font-medium"
+      style={{ background: "var(--glass-bar)" }}
+    >
+      <span className="grid size-4 place-items-center rounded-[5px] bg-primary text-[10px] font-extrabold text-primary-foreground">
+        {brand.logo}
+      </span>
+
+      <Menu label={brand.name} bold>
+        <DropdownMenuItem onSelect={() => openWindow("os-settings", "Settings")}>
+          About {brand.name}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => openWindow("os-settings", "Settings")}>
+          System Settings…
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => void signOut()}>Log Out</DropdownMenuItem>
+      </Menu>
+
+      <Menu label={appName} bold>
+        <DropdownMenuItem disabled>About {appName}</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          Preferences… <DropdownMenuShortcut>⌘,</DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </Menu>
+
+      {focusedApp?.menus?.length ? (
+        <AppMenus menus={focusedApp.menus} />
+      ) : (
+        <DefaultMenus focusedId={focusedId} closeFocused={closeFocused} maximizeFocused={maximizeFocused} />
+      )}
+
+      {/* Window + Help persist regardless of app menus (real macOS behaviour). */}
+      <WindowMenu focusedId={focusedId} />
+      <HelpMenu />
+
+      <StatusCluster />
+    </header>
+  );
+}

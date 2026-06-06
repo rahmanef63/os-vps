@@ -1,0 +1,15 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "app-store",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/app-store"
+  },
+  "files": [
+    "frontend/slices/app-store/index.ts",
+    "frontend/slices/app-store/app.tsx",
+    "frontend/slices/app-store/lib/catalog.ts",
+    "frontend/slices/app-store/components/store-card.tsx"
+  ]
+}

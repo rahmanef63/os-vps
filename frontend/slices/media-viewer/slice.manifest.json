@@ -1,0 +1,15 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "media-viewer",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/media-viewer"
+  },
+  "files": [
+    "frontend/slices/media-viewer/index.ts",
+    "frontend/slices/media-viewer/app.tsx",
+    "frontend/slices/media-viewer/lib/samples.ts",
+    "frontend/slices/media-viewer/components/viewer-toolbar.tsx"
+  ]
+}

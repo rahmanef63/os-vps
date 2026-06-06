@@ -1,0 +1,13 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "shell-control-center",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/shell-control-center"
+  },
+  "files": [
+    "frontend/slices/shell-control-center/index.ts",
+    "frontend/slices/shell-control-center/components/control-center.tsx"
+  ]
+}

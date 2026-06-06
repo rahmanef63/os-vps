@@ -1,0 +1,32 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "os-settings",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Settings — appearance + VPS server",
+  "description": "OS Tweaks app: theme/style/accent/wallpaper appearance controls, display device override, and VPS server (mock|live) connection settings. UI-only slice backed by the local appearance store; no Convex feature.",
+  "namespace": "@/features/os-settings",
+  "frontend": {
+    "slicePath": "frontend/slices/os-settings",
+    "configExport": "osSettingsApp"
+  },
+  "convex": {
+    "schemaPath": "",
+    "tablesExport": "",
+    "rootPaths": []
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["scroll-area", "separator", "switch", "input"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" },
+      { "slug": "shell-settings", "range": "^0.1", "reason": "composes the portable appearance panel" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:public-fn-validator", "bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "settings", "appearance", "ui"]
+}

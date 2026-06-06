@@ -1,0 +1,26 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "media-viewer",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Preview — media quick-look",
+  "description": "OS quick-look viewer. Zoomable images with dimensions + checkerboard transparency, an audio player with CSS-bar waveform/transport, a video player with play/pause + scrubber + volume, and PDF/text surfaces. Type-indicator chip, Download, and Open-in-editor handoff (image→media-studio, video/audio→reel-editor; remote files→code-editor). Opened from the launcher; switch samples with prev/next. Fully offline — no external network.",
+  "namespace": "@/features/media-viewer",
+  "frontend": {
+    "slicePath": "frontend/slices/media-viewer",
+    "configExport": "mediaViewerApp"
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["button", "scroll-area", "separator", "badge", "tooltip", "slider"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "preview", "viewer", "ui"]
+}

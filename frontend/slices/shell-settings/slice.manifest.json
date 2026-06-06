@@ -1,0 +1,17 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "shell-settings",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/shell-settings"
+  },
+  "files": [
+    "frontend/slices/shell-settings/index.ts",
+    "frontend/slices/shell-settings/lib/types.ts",
+    "frontend/slices/shell-settings/components/section.tsx",
+    "frontend/slices/shell-settings/components/row.tsx",
+    "frontend/slices/shell-settings/components/accent-swatches.tsx",
+    "frontend/slices/shell-settings/components/appearance-panel.tsx"
+  ]
+}

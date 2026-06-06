@@ -1,0 +1,32 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "media-studio",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/media-studio"
+  },
+  "files": [
+    "frontend/slices/media-studio/index.ts",
+    "frontend/slices/media-studio/app.tsx",
+    "frontend/slices/media-studio/lib/filters.ts",
+    "frontend/slices/media-studio/lib/model.ts",
+    "frontend/slices/media-studio/lib/masks.ts",
+    "frontend/slices/media-studio/lib/serialize.ts",
+    "frontend/slices/media-studio/lib/use-studio.ts",
+    "frontend/slices/media-studio/lib/use-keyboard.ts",
+    "frontend/slices/media-studio/components/tool-rail.tsx",
+    "frontend/slices/media-studio/components/canvas-stage.tsx",
+    "frontend/slices/media-studio/components/layer-view.tsx",
+    "frontend/slices/media-studio/components/safe-area.tsx",
+    "frontend/slices/media-studio/components/side-panel.tsx",
+    "frontend/slices/media-studio/components/studio-chrome.tsx",
+    "frontend/slices/media-studio/components/export-modal.tsx",
+    "frontend/slices/media-studio/components/panel/section.tsx",
+    "frontend/slices/media-studio/components/panel/layers-panel.tsx",
+    "frontend/slices/media-studio/components/panel/transform-panel.tsx",
+    "frontend/slices/media-studio/components/panel/layer-extras.tsx",
+    "frontend/slices/media-studio/components/panel/adjust-panel.tsx"
+  ],
+  "convexFiles": []
+}

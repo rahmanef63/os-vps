@@ -1,0 +1,31 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "reel-editor",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/reel-editor"
+  },
+  "files": [
+    "frontend/slices/reel-editor/index.ts",
+    "frontend/slices/reel-editor/app.tsx",
+    "frontend/slices/reel-editor/lib/mock-timeline.ts",
+    "frontend/slices/reel-editor/lib/keyframes.ts",
+    "frontend/slices/reel-editor/lib/composition.ts",
+    "frontend/slices/reel-editor/lib/history.ts",
+    "frontend/slices/reel-editor/lib/ai-edit.ts",
+    "frontend/slices/reel-editor/lib/use-clip-drag.ts",
+    "frontend/slices/reel-editor/lib/use-shortcuts.ts",
+    "frontend/slices/reel-editor/components/preview-stage.tsx",
+    "frontend/slices/reel-editor/components/transport.tsx",
+    "frontend/slices/reel-editor/components/toolbar.tsx",
+    "frontend/slices/reel-editor/components/timeline.tsx",
+    "frontend/slices/reel-editor/components/clip-block.tsx",
+    "frontend/slices/reel-editor/components/clip-props.tsx",
+    "frontend/slices/reel-editor/components/comp-props.tsx",
+    "frontend/slices/reel-editor/components/keyframe-lane.tsx",
+    "frontend/slices/reel-editor/components/side-panel.tsx",
+    "frontend/slices/reel-editor/components/ai-panel.tsx",
+    "frontend/slices/reel-editor/components/render-overlay.tsx"
+  ]
+}

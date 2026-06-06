@@ -1,0 +1,17 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "assistant",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/assistant"
+  },
+  "files": [
+    "frontend/slices/assistant/index.ts",
+    "frontend/slices/assistant/app.tsx",
+    "frontend/slices/assistant/lib/engine.ts",
+    "frontend/slices/assistant/components/message-bubble.tsx",
+    "frontend/slices/assistant/components/chat-composer.tsx",
+    "frontend/slices/assistant/components/empty-state.tsx"
+  ]
+}

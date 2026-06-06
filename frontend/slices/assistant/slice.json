@@ -1,0 +1,26 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "assistant",
+  "version": "0.1.0",
+  "category": "ai",
+  "kind": "full",
+  "title": "Alfa — AI assistant chat",
+  "description": "OS app: a streaming chat UI for the 'Alfa' assistant. Ships with a local mock engine that narrates the VPS actions it would take (terminal, files, services). TODO: swap for a real /api/assistant route (Anthropic) — no backend yet.",
+  "namespace": "@/features/assistant",
+  "frontend": {
+    "slicePath": "frontend/slices/assistant",
+    "configExport": "assistantApp"
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["button", "textarea", "scroll-area", "separator", "badge", "tooltip"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "ai", "assistant", "chat"]
+}

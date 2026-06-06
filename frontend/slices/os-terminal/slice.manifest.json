@@ -1,0 +1,14 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "os-terminal",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": { "frontend": "frontend/slices/os-terminal", "convex": "" },
+  "files": [
+    "frontend/slices/os-terminal/index.ts",
+    "frontend/slices/os-terminal/app.tsx",
+    "frontend/slices/os-terminal/lib/mock-shell.ts",
+    "frontend/slices/os-terminal/lib/agent-bridge.ts"
+  ],
+  "convexFiles": []
+}

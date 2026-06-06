@@ -1,0 +1,26 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "browser",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Browser — tabbed web view",
+  "description": "OS app: a tabbed web browser with an omnibar (back/forward/reload + address bar) rendering live pages in a sandboxed iframe. Many sites block embedding (X-Frame-Options), so blank frames are expected for those.",
+  "namespace": "@/features/browser",
+  "frontend": {
+    "slicePath": "frontend/slices/browser",
+    "configExport": "browserApp"
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["button", "input", "tooltip", "dropdown-menu", "scroll-area"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "browser", "web", "ui"]
+}

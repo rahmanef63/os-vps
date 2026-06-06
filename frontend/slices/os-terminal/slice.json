@@ -1,0 +1,30 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "os-terminal",
+  "version": "0.1.0",
+  "category": "infra",
+  "kind": "full",
+  "title": "Terminal — xterm.js pty app",
+  "description": "OS terminal app built on xterm.js. Phase 0 runs an offline mock shell; Phase 2 proxies ptys to the Control Room agent (allowlist-gated, server-only WS). Adds no new host surface.",
+  "namespace": "@/features/os-terminal",
+  "frontend": {
+    "slicePath": "frontend/slices/os-terminal",
+    "configExport": "osTerminalApp"
+  },
+  "convex": { "schemaPath": "", "tablesExport": "", "rootPaths": [] },
+  "deps": {
+    "npm": ["@xterm/xterm", "@xterm/addon-fit", "lucide-react"],
+    "shadcn": [],
+    "env": [
+      { "name": "OS_AGENT_URL", "scope": "server", "required": false, "description": "Control Room agent base URL (Phase 2 pty bridge)." },
+      { "name": "OS_AGENT_SECRET", "scope": "server", "required": false, "description": "Bearer for the agent bridge. NEVER NEXT_PUBLIC_." }
+    ],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "terminal", "xterm", "infra", "ssh"]
+}

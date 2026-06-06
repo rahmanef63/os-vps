@@ -1,0 +1,61 @@
+"use client";
+
+import { Check, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { glyphIcon } from "../lib/glyph";
+import type { CatalogApp } from "../lib/store-catalog";
+
+// Editor's-choice hero card. Highlights one catalog app with its glossy icon,
+// a tagline and a primary Get / Installed toggle wired to the same handler as
+// the grid cards.
+export function FeaturedCard({
+  app,
+  busy,
+  onToggle,
+}: {
+  app: CatalogApp;
+  busy: boolean;
+  onToggle: (app: CatalogApp) => void;
+}) {
+  const Icon = glyphIcon(app.glyph);
+
+  return (
+    <div
+      className="relative mb-4 overflow-hidden rounded-2xl p-6 text-white"
+      style={{ background: app.gradient }}
+    >
+      <span className="pointer-events-none absolute -right-6 -top-6 size-40 rounded-full bg-white/10" />
+      <div className="relative flex items-start gap-4">
+        <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/15 shadow-sm">
+          <Icon className="size-7" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-bold uppercase tracking-[0.08em] opacity-80">
+            Editor&rsquo;s Choice
+          </div>
+          <h3 className="mt-1 text-xl font-extrabold leading-tight tracking-tight">
+            {app.title}
+          </h3>
+          <p className="mt-1 max-w-md text-sm opacity-90">{app.desc}</p>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={busy}
+            onClick={() => onToggle(app)}
+            className="mt-3 text-foreground"
+          >
+            {app.installed ? (
+              <>
+                <Check /> Installed
+              </>
+            ) : (
+              <>
+                <Download /> Get
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

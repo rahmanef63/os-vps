@@ -1,0 +1,24 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "image-editor",
+  "version": "0.2.0",
+  "category": "ui",
+  "kind": "frontend",
+  "title": "Image Editor — layered raster editor",
+  "description": "Embeddable, layer-based raster image editor (Konva): layers with blend modes + layer styles (shadow/glow/stroke), transforms, crop/resize/aspect presets, paint brushes, adjustments, text layers with fonts, free in-browser background removal (@imgly), PNG/JPEG/WebP export, an AI function-calling command registry (every operation is a schema'd command) with in-editor chat, and a headless server barrel (server.ts) to run commands against documents without a DOM.",
+  "namespace": "@/features/image-editor",
+  "frontend": {
+    "slicePath": "frontend/slices/image-editor",
+    "configExport": "imageEditorConfig"
+  },
+  "deps": {
+    "npm": ["lucide-react", "konva", "react-konva", "@imgly/background-removal", "class-variance-authority", "radix-ui"],
+    "shadcn": ["button", "input", "label", "separator", "select", "scroll-area", "switch", "dropdown-menu", "tooltip", "resizable", "popover"],
+    "env": [],
+    "peers": []
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["image", "raster", "layers", "konva", "editor", "ai", "ui"]
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "os-shell",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "os-shell — Topside consumer of the AppShell framework",
+  "description": "The os-vps (Topside) consumer slice: shell.manifest.ts declares the brand + built-in app set + shell features, and the barrel re-exports the generic `appshell` framework so app slices import a stable `@/features/os-shell`. No backend — window layout persists to localStorage.",
+  "namespace": "@/features/os-shell",
+  "frontend": {
+    "slicePath": "frontend/slices/os-shell",
+    "configExport": "default"
+  },
+  "deps": {
+    "npm": ["lucide-react", "class-variance-authority", "clsx", "tailwind-merge"],
+    "shadcn": ["button", "tooltip", "scroll-area"],
+    "env": [],
+    "peers": [
+      {
+        "slug": "appshell",
+        "range": "^0.1",
+        "reason": "the generic shell framework this slice configures + re-exports"
+      }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "shell", "consumer", "manifest", "ui"]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "files-manager",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/files-manager"
+  },
+  "files": [
+    "frontend/slices/files-manager/index.ts",
+    "frontend/slices/files-manager/app.tsx",
+    "frontend/slices/files-manager/lib/format.ts",
+    "frontend/slices/files-manager/lib/icons.ts",
+    "frontend/slices/files-manager/lib/types.ts",
+    "frontend/slices/files-manager/hooks/use-files.ts",
+    "frontend/slices/files-manager/hooks/use-file-selection.ts",
+    "frontend/slices/files-manager/components/files-sidebar.tsx",
+    "frontend/slices/files-manager/components/files-toolbar.tsx",
+    "frontend/slices/files-manager/components/file-view.tsx",
+    "frontend/slices/files-manager/components/file-item.tsx",
+    "frontend/slices/files-manager/components/file-context-menu.tsx"
+  ],
+  "convexFiles": []
+}

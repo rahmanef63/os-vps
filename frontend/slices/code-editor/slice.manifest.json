@@ -1,0 +1,18 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "code-editor",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/code-editor",
+    "convex": ""
+  },
+  "files": [
+    "frontend/slices/code-editor/index.ts",
+    "frontend/slices/code-editor/app.tsx",
+    "frontend/slices/code-editor/lib/highlight.ts",
+    "frontend/slices/code-editor/components/editor-surface.tsx",
+    "frontend/slices/code-editor/components/editor-toolbar.tsx"
+  ],
+  "convexFiles": []
+}

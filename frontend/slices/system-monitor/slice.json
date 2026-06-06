@@ -1,0 +1,32 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "system-monitor",
+  "version": "0.1.0",
+  "category": "infra",
+  "kind": "full",
+  "title": "System Monitor — CPU / RAM / disk",
+  "description": "OS app showing live host telemetry (CPU load, memory, disk, processes) as theme-token meters. Reads the OsApi `sys` contract (lib/os-api) — mock adapter in-browser, HTTP adapter against the Control Room agent.",
+  "namespace": "@/features/system-monitor",
+  "frontend": {
+    "slicePath": "frontend/slices/system-monitor",
+    "configExport": "systemMonitorApp"
+  },
+  "convex": {
+    "schemaPath": "convex/features/systemMonitor/schema.ts",
+    "tablesExport": "systemMonitorTables",
+    "rootPaths": ["convex/features/systemMonitor"]
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": ["scroll-area"],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" },
+      { "slug": "convex-auth", "range": "^0.1", "reason": "gated telemetry reads" }
+    ]
+  },
+  "registers": ["registry"],
+  "audit": ["bp:public-fn-validator", "bp:ui-consistency"],
+  "license": "MIT",
+  "tags": ["os", "telemetry", "monitoring", "infra"]
+}

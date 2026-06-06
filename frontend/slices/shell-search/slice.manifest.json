@@ -1,0 +1,13 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "shell-search",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/shell-search"
+  },
+  "files": [
+    "frontend/slices/shell-search/index.ts",
+    "frontend/slices/shell-search/components/spotlight.tsx"
+  ]
+}

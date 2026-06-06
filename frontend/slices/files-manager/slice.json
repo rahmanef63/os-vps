@@ -1,0 +1,58 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "files-manager",
+  "version": "0.1.0",
+  "category": "infra",
+  "kind": "full",
+  "title": "Files — VPS file manager",
+  "description": "Finder-style OS app for the VPS filesystem: favorites sidebar, breadcrumb + back/forward history, grid/list view, sort, multi-select, cut/copy/paste, inline rename, new folder, delete, upload, right-click menu, and storage usage. Reads/mutates via the os-api fs contract (mock and live host both writable within OS_FS_WRITE_ROOTS; errors surface inline).",
+  "namespace": "@/features/files-manager",
+  "frontend": {
+    "slicePath": "frontend/slices/files-manager",
+    "configExport": "filesManagerApp"
+  },
+  "convex": {
+    "schemaPath": "",
+    "tablesExport": "",
+    "rootPaths": []
+  },
+  "deps": {
+    "npm": [
+      "lucide-react"
+    ],
+    "shadcn": [
+      "button",
+      "input",
+      "scroll-area",
+      "separator",
+      "dropdown-menu"
+    ],
+    "env": [],
+    "peers": [
+      {
+        "slug": "os-shell",
+        "range": "^0.1",
+        "reason": "renders as a window app; openWindow routes file opens to media-viewer/code-editor"
+      },
+      {
+        "slug": "convex-auth",
+        "range": "^0.1",
+        "reason": "gated filesystem reads"
+      }
+    ]
+  },
+  "registers": [
+    "registry"
+  ],
+  "audit": [
+    "bp:public-fn-validator",
+    "bp:ui-consistency"
+  ],
+  "license": "MIT",
+  "tags": [
+    "os",
+    "files",
+    "filesystem",
+    "infra"
+  ]
+}
