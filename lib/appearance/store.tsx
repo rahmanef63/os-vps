@@ -28,6 +28,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration restore: this provider wraps SSR'd markup (login screen reads the wallpaper tweak), so a lazy initializer reading localStorage would hydration-mismatch
       if (raw) setState({ ...TWEAK_DEFAULTS, ...JSON.parse(raw) });
     } catch {
       /* ignore corrupt cache */

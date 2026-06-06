@@ -99,8 +99,11 @@ export function CompProps({
 // Numeric box that commits on blur/Enter (local draft so typing isn't fought
 // by the controlled comp value), feeding arbitrary dimensions back to onRatio.
 function NumBox({ value, onCommit }: { value: number; onCommit: (n: number) => void }) {
-  const [draft, setDraft] = useState(String(value));
-  useEffect(() => setDraft(String(value)), [value]);
+  // Local draft keyed to the comp value it edits: a new value (external change)
+  // derives back to the mirror — no effect-driven reset (set-state-in-effect).
+  const [edit, setEdit] = useState<{ key: number; value: string } | null>(null);
+  const draft = edit?.key === value ? edit.value : String(value);
+  const setDraft = (v: string) => setEdit({ key: value, value: v });
   const commit = () => {
     const n = Number(draft);
     if (Number.isFinite(n) && n > 0) onCommit(n);

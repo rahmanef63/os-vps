@@ -72,13 +72,14 @@ export function AlphaList({
   onOpen: (app: AppDescriptor) => void;
 }) {
   if (apps.length === 0) return <p className="px-1 text-sm text-white/60">No apps match “{q}”.</p>;
-  let lastLetter = "";
   return (
     <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none]">
-      {apps.map((a) => {
+      {apps.map((a, i) => {
+        // Header when this app's letter differs from the previous one — derived
+        // from the index, no render-scope reassignment (react-hooks/immutability).
         const letter = a.title[0]?.toUpperCase() ?? "#";
-        const header = letter !== lastLetter ? letter : null;
-        lastLetter = letter;
+        const prevLetter = i > 0 ? (apps[i - 1].title[0]?.toUpperCase() ?? "#") : null;
+        const header = letter !== prevLetter ? letter : null;
         return (
           <div key={a.id}>
             {header && (

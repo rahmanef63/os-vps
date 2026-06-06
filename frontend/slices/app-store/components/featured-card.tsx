@@ -1,5 +1,6 @@
 "use client";
 
+import { createElement } from "react";
 import { Check, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { glyphIcon } from "../lib/glyph";
@@ -17,8 +18,6 @@ export function FeaturedCard({
   busy: boolean;
   onToggle: (app: CatalogApp) => void;
 }) {
-  const Icon = glyphIcon(app.glyph);
-
   return (
     <div
       className="relative mb-4 overflow-hidden rounded-2xl p-6 text-white"
@@ -27,7 +26,8 @@ export function FeaturedCard({
       <span className="pointer-events-none absolute -right-6 -top-6 size-40 rounded-full bg-white/10" />
       <div className="relative flex items-start gap-4">
         <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/15 shadow-sm">
-          <Icon className="size-7" />
+          {/* createElement: dynamic stateless lookup, not a render-created component */}
+          {createElement(glyphIcon(app.glyph), { className: "size-7" })}
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-[11px] font-bold uppercase tracking-[0.08em] opacity-80">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -45,10 +45,13 @@ type OmnibarProps = {
 
 export function Omnibar(props: OmnibarProps) {
   const { url, isNewTab, loading, canBack, canForward, bookmarked } = props;
-  const [draft, setDraft] = useState(isNewTab ? "" : url);
-
-  // Mirror the active tab's URL while not typing.
-  useEffect(() => setDraft(isNewTab ? "" : url), [url, isNewTab]);
+  // Mirror the active tab's URL while not typing: the user's edit is keyed to
+  // the tab state it started from, so a navigation (key change) derives back to
+  // the mirrored URL — no effect-driven reset (react-hooks/set-state-in-effect).
+  const mirror = isNewTab ? "" : url;
+  const [edit, setEdit] = useState<{ key: string; value: string } | null>(null);
+  const draft = edit?.key === mirror ? edit.value : mirror;
+  const setDraft = (value: string) => setEdit({ key: mirror, value });
 
   const secure = isSecure(url);
   const SchemeIcon = secure ? Lock : Globe;

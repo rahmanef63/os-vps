@@ -60,7 +60,9 @@ export function Inspector() {
         {tab === "props" ? (
           <PropsTab info={info} />
         ) : (
-          <InspectorAI appId={appId ?? "desktop"} subject={subject} info={info ?? {}} />
+          // key: a focused-app change REMOUNTS the chat — thread/draft reset
+          // without an effect-driven setState (react-hooks/set-state-in-effect).
+          <InspectorAI key={appId ?? "desktop"} appId={appId ?? "desktop"} subject={subject} info={info ?? {}} />
         )}
       </div>
     </aside>

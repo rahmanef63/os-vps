@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -141,16 +141,20 @@ function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveD
   useAutosave(autoRestore, saveDoc, ready);
   const mobile = useIsMobile();
   const { version, canUndo, stageRef } = useEditor();
-  const [dirty, setDirty] = useState(false);
-  // Any undoable edit marks the doc dirty; loadProject/autosave don't push history
-  // so opening a file doesn't trip it. Consumer clears it via api.markSaved().
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- fire on version bumps only; canUndo is read, not subscribed
-  useEffect(() => { if (canUndo) setDirty(true); }, [version]);
+  // Dirty = history moved past the last save. Derived (no effect-driven
+  // setState): loadProject/autosave don't push history so opening a file never
+  // trips it; api.markSaved() pins savedVersion to the current version.
+  const [savedVersion, setSavedVersion] = useState(0);
+  const dirty = canUndo && version > savedVersion;
+  const versionRef = useRef(version);
+  useEffect(() => {
+    versionRef.current = version;
+  });
   useEffect(() => { onDirty?.(dirty); }, [dirty, onDirty]);
   useEffect(() => {
     onReady?.({
       exportPng: () => { const s = stageRef.current; return s ? stageToDataURL(s, { format: "png" }) : null; },
-      markSaved: () => setDirty(false),
+      markSaved: () => setSavedVersion(versionRef.current),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

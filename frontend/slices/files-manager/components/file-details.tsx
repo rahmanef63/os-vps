@@ -1,5 +1,6 @@
 "use client";
 
+import { createElement } from "react";
 import { Copy } from "lucide-react";
 import type { FsEntry } from "@/lib/os-api";
 import { toast } from "@/features/os-shell";
@@ -18,7 +19,6 @@ export function FileDetails({
   dir: string;
 }) {
   const full = entry ? joinPath(dir, entry.name) : dir;
-  const Icon = entry ? iconFor(entry) : null;
   const kind = !entry ? "Folder" : entry.kind === "dir" ? "Folder" : (entry.ext ?? "").toUpperCase() || "File";
   const copy = () =>
     void navigator.clipboard
@@ -28,7 +28,8 @@ export function FileDetails({
 
   return (
     <div className="flex items-center gap-3 border-t border-border bg-muted/30 px-3 py-2">
-      {Icon && entry && <Icon className={cn("size-6 shrink-0", colorFor(entry))} />}
+      {/* createElement: dynamic stateless lookup, not a render-created component */}
+      {entry && createElement(iconFor(entry), { className: cn("size-6 shrink-0", colorFor(entry)) })}
       <div className="flex min-w-0 flex-col">
         <span className="truncate text-xs font-medium">{entry?.name ?? "Current folder"}</span>
         <span className="truncate font-mono text-[10px] text-muted-foreground" title={full}>

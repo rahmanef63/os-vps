@@ -58,14 +58,15 @@ export function computePeaks(url: string): Promise<Uint8Array | null> {
 
 /** Peaks for a clip's audio url, computed lazily; null while loading / on error. */
 export function useWaveform(url: string | undefined): Uint8Array | null {
-  const [pk, setPk] = useState<Uint8Array | null>(() => (url ? peaks.get(url) ?? null : null));
+  // The module-level `peaks` map is the source of truth — render derives from
+  // it directly; state only marks "url X finished" to trigger the re-render
+  // (no synchronous setState in the effect, react-hooks/set-state-in-effect).
+  const [, setDone] = useState<string | null>(null);
   useEffect(() => {
-    if (!url) return void setPk(null);
-    const cached = peaks.get(url);
-    if (cached) return void setPk(cached);
+    if (!url || peaks.get(url)) return;
     let alive = true;
-    void computePeaks(url).then((p) => alive && setPk(p));
+    void computePeaks(url).then(() => alive && setDone(url));
     return () => void (alive = false);
   }, [url]);
-  return pk;
+  return url ? (peaks.get(url) ?? null) : null;
 }

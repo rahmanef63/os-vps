@@ -1,5 +1,6 @@
 "use client";
 
+import { createElement } from "react";
 import { glyphIcon } from "@/features/app-store/lib/glyph";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +16,6 @@ export function IconPreview({
   gradient: string;
   className?: string;
 }) {
-  const Glyph = glyphIcon(glyph);
   return (
     <span
       className={cn(
@@ -25,7 +25,8 @@ export function IconPreview({
       style={{ background: gradient }}
     >
       <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/45 to-transparent to-[48%]" />
-      <Glyph className="relative z-[1] size-7" />
+      {/* createElement: dynamic stateless lookup, not a render-created component */}
+      {createElement(glyphIcon(glyph), { className: "relative z-[1] size-7" })}
     </span>
   );
 }

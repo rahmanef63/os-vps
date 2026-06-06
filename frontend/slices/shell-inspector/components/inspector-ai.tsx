@@ -25,11 +25,8 @@ export function InspectorAI({ appId, subject, info }: { appId: string; subject: 
   const [draft, setDraft] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
 
-  // Reset the thread when the focused app changes.
-  useEffect(() => {
-    setMsgs([]);
-    setDraft("");
-  }, [appId]);
+  // Thread reset on app change happens via key={appId} at the call site
+  // (remount), not an effect-driven setState here.
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [msgs]);

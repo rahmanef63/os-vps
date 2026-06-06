@@ -27,8 +27,13 @@ export function AppSwitcher() {
     .map((id) => apps.find((a) => a.id === id))
     .filter(Boolean) as AppDescriptor[];
 
-  const idxRef = useRef(idx); idxRef.current = idx;
-  const runRef = useRef(running); runRef.current = running;
+  const idxRef = useRef(idx);
+  const runRef = useRef(running);
+  // Latest-ref mirrors for the keydown handler (post-render, per react-hooks/refs).
+  useEffect(() => {
+    idxRef.current = idx;
+    runRef.current = running;
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

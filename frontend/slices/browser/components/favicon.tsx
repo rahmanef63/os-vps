@@ -2,7 +2,7 @@
 
 // Favicon with graceful fallback to a globe glyph when the page has no icon
 // (or the input is not an http URL).
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Globe } from "lucide-react";
 import { faviconFor } from "../lib/url";
@@ -15,11 +15,11 @@ export function Favicon({
   url: string;
   className?: string;
 }) {
-  const [err, setErr] = useState(false);
+  // Remember WHICH src failed — a different URL derives back to "no error"
+  // without an effect-driven reset (react-hooks/set-state-in-effect).
+  const [errSrc, setErrSrc] = useState<string | null>(null);
   const src = faviconFor(url);
-
-  // Reset the error flag whenever we point at a different URL.
-  useEffect(() => setErr(false), [url]);
+  const err = src !== null && errSrc === src;
 
   if (!src || err) {
     return <Globe className={cn("size-3.5 text-muted-foreground", className)} />;
@@ -30,7 +30,7 @@ export function Favicon({
       alt=""
       width={14}
       height={14}
-      onError={() => setErr(true)}
+      onError={() => setErrSrc(src)}
       className={cn("size-3.5 rounded-[3px]", className)}
     />
   );

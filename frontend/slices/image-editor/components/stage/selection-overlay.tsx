@@ -19,7 +19,9 @@ export function SelectionOverlay({ onDone }: { onDone: () => void }) {
   const drag = useRef<{ h: Handle; px: number; py: number; b: Box } | null>(null);
   const paint = selected?.kind === "paint" ? selected : null;
 
-  const start = (h: Handle) => (e: React.PointerEvent) => {
+  // Un-curried (h, e) signature: a curried start(h) call in JSX executes during
+  // render, which react-hooks/refs reads as a render-time ref write.
+  const start = (h: Handle, e: React.PointerEvent) => {
     e.stopPropagation();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     drag.current = { h, px: e.clientX, py: e.clientY, b: box };
@@ -62,11 +64,11 @@ export function SelectionOverlay({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="absolute inset-0 z-20" onPointerMove={move} onPointerUp={end}>
-      <div className="absolute border-2 border-dashed border-primary bg-primary/5" style={sx} onPointerDown={start("move")}>
-        <span className={cn(corner, "-left-1.5 -top-1.5 cursor-nwse-resize")} onPointerDown={start("nw")} />
-        <span className={cn(corner, "-right-1.5 -top-1.5 cursor-nesw-resize")} onPointerDown={start("ne")} />
-        <span className={cn(corner, "-bottom-1.5 -left-1.5 cursor-nesw-resize")} onPointerDown={start("sw")} />
-        <span className={cn(corner, "-bottom-1.5 -right-1.5 cursor-nwse-resize")} onPointerDown={start("se")} />
+      <div className="absolute border-2 border-dashed border-primary bg-primary/5" style={sx} onPointerDown={(e) => start("move", e)}>
+        <span className={cn(corner, "-left-1.5 -top-1.5 cursor-nwse-resize")} onPointerDown={(e) => start("nw", e)} />
+        <span className={cn(corner, "-right-1.5 -top-1.5 cursor-nesw-resize")} onPointerDown={(e) => start("ne", e)} />
+        <span className={cn(corner, "-bottom-1.5 -left-1.5 cursor-nesw-resize")} onPointerDown={(e) => start("sw", e)} />
+        <span className={cn(corner, "-bottom-1.5 -right-1.5 cursor-nwse-resize")} onPointerDown={(e) => start("se", e)} />
       </div>
       <div className="absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-border bg-card/95 px-2 py-1 text-xs shadow-sm">
         <Button type="button" variant="ghost" disabled={!paint} onClick={clear} className={cn(btn, "text-foreground hover:bg-accent disabled:opacity-40")}>

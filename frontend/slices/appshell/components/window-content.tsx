@@ -15,24 +15,25 @@ import type { AppProps } from "../lib/types";
 // dock hover), so this stays cheap.
 export function WindowContent({ app, payload, winId }: { app: string; payload?: unknown; winId?: string }) {
   const descriptor = useApp(app);
-  const [Comp, setComp] = useState<ComponentType<AppProps> | null>(null);
+  // Keyed by app id: when the window switches app the stale module no longer
+  // matches, so `Comp` derives back to null (spinner) without a synchronous
+  // setState reset in the effect (react-hooks/set-state-in-effect).
+  const [loaded, setLoaded] = useState<{ key: string; Comp: ComponentType<AppProps> } | null>(null);
+  const Comp = loaded?.key === app ? loaded.Comp : null;
 
   useEffect(() => {
-    if (!descriptor) {
-      setComp(null);
-      return;
-    }
+    if (!descriptor) return;
     let alive = true;
     descriptor
       .load()
-      .then((m) => alive && setComp(() => m.default))
+      .then((m) => alive && setLoaded({ key: app, Comp: m.default }))
       .catch(() => {
         /* leave the spinner; a failed chunk import is caught by the SW recovery */
       });
     return () => {
       alive = false;
     };
-  }, [descriptor]);
+  }, [descriptor, app]);
 
   if (!descriptor) {
     return (

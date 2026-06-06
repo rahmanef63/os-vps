@@ -19,8 +19,14 @@ export function useHistory(apply: {
 }) {
   const past = useRef<HistAction[]>([]);
   const future = useRef<HistAction[]>([]);
-  const [rev, bump] = useState(0);
-  const tick = () => bump((n) => n + 1);
+  // Snapshot state instead of reading the refs during render (react-hooks/refs):
+  // every mutation recomputes the flags, so renders never touch the refs.
+  const [snap, setSnap] = useState({ rev: 0, canUndo: false, canRedo: false });
+  const tick = () => {
+    const canUndo = past.current.length > 0;
+    const canRedo = future.current.length > 0;
+    setSnap((s) => ({ rev: s.rev + 1, canUndo, canRedo }));
+  };
 
   const push = useCallback((a: HistAction) => {
     past.current = [...past.current.slice(-(LIMIT - 1)), a];
@@ -49,13 +55,13 @@ export function useHistory(apply: {
   }, [apply]);
 
   // `rev` bumps on every change so the store can list it in its value-memo deps
-  // → canUndo/canRedo (plain booleans, fresh each render) stay reactive.
+  // → canUndo/canRedo stay reactive (recomputed on each mutation, see tick).
   return {
     push,
     undo,
     redo,
-    rev,
-    canUndo: past.current.length > 0,
-    canRedo: future.current.length > 0,
+    rev: snap.rev,
+    canUndo: snap.canUndo,
+    canRedo: snap.canRedo,
   };
 }

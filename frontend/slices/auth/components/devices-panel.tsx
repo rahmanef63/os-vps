@@ -30,19 +30,29 @@ export function DevicesPanel() {
   const [devices, setDevices] = useState<Device[] | null>(null);
   const thisId = typeof window !== "undefined" ? getOrCreateDeviceId() : "";
 
-  const load = useCallback(async () => {
+  // Pure fetch (no setState) so the mount effect can use the .then form
+  // (react-hooks/set-state-in-effect).
+  const fetchDevices = useCallback(async (): Promise<Device[]> => {
     try {
       const r = await fetch("/api/auth/devices", { cache: "no-store" });
-      if (r.ok) setDevices(flatten((await r.json()) as DevicesResponse));
-      else setDevices([]);
+      if (r.ok) return flatten((await r.json()) as DevicesResponse);
+      return [];
     } catch {
-      setDevices([]);
+      return [];
     }
   }, []);
 
+  const load = useCallback(async () => {
+    setDevices(await fetchDevices());
+  }, [fetchDevices]);
+
   useEffect(() => {
-    void load();
-  }, [load]);
+    let alive = true;
+    fetchDevices().then((d) => alive && setDevices(d));
+    return () => {
+      alive = false;
+    };
+  }, [fetchDevices]);
 
   const act = useCallback(async (action: "approve" | "revoke", deviceId: string) => {
     try {

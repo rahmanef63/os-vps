@@ -1,17 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { DEFAULT_LAYOUT, findLayout } from "./layout";
 
-// Workspace layout preset id, persisted to localStorage. Restored after mount
-// (not in the initial state) to avoid an SSR/client hydration mismatch.
+// Workspace layout preset id, persisted to localStorage. Read lazily on first
+// client render — the reel app mounts client-side only (window bundles load
+// post-hydration), so the initializer never runs during SSR markup.
 export function useLayout(): [string, (id: string) => void] {
-  const [layout, setLayoutState] = useState<string>(DEFAULT_LAYOUT);
-
-  useEffect(() => {
-    const v = typeof window !== "undefined" ? localStorage.getItem("reel.layout") : null;
-    if (v && findLayout(v).id === v) setLayoutState(v);
-  }, []);
+  const [layout, setLayoutState] = useState<string>(() => {
+    if (typeof window === "undefined") return DEFAULT_LAYOUT;
+    const v = localStorage.getItem("reel.layout");
+    return v && findLayout(v).id === v ? v : DEFAULT_LAYOUT;
+  });
 
   const setLayout = useCallback((id: string) => {
     setLayoutState(id);

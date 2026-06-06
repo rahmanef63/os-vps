@@ -18,18 +18,29 @@ export function AiSection() {
   const [model, setModel] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const load = useCallback(async () => {
+  // Pure fetch (no setState) so the mount effect can use the .then form
+  // (react-hooks/set-state-in-effect).
+  const fetchCfg = useCallback(async (): Promise<Cfg | null> => {
     try {
       const r = await fetch("/api/config", { cache: "no-store" });
-      if (r.ok) setCfg((await r.json()) as Cfg);
+      return r.ok ? ((await r.json()) as Cfg) : null;
     } catch {
-      /* leave null → Save stays disabled */
+      return null; /* leave null → Save stays disabled */
     }
   }, []);
 
+  const load = useCallback(async () => {
+    const c = await fetchCfg();
+    if (c) setCfg(c);
+  }, [fetchCfg]);
+
   useEffect(() => {
-    void load();
-  }, [load]);
+    let alive = true;
+    fetchCfg().then((c) => alive && c && setCfg(c));
+    return () => {
+      alive = false;
+    };
+  }, [fetchCfg]);
 
   async function onSave() {
     await fetch("/api/config", {

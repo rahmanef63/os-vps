@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -29,7 +28,30 @@ const EditorContext = createContext<Ctx | null>(null);
 
 export function EditorProvider({ initialDoc, children }: { initialDoc?: Doc; children: ReactNode }) {
   const [doc, setDocState] = useState<Doc>(() => initialDoc ?? blankDoc());
-  const [selectedId, setSelectedId] = useState<string | null>(doc.layers.at(-1)?.id ?? null);
+  // Selection + mask-edit live in ONE state so their invariant (mask-editing is
+  // scoped to the selected layer) is enforced atomically in the setters instead
+  // of an effect-driven reset (react-hooks/set-state-in-effect).
+  const [sel, setSel] = useState<{ id: string | null; mask: string | null }>(() => ({
+    id: doc.layers.at(-1)?.id ?? null,
+    mask: null,
+  }));
+  const selectedId = sel.id;
+  const maskEditId = sel.mask;
+  const setSelectedId = useCallback(
+    (v: string | null | ((s: string | null) => string | null)) =>
+      setSel((s) => {
+        const id = typeof v === "function" ? v(s.id) : v;
+        // Switching layers exits mask-edit — the brush can never silently keep
+        // painting a different layer's mask (the "my strokes vanish" bug).
+        return { id, mask: s.mask && s.mask !== id ? null : s.mask };
+      }),
+    [],
+  );
+  const setMaskEditId = useCallback(
+    (v: string | null | ((m: string | null) => string | null)) =>
+      setSel((s) => ({ ...s, mask: typeof v === "function" ? v(s.mask) : v })),
+    [],
+  );
   const [tool, setTool] = useState<Tool>("move");
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<Pan>({ x: 0, y: 0 });
@@ -37,7 +59,6 @@ export function EditorProvider({ initialDoc, children }: { initialDoc?: Doc; chi
   const [fg, setFgState] = useState(DEFAULT_FG);
   const [bg, setBgState] = useState(DEFAULT_BG);
   const [recentColors, setRecent] = useState<string[]>([]);
-  const [maskEditId, setMaskEditId] = useState<string | null>(null);
 
   const setFg = useCallback((c: string) => {
     setFgState(c);
@@ -49,16 +70,11 @@ export function EditorProvider({ initialDoc, children }: { initialDoc?: Doc; chi
   }, [bg]);
   const resetColors = useCallback(() => { setFgState(DEFAULT_FG); setBgState(DEFAULT_BG); setBrushState((s) => ({ ...s, color: DEFAULT_FG })); }, []);
 
-  // Mask-editing is scoped to the selected layer: entering it selects that layer,
-  // and switching layers exits it — so the brush can never silently keep painting
-  // a different layer's mask (the "my strokes vanish" bug).
-  const setMaskEdit = useCallback((id: string | null) => {
-    setMaskEditId(id);
-    if (id) setSelectedId(id);
-  }, []);
-  useEffect(() => {
-    setMaskEditId((m) => (m && m !== selectedId ? null : m));
-  }, [selectedId]);
+  // Entering mask-edit selects that layer (atomic with the selection state).
+  const setMaskEdit = useCallback(
+    (id: string | null) => setSel((s) => ({ id: id ?? s.id, mask: id })),
+    [],
+  );
   const canvases = useRef<Map<string, HTMLCanvasElement>>(new Map());
   const stageRef = useRef<Konva.Stage | null>(null);
 
@@ -121,7 +137,7 @@ export function EditorProvider({ initialDoc, children }: { initialDoc?: Doc; chi
     setDocSize, update, patchStyle, patchShadow, patchGlow, patchStroke, patchAdj,
     addLayer, removeLayer, duplicateLayer, reorder, raise, lower, applyCrop, addMask, removeMask,
     recordPaint, exportProject, loadProject, undo, redo,
-  }), [doc, selectedId, tool, zoom, pan, brush, fg, bg, recentColors, canUndo, canRedo, rev, maskEditId, canvasFor, setFg, swapColors, resetColors, setMaskEdit, setDocSize, update, patchStyle, patchShadow, patchGlow, patchStroke, patchAdj, addLayer, removeLayer, duplicateLayer, reorder, raise, lower, applyCrop, addMask, removeMask, recordPaint, exportProject, loadProject, undo, redo]);
+  }), [doc, selectedId, setSelectedId, tool, zoom, pan, brush, fg, bg, recentColors, canUndo, canRedo, rev, maskEditId, canvasFor, setFg, swapColors, resetColors, setMaskEdit, setDocSize, update, patchStyle, patchShadow, patchGlow, patchStroke, patchAdj, addLayer, removeLayer, duplicateLayer, reorder, raise, lower, applyCrop, addMask, removeMask, recordPaint, exportProject, loadProject, undo, redo]);
 
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;
 }

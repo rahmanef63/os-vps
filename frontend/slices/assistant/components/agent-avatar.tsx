@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import { cn } from "@/lib/utils";
 import { glyphIcon } from "./icon-map";
 
@@ -14,7 +15,6 @@ export function GlyphTile({
   size?: number;
   className?: string;
 }) {
-  const Icon = glyphIcon(glyph);
   return (
     <span
       className={cn(
@@ -24,7 +24,10 @@ export function GlyphTile({
       )}
       style={{ width: size, height: size }}
     >
-      <Icon style={{ width: size * 0.46, height: size * 0.46 }} />
+      {/* createElement: dynamic stateless lookup, not a render-created component */}
+      {createElement(glyphIcon(glyph), {
+        style: { width: size * 0.46, height: size * 0.46 },
+      })}
     </span>
   );
 }

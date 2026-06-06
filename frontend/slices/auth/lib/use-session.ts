@@ -10,19 +10,30 @@ export type SessionStatus = "loading" | "out" | "in";
 export function useSession() {
   const [status, setStatus] = useState<SessionStatus>("loading");
 
-  const refresh = useCallback(async () => {
+  // Pure probe (no setState) so the mount effect can use the .then form —
+  // react-hooks/set-state-in-effect treats async callbacks that set state as
+  // synchronous when invoked from an effect body.
+  const probe = useCallback(async (): Promise<SessionStatus> => {
     try {
       const r = await fetch("/api/auth/me", { cache: "no-store" });
       const d = (await r.json()) as { authenticated?: boolean };
-      setStatus(d.authenticated ? "in" : "out");
+      return d.authenticated ? "in" : "out";
     } catch {
-      setStatus("out");
+      return "out";
     }
   }, []);
 
+  const refresh = useCallback(async () => {
+    setStatus(await probe());
+  }, [probe]);
+
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let alive = true;
+    probe().then((s) => alive && setStatus(s));
+    return () => {
+      alive = false;
+    };
+  }, [probe]);
 
   return { status, refresh };
 }

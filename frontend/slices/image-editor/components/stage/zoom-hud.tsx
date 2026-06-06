@@ -3,6 +3,13 @@
 import { Minus, Plus, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Hoisted out of ZoomHud so it isn't re-created every render (react-hooks/static-components).
+const Btn = ({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) => (
+  <Button type="button" variant="ghost" aria-label={label} onClick={onClick} className="grid size-7 place-items-center rounded-md p-0 font-normal text-muted-foreground hover:bg-accent hover:text-foreground">
+    {children}
+  </Button>
+);
+
 // Floating zoom control (bottom-left of the canvas): −, current %, +, fit.
 export function ZoomHud({
   zoom,
@@ -17,11 +24,6 @@ export function ZoomHud({
   onReset: () => void;
   onFit: () => void;
 }) {
-  const Btn = ({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) => (
-    <Button type="button" variant="ghost" aria-label={label} onClick={onClick} className="grid size-7 place-items-center rounded-md p-0 font-normal text-muted-foreground hover:bg-accent hover:text-foreground">
-      {children}
-    </Button>
-  );
   return (
     <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-lg border border-border bg-card/90 px-1 py-0.5 shadow-sm backdrop-blur">
       <Btn label="Zoom out" onClick={onOut}><Minus className="size-4" /></Btn>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEditor } from "../lib/store";
@@ -16,15 +16,25 @@ type AnyNode = Konva.Node | null;
 export function useStageInteractions(panMode: boolean) {
   const { doc, tool, selectedId, select, setFg, update, maskEditId, canvasFor, version } = useEditor();
   const [editId, setEditId] = useState<string | null>(null);
-  // Content bbox (doc coords) of the selected PAINT layer — drives a move box that
-  // hugs the drawn pixels (null = empty layer → no box).
-  const [paintBox, setPaintBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const colorInput = useRef<HTMLInputElement | null>(null);
   const colorTarget = useRef<string | null>(null);
   const nodes = useRef<Map<string, AnyNode>>(new Map());
   const boxRef = useRef<Konva.Rect | null>(null);
   const trRef = useRef<Konva.Transformer | null>(null);
   const selected = doc.layers.find((l) => l.id === selectedId) ?? null;
+
+  // Content bbox (doc coords) of the selected PAINT layer — drives a move box
+  // that hugs the drawn pixels (null = empty layer → no box). Derived in render
+  // (memo on `version`) instead of an effect-driven setState — only meaningful
+  // while the Move tool has a paint layer selected.
+  const paintBox = useMemo(
+    () =>
+      tool === "move" && selected?.kind === "paint"
+        ? contentBBox(canvasFor(selected.id, doc.width, doc.height))
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- version stands in for the (mutable) canvas pixels; selected derives from selectedId; canvasFor is a stable cache accessor
+    [selectedId, tool, version, doc.width, doc.height],
+  );
 
   // The Move box hugs the OBJECT: shapes/text/images use their own (content-sized)
   // node with full resize+rotate; paint layers use a proxy fitted to the painted
@@ -48,16 +58,6 @@ export function useStageInteractions(panMode: boolean) {
     }
     tr.getLayer()?.batchDraw();
   }, [selectedId, tool, doc.layers, paintBox, selected]);
-
-  // Recompute the paint content bbox only while it matters (Move tool + paint).
-  useEffect(() => {
-    if (tool === "move" && selected?.kind === "paint") {
-      setPaintBox(contentBBox(canvasFor(selected.id, doc.width, doc.height)));
-    } else {
-      setPaintBox(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, tool, version, doc.width, doc.height]);
 
   const hex = (n: number) => n.toString(16).padStart(2, "0");
   const onBgDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {

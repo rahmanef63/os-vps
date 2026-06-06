@@ -16,16 +16,19 @@ const config = [
   },
   ...next,
   {
-    // react-hooks v6 "compiler-era" strictness: these flag long-standing,
-    // documented patterns here (hydrate-from-localStorage setState, stable-ref
-    // mirrors, render-scoped grouping vars). Advisory until a dedicated sweep —
-    // keep them visible as warnings, never silent.
+    // react-hooks v6 "compiler-era" rules, enforced as errors: the 2026-06-06
+    // sweep converted every legacy pattern (latest-ref mirrors → effect
+    // assignment, effect-driven resets → request-keyed derived state, inline
+    // icon lookups → createElement, inline components → hoisted). Keep them at
+    // error so the patterns don't creep back; the one sanctioned exception
+    // (post-hydration restore in lib/appearance/store.tsx) carries an inline
+    // disable with rationale.
     rules: {
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/refs": "warn",
-      "react-hooks/static-components": "warn",
-      "react-hooks/immutability": "warn",
-      "react-hooks/use-memo": "warn",
+      "react-hooks/set-state-in-effect": "error",
+      "react-hooks/refs": "error",
+      "react-hooks/static-components": "error",
+      "react-hooks/immutability": "error",
+      "react-hooks/use-memo": "error",
     },
   },
 ];

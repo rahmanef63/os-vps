@@ -40,28 +40,34 @@ function matches(q: string, label: string): boolean {
 }
 
 // Spotlight / ⌘K command palette — open apps + run shell actions from one box.
+// The panel MOUNTS per open (and unmounts on close), so query/selection state
+// starts fresh every time without effect-driven resets (set-state-in-effect).
 export function Spotlight() {
   const open = useSpotlightOpen();
+  return open ? <SpotlightPanel /> : null;
+}
+
+function SpotlightPanel() {
   const apps = useApps();
   const search = useShellSearch();
   const { theme, setTheme } = useShellAppearance();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
-  const [folderHits, setFolderHits] = useState<SearchHit[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Debounced folder search under ~/projects (live) — opens Files at the hit.
+  // Results are state, but "no query → no hits" is derived below (stale hits
+  // stay visible during the debounce, matching the old behaviour).
+  const [found, setFound] = useState<{ key: string; hits: SearchHit[] } | null>(null);
+  const folderHits = useMemo(() => (q.trim() ? (found?.hits ?? []) : []), [q, found]);
   useEffect(() => {
     const query = q.trim();
-    if (!query) {
-      setFolderHits([]);
-      return;
-    }
+    if (!query) return;
     let alive = true;
     const t = setTimeout(() => {
       search(query)
-        .then((h) => alive && setFolderHits(h))
-        .catch(() => alive && setFolderHits([]));
+        .then((h) => alive && setFound({ key: query, hits: h }))
+        .catch(() => alive && setFound({ key: query, hits: [] }));
     }, 150);
     return () => {
       alive = false;
@@ -102,20 +108,14 @@ export function Spotlight() {
     return [...base, ...folderCmds];
   }, [commands, q, folderHits]);
 
+  // Focus after the open transition paints (mount = open).
   useEffect(() => {
-    if (open) {
-      setQ("");
-      setSel(0);
-      // focus after the open transition paints
-      requestAnimationFrame(() => inputRef.current?.focus());
-    }
-  }, [open]);
+    const id = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(id);
+  }, []);
 
-  useEffect(() => {
-    setSel((s) => Math.min(s, Math.max(0, results.length - 1)));
-  }, [results.length]);
-
-  if (!open) return null;
+  // Clamp the selection in render when results shrink — no clamp effect.
+  const selIdx = Math.min(sel, Math.max(0, results.length - 1));
 
   const close = () => setSpotlightOpen(false);
   const runAt = (i: number) => {
@@ -136,7 +136,7 @@ export function Spotlight() {
       setSel((s) => (s - 1 + results.length) % Math.max(1, results.length));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      runAt(sel);
+      runAt(selIdx);
     }
   };
 
@@ -168,7 +168,7 @@ export function Spotlight() {
                   onClick={() => runAt(i)}
                   className={cn(
                     "h-auto flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm",
-                    i === sel ? "bg-primary/15 text-foreground" : "text-foreground/80",
+                    i === selIdx ? "bg-primary/15 text-foreground" : "text-foreground/80",
                   )}
                 >
                   <span

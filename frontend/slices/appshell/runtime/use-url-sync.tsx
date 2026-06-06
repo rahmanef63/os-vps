@@ -60,9 +60,13 @@ export function UrlSync({ apps }: { apps: AppDescriptor[] }) {
   const payload = win?.payload;
 
   const pathnameRef = useRef(pathname);
-  pathnameRef.current = pathname;
   const booted = useRef(false);
   const prevApp = useRef<string | null>(null);
+  // Latest-ref mirror; declared BEFORE the sync effects so it commits first
+  // each render cycle (effects run in declaration order).
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  });
 
   // State → URL. push on app change (so back/forward walks focus history),
   // replace on same-app path tweaks. The first pass only records the baseline

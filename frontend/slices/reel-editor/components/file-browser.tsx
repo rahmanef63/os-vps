@@ -60,9 +60,25 @@ export function FileBrowser({
     [api],
   );
 
+  // Initial listing on open, in .then form — `load` does a synchronous
+  // setLoading(true) which react-hooks/set-state-in-effect forbids from an
+  // effect body (it stays as-is for event handlers).
   useEffect(() => {
-    if (open) void load("~");
-  }, [open, load]);
+    if (!open) return;
+    let alive = true;
+    api.fs
+      .list("~")
+      .then((d) => {
+        if (!alive) return;
+        setData(d);
+        setError(null);
+      })
+      .catch((e) => alive && setError(e instanceof Error ? e.message : "Cannot read folder"))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [open, api]);
 
   const path = data?.path ?? "~";
   const entries = (data?.entries ?? [])

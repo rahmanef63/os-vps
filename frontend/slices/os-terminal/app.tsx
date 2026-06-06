@@ -12,15 +12,18 @@ import { run, seedFs, NEOFETCH, type Line } from "./lib/commands";
 export default function TerminalApp() {
   const api = useOsApi();
   const apiRef = useRef(api);
-  apiRef.current = api;
-  const fs = useMemo(seedFs, []);
+  const fs = useMemo(() => seedFs(), []);
 
   const [lines, setLines] = useState<Line[]>([
     { t: "sys", v: 'topside shell · type "help" for commands' },
   ]);
   const [cwd, setCwd] = useState("/");
   const cwdRef = useRef(cwd);
-  cwdRef.current = cwd;
+  // Latest-ref mirrors for event handlers (post-render, per react-hooks/refs).
+  useEffect(() => {
+    apiRef.current = api;
+    cwdRef.current = cwd;
+  });
   const [input, setInput] = useState("");
   const [hist, setHist] = useState<string[]>([]);
   const [hp, setHp] = useState(-1);

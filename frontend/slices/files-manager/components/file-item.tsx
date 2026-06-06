@@ -1,6 +1,6 @@
 "use client";
 
-import { type DragEvent, type MouseEvent, useState } from "react";
+import { createElement, type DragEvent, type MouseEvent, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,6 @@ export function FileItem({
   onDragLeave: () => void;
   onDrop: (e: DragEvent) => void;
 }) {
-  const Icon = iconFor(entry);
   const color = colorFor(entry);
   const isMobile = useIsMobile();
   const [thumbFail, setThumbFail] = useState(false);
@@ -124,13 +123,14 @@ export function FileItem({
             )}
           />
         ) : (
-          <Icon
-            className={cn(
+          // createElement: dynamic stateless lookup, not a render-created component
+          createElement(iconFor(entry), {
+            className: cn(
               "size-9 shrink-0 transition-transform",
               selected ? "" : color,
               dropActive && "scale-110",
-            )}
-          />
+            ),
+          })
         )}
         {renaming ? (
           <RenameInput initial={entry.name} onCommit={commit} onCancel={onRenameCancel} centered />
@@ -159,7 +159,8 @@ export function FileItem({
       )}
     >
       <span className="flex min-w-0 items-center gap-2">
-        <Icon className={cn("size-4 shrink-0", selected ? "" : color)} />
+        {/* createElement: dynamic stateless lookup, not a render-created component */}
+        {createElement(iconFor(entry), { className: cn("size-4 shrink-0", selected ? "" : color) })}
         {renaming ? (
           <RenameInput initial={entry.name} onCommit={commit} onCancel={onRenameCancel} />
         ) : (

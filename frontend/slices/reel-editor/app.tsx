@@ -46,7 +46,10 @@ export default function ReelEditor() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef(frame);
-  frameRef.current = frame;
+  // Latest-ref mirror for drag handlers (post-render, per react-hooks/refs).
+  useEffect(() => {
+    frameRef.current = frame;
+  });
 
   const selected = useMemo(() => comp.clips.find((c) => c.id === sel) ?? null, [comp.clips, sel]);
   const { dropTrack, begin } = useClipDrag(comp, apply, zoom, frameRef);

@@ -21,12 +21,13 @@ const STAGE =
 // hands off to the Image/Video editor by kind (never the code editor); falls
 // back to that handoff if the format can't render.
 export function RemoteView({ file }: { file: RemoteFile }) {
-  const [failed, setFailed] = useState(false);
+  // Remember WHICH path failed — a different file derives back to "no error"
+  // without an effect-driven reset (react-hooks/set-state-in-effect).
+  const [failedPath, setFailedPath] = useState<string | null>(null);
+  const failed = failedPath === file.path;
+  const setFailed = (v: boolean) => setFailedPath(v ? file.path : null);
   const src = rawUrl(file.path);
   const editor = editorFor(file.kind); // image → Image Editor, video/audio → Video Editor
-
-  // Reset the error state when the file changes.
-  useEffect(() => setFailed(false), [file.path]);
 
   const openInEditor = () => {
     if (!editor) return;

@@ -26,7 +26,10 @@ export function useFiles(initialPath?: string) {
   const [path, setPath] = useState(start);
   const [history, setHistory] = useState<string[]>([start]);
   const [cursor, setCursor] = useState(0);
-  const [entries, setEntries] = useState<FsEntry[] | null>(null);
+  // Listing keyed by the request that produced it: when path/reload move on the
+  // stale result stops matching and `entries` derives back to null (loading) —
+  // no synchronous setState reset in the effect (react-hooks/set-state-in-effect).
+  const [listing, setListing] = useState<{ key: string; entries: FsEntry[] } | null>(null);
   const [roots, setRoots] = useState<FsRoot[]>([]);
   const [usage, setUsage] = useState<FsUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,23 +39,25 @@ export function useFiles(initialPath?: string) {
 
   const refresh = useCallback(() => setReload((n) => n + 1), []);
 
+  const loadKey = `${path} ${reload}`;
+  const entries = listing?.key === loadKey ? listing.entries : null;
+
   useEffect(() => {
     let alive = true;
-    setEntries(null);
     api.fs
       .list(path)
       .then((res) => {
         if (!alive) return;
-        setEntries(res.entries);
+        setListing({ key: loadKey, entries: res.entries });
         if (res.roots?.length) setRoots(res.roots);
       })
       .catch(() => {
-        if (alive) setEntries([]);
+        if (alive) setListing({ key: loadKey, entries: [] });
       });
     return () => {
       alive = false;
     };
-  }, [api, path, reload]);
+  }, [api, path, loadKey]);
 
   useEffect(() => {
     let alive = true;

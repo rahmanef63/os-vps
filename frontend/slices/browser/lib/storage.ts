@@ -1,8 +1,10 @@
 "use client";
 
-// localStorage-backed state, SSR-safe. Reads once on mount (so the server and
-// first client render agree on the initial value), then mirrors writes back.
-import { useEffect, useRef, useState } from "react";
+// localStorage-backed state. Reads lazily on first client render (the browser
+// app mounts client-side only — window bundles load post-hydration, so the
+// initializer never runs during SSR markup that could mismatch), then mirrors
+// writes back. `key` must be stable for the hook's lifetime.
+import { useEffect, useState } from "react";
 
 export type HistoryEntry = { url: string; title: string; time: number };
 export type Bookmark = { url: string; title: string };
@@ -11,21 +13,17 @@ export function usePersistent<T>(
   key: string,
   initial: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [value, setValue] = useState<T>(initial);
-  const loaded = useRef(false);
-
-  useEffect(() => {
+  const [value, setValue] = useState<T>(() => {
+    if (typeof window === "undefined") return initial;
     try {
       const raw = localStorage.getItem(key);
-      if (raw) setValue(JSON.parse(raw) as T);
+      return raw ? (JSON.parse(raw) as T) : initial;
     } catch {
-      /* corrupt / unavailable — keep initial */
+      return initial; /* corrupt / unavailable */
     }
-    loaded.current = true;
-  }, [key]);
+  });
 
   useEffect(() => {
-    if (!loaded.current) return;
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
