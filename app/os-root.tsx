@@ -11,6 +11,7 @@ import {
   type ShellManifest,
 } from "@/features/os-shell";
 import { AppearanceProvider } from "@/lib/appearance";
+import "@/features/os-shell/integrations"; // side-effect: lock guard + Quick Look + DnD wiring
 import { OsApiProvider } from "@/lib/os-api";
 import { AuthGate } from "@/features/auth";
 import { useInstalledApps, useDisabledIds } from "@/features/app-store";

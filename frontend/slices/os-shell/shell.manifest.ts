@@ -8,6 +8,11 @@ import { inspectorFeature } from "@/features/shell-inspector";
 import { notificationsFeature } from "@/features/shell-notifications";
 import { controlCenterFeature } from "@/features/shell-control-center";
 import { widgetsFeature } from "@/features/shell-widgets";
+import { quickLookFeature } from "@/features/shell-quick-look";
+import { clipboardFeature } from "@/features/shell-clipboard";
+import { shareFeature } from "@/features/shell-share";
+import { shortcutHelpFeature } from "@/features/shell-shortcut-help";
+import { lockScreenFeature } from "@/features/shell-lock-screen";
 import { filesManagerApp } from "@/features/files-manager";
 import { browserApp } from "@/features/browser";
 import { codeEditorApp } from "@/features/code-editor";
@@ -57,6 +62,11 @@ export const BUILTIN_APPS: AppDescriptor[] = [
 // no surface edit. Settings stays the `os-settings` app (already its own slice).
 export const TOPSIDE_FEATURES: FeatureDescriptor[] = [
   searchFeature,
+  quickLookFeature,
+  clipboardFeature,
+  shareFeature,
+  shortcutHelpFeature,
+  lockScreenFeature,
   inspectorFeature,
   notificationsFeature,
   controlCenterFeature,
