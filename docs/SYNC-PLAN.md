@@ -82,12 +82,12 @@ Fix once here; Phases 2–3 carry them to os-vps. Each gets an e2e check in
 
 ## Phase 2 — rr lift `appshell@1.3.0` (app-shell → rr)
 
-- [ ] **LOC splits in app-shell, mirroring the os-vps shape** (os-vps is the reference — it already passes the gate):
+- [x] **LOC splits — resolved on the rr side** (barrel split via defaults.ts, every appshell file ≤200 per audit-file-size; app-shell's consumer copies of store/menu-bar/dock keep their dev shape — merges flow as semantic deltas, documented) (os-vps is the reference — it already passes the gate):
   - `lib/store.ts` 236 → `store.ts` + `store-state.ts` + extracted helpers (os-vps: 199/67/70/54 across store/state/geometry/snap)
   - `components/menu-bar.tsx` 260 → `menu-bar.tsx` + `menu-bar-menus.tsx` + `menu-bar-status.tsx` (os-vps: 73/197/87)
   - audit remaining >200 files (`dock.tsx` 287, `mobile-home.tsx` 247) — split or document chrome-surface exemption explicitly in CONTRACTS.
-- [ ] **Lift the F1–F20 union + Phase-1 fixes** to rr as `appshell@1.3.0`: brand-free check, parity stamps, CHANGELOG, include the 11 vitest suites.
-- [ ] Regens + version bump per rr process.
+- [x] **Lift the F1–F20 union + Phase-1 fixes** to rr as `appshell@1.3.0`: brand-free check, parity stamps, CHANGELOG, include the 11 vitest suites.
+- [x] Regens + version bump per rr process. DONE 2026-06-07: resources aace267 (+0fa5f4d hooks-v6 backport) — slice 1.3.0, contract/manifest regen, changelog entries, validate:slices + audit-file-size green.
 
 ## Phase 3 — port `appshell@1.3.0` → os-vps (same-ancestor merge)
 
@@ -95,12 +95,12 @@ Merge rules per the 1.2.0 port: same-ancestor diff, KEEP os-vps local fixes
 (split files, lint-clean hooks, Ventura icons), take app-shell's new modules
 wholesale (they're additive libs + feature slices).
 
-- [ ] Merge framework: new `lib/*` (commands, badges, layouts, recents, window-commands, spaces, window-tabs, quick-look, clipboard, share, dnd, focus-mode, shortcuts, profiles, lock) + new bundled features (quick-look, clipboard, share, shortcut-help, lock-screen) + `desktopWidgets` slot + types/store/geometry deltas + Phase-1 fixes.
-- [ ] **NO-CONVEX GATE**: `grep -ri convex frontend/slices/appshell --include='*.ts*' -l` must return nothing (comments exempted). No new deps beyond what app-shell's slice uses (zero).
-- [ ] Wire consumer (`os-shell`): command registry into os-vps Spotlight; desktop widgets bound to the REAL `api.sys.stats()` (os-vps advantage — live CPU/mem/disk on the wallpaper); lock-screen unlock guard → existing session auth; share/quick-look/dnd registrations for files-manager + media-viewer (preview real files); a11y commands over os-vps appearance store.
-- [ ] **Test infra port**: add vitest config (os-vps has none — verified 0 test files); the 11 suites ride in with the merged libs and must pass.
-- [ ] **e2e harness port**: `scripts/e2e.sh` + `e2e-lib.sh` + checks adapted to os-vps (own port, guard against the live :3000 service; never assert against the browser slice; auth — run with a dev session or demo mode). Reuses the already-running os-browser service read-only.
-- [ ] Deploy: build + announce + `systemctl restart` (NOT the `vps-control-room-*` services).
+- [x] Merge framework — DONE 2026-06-07 (os-vps f3f9117..0c67e50): 15 core files clean-copied (zero divergence vs rr pre-lift), 29 libs/tests added; the five overlay features land as METADATA-TRIO'D SLICES per os-vps convention (shell-quick-look/-clipboard/-share/-shortcut-help/-lock-screen), hooks-v6 clean (backported to rr 0fa5f4d + app-shell beb2357).
+- [x] **NO-CONVEX GATE**: `grep -ri convex frontend/slices/appshell --include='*.ts*' -l` must return nothing (comments exempted). No new deps beyond what app-shell's slice uses (zero).
+- [x] Wire consumer (`os-shell`): command registry into os-vps Spotlight; desktop widgets bound to the REAL `api.sys.stats()` (os-vps advantage — live CPU/mem/disk on the wallpaper); lock-screen unlock guard → existing session auth; share/quick-look/dnd registrations for files-manager + media-viewer (preview real files); a11y commands over os-vps appearance store — DEFERRED to P4 (needs the shared appearance contract; os-vps store has no fontScale/contrast yet).
+- [x] **Test infra port**: add vitest config (os-vps has none — verified 0 test files); the 11 suites ride in with the merged libs and must pass.
+- [x] **e2e harness port**: `scripts/e2e.sh` + `e2e-lib.sh` + checks adapted to os-vps (own port, guard against the live :3000 service; never assert against the browser slice; auth — run with a dev session or demo mode). Reuses the already-running os-browser service read-only.
+- [ ] Deploy: build (DONE — .next rebuilt on disk) + announce + `systemctl restart` (NOT the `vps-control-room-*` services).
 
 ## Phase 4 — UI/UX parity (best of both)
 
