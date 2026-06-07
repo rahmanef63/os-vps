@@ -100,7 +100,7 @@ wholesale (they're additive libs + feature slices).
 - [x] Wire consumer (`os-shell`): command registry into os-vps Spotlight; desktop widgets bound to the REAL `api.sys.stats()` (os-vps advantage — live CPU/mem/disk on the wallpaper); lock-screen unlock guard → existing session auth; share/quick-look/dnd registrations for files-manager + media-viewer (preview real files); a11y commands over os-vps appearance store — DEFERRED to P4 (needs the shared appearance contract; os-vps store has no fontScale/contrast yet).
 - [x] **Test infra port**: add vitest config (os-vps has none — verified 0 test files); the 11 suites ride in with the merged libs and must pass.
 - [x] **e2e harness port**: `scripts/e2e.sh` + `e2e-lib.sh` + checks adapted to os-vps (own port, guard against the live :3000 service; never assert against the browser slice; auth — run with a dev session or demo mode). Reuses the already-running os-browser service read-only.
-- [ ] Deploy: build (DONE — .next rebuilt on disk) + announce + `systemctl restart` (NOT the `vps-control-room-*` services).
+- [x] Deploy: DONE 2026-06-07 — `os-vps.service` (:4005) and `os-vps-demo.service` (:4006, separate checkout pulled to 27fd922) restarted with user go-ahead; both 200, new features verified live via headless smoke. `os-browser.service` untouched (quarantine).
 
 ## Phase 4 — UI/UX parity (best of both)
 
@@ -112,7 +112,7 @@ wholesale (they're additive libs + feature slices).
 
 ## Phase 5 — app-shell hardening (os-vps → app-shell)
 
-- [x] **Gate Convex functions**: `convex/files.ts` + `convex/dashboards.ts` are fully public today — anyone with the deployment URL can write/delete. DONE 2026-06-07 (app-rahmanef 96cf2fe): shared write key — every mutation takes key?, checked vs OS_WRITE_KEY on the deployment (convex/guard.ts); reads stay public. UNARMED until `npx convex env set OS_WRITE_KEY <secret>` runs; then enter the key once per device in Settings → Sync. Per rahman: no real-identity auth — fitur minim, gak perlu diberatkan.
+- [x] **Gate Convex functions**: `convex/files.ts` + `convex/dashboards.ts` are fully public today — anyone with the deployment URL can write/delete. DONE 2026-06-07 (app-rahmanef 96cf2fe): shared write key — every mutation takes key?, checked vs OS_WRITE_KEY on the deployment (convex/guard.ts); reads stay public. UNARMED until `npx convex env set OS_WRITE_KEY <secret>` runs; then enter the key once per device in Settings → Sync. OWNER DECISION 2026-06-07: stays UNARMED — app-shell is a demo-only site, deliberately not coupled to the VPS; only os-vps is VPS-connected. Per rahman: no real-identity auth — fitur minim, gak perlu diberatkan.
 - [x] Keep Convex strictly in app-shell (rule 1). Verified: grep gate green on the ported slice + new shell-* slices.
 
 ## Quarantine — browser (DO NOT TOUCH this plan cycle)
