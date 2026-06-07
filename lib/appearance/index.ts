@@ -1,5 +1,6 @@
 export { AppearanceProvider, useAppearance } from "./store";
 export {
+  FONT_SCALES,
   TWEAK_DEFAULTS,
   ACCENTS,
   type Tweaks,

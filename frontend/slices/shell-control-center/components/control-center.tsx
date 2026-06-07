@@ -1,6 +1,6 @@
 "use client";
 
-import { type LucideIcon, Moon, Sun, Server, Cloud, Sparkles, Layers, Search } from "lucide-react";
+import { type LucideIcon, Bell, Moon, MoonStar, Sun, Server, Cloud, Sparkles, Layers, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,8 @@ import {
   closeAll,
   toggleInspector,
   toggleSpotlight,
+  toggleFocusMode,
+  useFocusMode,
   useShellUI,
   useShellAppearance,
   useServerToggle,
@@ -23,6 +25,7 @@ export function ControlCenter() {
   const { theme, setTheme } = useShellAppearance();
   const server = useServerToggle();
   const openCount = useWindowOrder().length;
+  const focus = useFocusMode();
   const dark = theme === "dark";
   const close = () => onOpenChange(false);
 
@@ -52,6 +55,13 @@ export function ControlCenter() {
               onClick={server.toggle}
             />
           )}
+          <Tile
+            icon={focus ? MoonStar : Bell}
+            label="Focus"
+            value={focus ? "On — toasts to log" : "Off"}
+            on={focus}
+            onClick={toggleFocusMode}
+          />
           <Tile icon={Search} label="Search" value="Spotlight" onClick={() => { close(); toggleSpotlight(); }} />
           <Tile icon={Sparkles} label="Assistant" value="AI Inspector" onClick={() => { close(); toggleInspector(); }} />
           <Tile

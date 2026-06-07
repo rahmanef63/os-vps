@@ -12,6 +12,7 @@ import {
 } from "@/features/os-shell";
 import { AppearanceProvider } from "@/lib/appearance";
 import "@/features/os-shell/integrations"; // side-effect: lock guard + Quick Look + DnD wiring
+import { A11yCommands } from "@/features/os-shell/a11y-commands";
 import { OsApiProvider } from "@/lib/os-api";
 import { AuthGate } from "@/features/auth";
 import { useInstalledApps, useDisabledIds } from "@/features/app-store";
@@ -40,6 +41,7 @@ function Shell() {
 export function OsRoot() {
   return (
     <AppearanceProvider>
+      <A11yCommands />
       <AuthGate>
         <OsApiProvider>
           <Shell />

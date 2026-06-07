@@ -8,6 +8,9 @@ export type Wallpaper =
 export type Device = "auto" | "desktop" | "phone";
 export type ServerMode = "mock" | "live";
 
+/** Accessibility text-scale steps (root font-size multiplier). */
+export const FONT_SCALES = [0.875, 1, 1.125, 1.25] as const;
+
 export type Appearance = {
   theme: Theme;
   accent: string;
@@ -15,6 +18,10 @@ export type Appearance = {
   wallpaper: Wallpaper;
   reduceGlass: boolean;
   device: Device;
+  /** Root font-size multiplier (a11y) — one of FONT_SCALES. */
+  fontScale: number;
+  /** Stronger borders + secondary text (a11y). */
+  highContrast: boolean;
 };
 
 // No token field: the HTTP adapter authenticates with the signed session
@@ -42,5 +49,7 @@ export const TWEAK_DEFAULTS: Tweaks = {
   wallpaper: "auto",
   reduceGlass: false,
   device: "auto",
+  fontScale: 1,
+  highContrast: false,
   server: { mode: "mock", url: "" },
 };

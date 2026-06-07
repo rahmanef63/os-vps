@@ -68,6 +68,19 @@
   --ring: var(--accent);
 }
 
+/* Accessibility: high-contrast (Settings / a11y commands) — stronger
+   separators + darker secondary text, both themes. */
+.high-contrast {
+  --sep: rgba(0, 0, 0, 0.45);
+  --sep-strong: rgba(0, 0, 0, 0.6);
+  --text-dim: rgba(28, 28, 31, 0.88);
+}
+.high-contrast[data-theme="dark"] {
+  --sep: rgba(255, 255, 255, 0.4);
+  --sep-strong: rgba(255, 255, 255, 0.55);
+  --text-dim: rgba(236, 237, 241, 0.92);
+}
+
 [data-theme="dark"] {
   --text: #f2f2f5;
   --text-dim: rgba(242, 242, 245, 0.64);

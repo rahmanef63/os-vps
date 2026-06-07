@@ -51,6 +51,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     el.classList.remove("dir-aqua", "dir-graphite", "dir-vivid");
     el.classList.add(`dir-${tweaks.dir}`);
     el.classList.toggle("reduce-glass", tweaks.reduceGlass);
+    el.classList.toggle("high-contrast", tweaks.highContrast);
+    el.style.fontSize = tweaks.fontScale === 1 ? "" : `${tweaks.fontScale * 100}%`;
     el.style.setProperty("--accent", tweaks.accent);
     try {
       localStorage.setItem(KEY, JSON.stringify(tweaks));
