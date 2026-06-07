@@ -34,7 +34,7 @@ function Tab({ value, icon: Icon, label }: { value: string; icon: typeof Bot; la
 // assistant is opt-in (last tab), NOT the default. Drag the divider to rebalance.
 export function SidePanel() {
   return (
-    <div className="flex w-[312px] shrink-0 flex-col border-l border-border bg-card">
+    <div className="flex w-[312px] max-w-[45vw] shrink-0 flex-col border-l border-border bg-card">
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel defaultSize={40} minSize={22}>
           <Tabs defaultValue="props" className="flex h-full flex-col">

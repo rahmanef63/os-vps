@@ -28,9 +28,9 @@ export function DynamicIsland() {
       >
         <span className="grid size-5 shrink-0 place-items-center">
           {tone === "done" ? (
-            <Check className="size-4 text-emerald-400" />
+            <Check className="size-4 text-success" />
           ) : tone === "error" ? (
-            <X className="size-4 text-red-400" />
+            <X className="size-4 text-destructive" />
           ) : pct != null ? (
             <ProgressRing pct={pct} />
           ) : (

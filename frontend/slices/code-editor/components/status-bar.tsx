@@ -35,7 +35,7 @@ export function StatusBar({
             Ln {ln}, Col {col}
           </span>
           <span>Spaces: {tabSize}</span>
-          <span className={saveState === "error" ? "text-amber-400" : undefined}>
+          <span className={saveState === "error" ? "text-warning" : undefined}>
             {status}
           </span>
         </>

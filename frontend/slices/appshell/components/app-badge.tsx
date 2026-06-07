@@ -35,13 +35,13 @@ export function AppBadge({ appId }: { appId: string }) {
   }
   if (b.count) {
     return (
-      <span className="absolute right-0.5 top-0.5 z-[2] grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white shadow">
+      <span className="absolute right-0.5 top-0.5 z-[2] grid h-3.5 min-w-3.5 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-white shadow">
         {b.count > 99 ? "99+" : b.count}
       </span>
     );
   }
   if (b.dot) {
-    return <span className="absolute right-1 top-1 z-[2] size-2 rounded-full bg-red-500 shadow" />;
+    return <span className="absolute right-1 top-1 z-[2] size-2 rounded-full bg-destructive shadow" />;
   }
   return null;
 }

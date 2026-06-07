@@ -26,7 +26,7 @@ export function ClipTabAudio({
             onClick={() => onChange({ mute: !clip.mute })}
             className={cn(
               "h-5 rounded px-2 text-[10px] font-bold uppercase",
-              clip.mute ? "bg-red-500/15 text-red-500 hover:bg-red-500/15 hover:text-red-500" : "bg-secondary text-muted-foreground hover:bg-secondary hover:text-muted-foreground",
+              clip.mute ? "bg-destructive/15 text-destructive hover:bg-destructive/15 hover:text-destructive" : "bg-secondary text-muted-foreground hover:bg-secondary hover:text-muted-foreground",
             )}
           >
             {clip.mute ? "Muted" : "Mute"}

@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { TWEAK_DEFAULTS, type Tweaks, type ServerConfig } from "./types";
+import { applyPreset, clearPreset } from "./presets/apply";
 
 const KEY = "os-vps:tweaks";
 
@@ -53,7 +54,14 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     el.classList.toggle("reduce-glass", tweaks.reduceGlass);
     el.classList.toggle("high-contrast", tweaks.highContrast);
     el.style.fontSize = tweaks.fontScale === 1 ? "" : `${tweaks.fontScale * 100}%`;
-    el.style.setProperty("--accent", tweaks.accent);
+    // A color preset owns --accent (stylesheet); inline accent would beat it.
+    if (tweaks.preset) {
+      el.style.removeProperty("--accent");
+      void applyPreset(tweaks.preset);
+    } else {
+      clearPreset();
+      el.style.setProperty("--accent", tweaks.accent);
+    }
     try {
       localStorage.setItem(KEY, JSON.stringify(tweaks));
     } catch {

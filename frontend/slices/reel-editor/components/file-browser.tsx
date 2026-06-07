@@ -130,7 +130,7 @@ export function FileBrowser({
               <Loader2 className="size-5 animate-spin" />
             </div>
           ) : error ? (
-            <div className="grid h-full place-items-center px-6 text-center text-xs text-red-500">{error}</div>
+            <div className="grid h-full place-items-center px-6 text-center text-xs text-destructive">{error}</div>
           ) : entries.length === 0 ? (
             <div className="grid h-full place-items-center text-xs text-muted-foreground">No media in this folder</div>
           ) : (

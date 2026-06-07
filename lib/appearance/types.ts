@@ -14,6 +14,8 @@ export const FONT_SCALES = [0.875, 1, 1.125, 1.25] as const;
 export type Appearance = {
   theme: Theme;
   accent: string;
+  /** tweakcn color preset name (lib/appearance/presets) — null = stock os-rr palette. */
+  preset: string | null;
   dir: Dir;
   wallpaper: Wallpaper;
   reduceGlass: boolean;
@@ -45,6 +47,7 @@ export const ACCENTS = [
 export const TWEAK_DEFAULTS: Tweaks = {
   theme: "light",
   accent: "#2f7bf6",
+  preset: null,
   dir: "aqua",
   wallpaper: "auto",
   reduceGlass: false,

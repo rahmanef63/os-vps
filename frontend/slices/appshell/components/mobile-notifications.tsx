@@ -16,10 +16,10 @@ import {
 } from "../lib/toast";
 
 const TONE_DOT: Record<string, string> = {
-  success: "bg-emerald-400",
-  error: "bg-red-400",
-  warning: "bg-amber-400",
-  info: "bg-sky-400",
+  success: "bg-success",
+  error: "bg-destructive",
+  warning: "bg-warning",
+  info: "bg-info",
 };
 
 function rel(ts: number): string {

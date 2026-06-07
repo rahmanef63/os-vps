@@ -14,7 +14,7 @@ export function BrushOptions() {
   return (
     <>
       {!canPaint && (
-        <span className="rounded bg-amber-500/15 px-2 py-0.5 text-amber-600 dark:text-amber-400">
+        <span className="rounded bg-warning/15 px-2 py-0.5 text-warning">
           Select a Pixel layer to paint
         </span>
       )}

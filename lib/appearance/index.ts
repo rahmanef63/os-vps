@@ -1,5 +1,12 @@
 export { AppearanceProvider, useAppearance } from "./store";
 export {
+  loadPresetRegistry,
+  findPreset,
+  presetSwatches,
+  groupPresets,
+} from "./presets/registry";
+export type { PresetItem, PresetGroup } from "./presets/types";
+export {
   FONT_SCALES,
   TWEAK_DEFAULTS,
   ACCENTS,

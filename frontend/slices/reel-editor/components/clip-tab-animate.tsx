@@ -44,7 +44,7 @@ export function ClipTabAnimate({
     <>
       <Header
         right={
-          <span className={cn("font-mono text-[10px]", inClip ? "text-muted-foreground" : "text-orange-400")}>
+          <span className={cn("font-mono text-[10px]", inClip ? "text-muted-foreground" : "text-warning")}>
             {inClip ? `◆ ${(local / comp.fps).toFixed(2)}s` : "playhead off-clip"}
           </span>
         }

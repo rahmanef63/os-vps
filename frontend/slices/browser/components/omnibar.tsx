@@ -93,7 +93,7 @@ export function Omnibar(props: OmnibarProps) {
               isNewTab
                 ? "text-muted-foreground"
                 : secure
-                  ? "text-emerald-500"
+                  ? "text-success"
                   : "text-muted-foreground",
             )}
           />

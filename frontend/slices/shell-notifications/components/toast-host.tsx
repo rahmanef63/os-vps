@@ -16,8 +16,8 @@ const toneIcon: Record<ToastTone, typeof CheckCircle2 | null> = {
 
 const toneColor: Record<ToastTone, string> = {
   default: "text-foreground",
-  success: "text-emerald-500",
-  error: "text-red-500",
+  success: "text-success",
+  error: "text-destructive",
 };
 
 export function ToastHost() {

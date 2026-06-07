@@ -45,8 +45,8 @@ export function StageOverlays({
       {/* Mask-edit cue: the mask surface is invisible, so make the mode obvious +
           give a one-click exit (brush HIDES, eraser REVEALS while this is on). */}
       {maskEditId && (
-        <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-amber-400/80">
-          <div className="pointer-events-auto absolute left-1/2 top-2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-amber-500/95 px-3 py-1 text-xs font-medium text-black shadow">
+        <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-warning/80">
+          <div className="pointer-events-auto absolute left-1/2 top-2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-warning/95 px-3 py-1 text-xs font-medium text-black shadow">
             Editing mask — brush hides · eraser reveals
             <Button type="button" variant="ghost" className="h-auto rounded bg-black/20 px-1.5 py-0.5 text-xs font-medium text-black hover:bg-black/30" onClick={() => setMaskEdit(null)}>
               Done

@@ -40,7 +40,7 @@ export function NotificationCenter() {
     <>
       <div className="fixed inset-0 z-[889]" onClick={close} />
       <aside
-        className="glass fixed right-0 top-0 bottom-0 z-[890] flex w-[340px] flex-col gap-3 border-l border-border p-3 pt-9 shadow-[-20px_0_60px_-20px_rgba(0,0,0,0.5)] animate-in slide-in-from-right duration-200"
+        className="glass fixed right-0 top-0 bottom-0 z-[890] flex w-[340px] max-w-[calc(100vw-12px)] flex-col gap-3 border-l border-border p-3 pt-9 shadow-[-20px_0_60px_-20px_rgba(0,0,0,0.5)] animate-in slide-in-from-right duration-200"
         style={{ background: "var(--glass-menu)" }}
       >
         <header className="flex items-center px-1">
@@ -71,8 +71,8 @@ export function NotificationCenter() {
 
 const TONE_DOT: Record<NotificationItem["tone"], string> = {
   default: "bg-primary",
-  success: "bg-emerald-500",
-  error: "bg-rose-500",
+  success: "bg-success",
+  error: "bg-destructive",
 };
 
 function NotifCard({ n }: { n: NotificationItem }) {

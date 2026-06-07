@@ -61,7 +61,7 @@ function StartButton({ open, onClick }: { open: boolean; onClick: () => void }) 
     >
       <span className="grid grid-cols-2 gap-[2px]">
         {[0, 1, 2, 3].map((i) => (
-          <span key={i} className="size-1.5 rounded-[1px] bg-sky-500" />
+          <span key={i} className="size-1.5 rounded-[1px] bg-info" />
         ))}
       </span>
     </Button>
@@ -96,7 +96,7 @@ function TaskButton({ id }: { id: string }) {
         )}
         <span className="max-w-[120px] truncate text-xs">{win.title}</span>
         <span
-          className={cn(`absolute bottom-[1px] left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-sky-500 transition-all ${active ? "w-5" : "w-2 opacity-60"}`)}
+          className={cn(`absolute bottom-[1px] left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-info transition-all ${active ? "w-5" : "w-2 opacity-60"}`)}
         />
       </Button>
       <ContextMenu

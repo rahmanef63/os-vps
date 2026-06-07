@@ -169,7 +169,7 @@ function CapBtn({
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className={cn("h-auto p-0 font-normal hover:bg-transparent", 
         "grid w-[46px] place-items-center text-muted-foreground transition-colors",
-        danger ? "hover:bg-red-600 hover:text-white" : "hover:bg-muted",
+        danger ? "hover:bg-destructive hover:text-white" : "hover:bg-muted",
       )}
     >
       <svg viewBox="0 0 10 10" className="size-2.5" fill="currentColor">{children}</svg>

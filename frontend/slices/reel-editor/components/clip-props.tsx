@@ -78,7 +78,7 @@ export function ClipProps(props: {
       <Button
         type="button"
         variant="ghost"
-        className="flex h-7 items-center justify-center gap-1.5 rounded-md bg-secondary px-0 text-xs font-normal text-red-500 hover:bg-secondary hover:text-red-500"
+        className="flex h-7 items-center justify-center gap-1.5 rounded-md bg-secondary px-0 text-xs font-normal text-destructive hover:bg-secondary hover:text-destructive"
         onClick={onDelete}
       >
         <Trash2 className="size-3.5" /> Delete clip

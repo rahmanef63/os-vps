@@ -63,6 +63,8 @@
   --accent-foreground: var(--text);
   --destructive: #ff5f57;
   --success: #34c759;
+  --warning: #ff9500;
+  --info: #0a84ff;
   --border: var(--sep);
   --input: var(--sep-strong);
   --ring: var(--accent);
@@ -103,6 +105,9 @@
   --shadow-win: 0 0 0 0.5px rgba(0, 0, 0, 0.6), 0 28px 70px -12px rgba(0, 0, 0, 0.7), 0 8px 22px -10px rgba(0, 0, 0, 0.55);
   --shadow-pop: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 16px 40px -8px rgba(0, 0, 0, 0.6);
   --dock-bg: rgba(40, 40, 48, 0.42);
+
+  --warning: #ff9f0a;
+  --info: #409cff;
 }
 
 /* shell style presets (dir) */
@@ -129,6 +134,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

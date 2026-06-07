@@ -142,7 +142,7 @@ export function FilesPane({ onAdd }: { onAdd: (m: MediaRef, name: string) => voi
             <Loader2 className="size-4 animate-spin" />
           </div>
         ) : error ? (
-          <div className="grid h-full place-items-center px-4 text-center text-[11px] text-red-500">{error}</div>
+          <div className="grid h-full place-items-center px-4 text-center text-[11px] text-destructive">{error}</div>
         ) : entries.length === 0 ? (
           <div className="grid h-full place-items-center text-[11px] text-muted-foreground">No media here</div>
         ) : (

@@ -30,7 +30,7 @@ export function Inspector() {
   const subject = app?.title ?? appId ?? "Desktop";
 
   return (
-    <aside className="absolute right-0 top-[30px] bottom-0 z-[40] flex w-[300px] flex-col border-l border-border bg-card/80 backdrop-blur-xl">
+    <aside className="absolute right-0 top-[30px] bottom-0 z-[40] flex w-[300px] max-w-[85vw] flex-col border-l border-border bg-card/80 backdrop-blur-xl">
       <header className="flex items-center gap-2 border-b border-border px-3 py-2">
         <Sparkles className="size-4 text-[var(--accent)]" />
         <div className="min-w-0 flex-1">

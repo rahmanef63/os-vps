@@ -1,21 +1,70 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppearance } from "@/lib/appearance";
-import { AppFrame, usePublishInspector } from "@/features/os-shell";
-import { SettingsSection as Section } from "@/features/shell-settings";
+import { AppFrame, MasterDetail, usePublishInspector, useResponsive } from "@/features/os-shell";
 import { DevicesPanel } from "@/features/auth";
+import { SettingsNav, SECTIONS, type SectionId } from "./components/nav";
 import { AppearanceSection } from "./components/appearance-section";
+import { ThemeSection } from "./components/theme-section";
 import { AiSection } from "./components/ai-section";
 import { ServerSection } from "./components/server-section";
 import { AboutSection } from "./components/about-section";
 
+// macOS System Settings layout: nav rail (master) + one section per detail
+// pane. On compact the list shows first and sections slide in with a back
+// affordance (MasterDetail primitive). All sections preserved.
+function SectionBody({ id }: { id: SectionId }) {
+  switch (id) {
+    case "appearance":
+      return <AppearanceSection />;
+    case "theme":
+      return <ThemeSection />;
+    case "ai":
+      return <AiSection />;
+    case "devices":
+      return (
+        <div className="space-y-3">
+          <DevicesPanel />
+          <p className="text-[11px] leading-relaxed text-muted-foreground">
+            Each browser is a device gated by password + approval. Approve a
+            pending device to grant it access; revoke to cut it off.
+          </p>
+        </div>
+      );
+    case "server":
+      return <ServerSection />;
+    case "about":
+      return <AboutSection />;
+  }
+}
+
+function SectionDetail({ id }: { id: SectionId }) {
+  const meta = SECTIONS.find((s) => s.id === id);
+  return (
+    <ScrollArea className="h-full">
+      <div className="space-y-5 p-5">
+        {meta && (
+          <header className="space-y-0.5">
+            <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>
+            <p className="text-xs text-muted-foreground">{meta.blurb}</p>
+          </header>
+        )}
+        <SectionBody id={id} />
+      </div>
+    </ScrollArea>
+  );
+}
+
 // Default export so os-shell can lazy-load it as a window app.
 export default function OsSettings() {
   const { tweaks } = useAppearance();
+  const { isMobile } = useResponsive();
   const [model, setModel] = useState("default");
+  const [sel, setSel] = useState<SectionId | null>(null);
+  const active = sel ?? "appearance";
+
   useEffect(() => {
     fetch("/api/config", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
@@ -29,7 +78,8 @@ export default function OsSettings() {
     {
       subject: "System Settings",
       props: [
-        { label: "Theme", value: tweaks.theme },
+        { label: "Theme", value: tweaks.preset ?? "stock" },
+        { label: "Mode", value: tweaks.theme },
         { label: "Accent", value: tweaks.accent },
         { label: "Device", value: tweaks.device },
         { label: "Server mode", value: tweaks.server.mode },
@@ -42,30 +92,21 @@ export default function OsSettings() {
         "Explain device approval",
       ],
     },
-    [tweaks.theme, tweaks.accent, tweaks.device, tweaks.server.mode, model],
+    [tweaks.theme, tweaks.preset, tweaks.accent, tweaks.device, tweaks.server.mode, model],
   );
 
   return (
     <AppFrame>
-      <ScrollArea className="h-full">
-      <div className="space-y-6 p-5">
-        <AppearanceSection />
-
-        <AiSection />
-
-        <Section icon={<ShieldCheck />} title="Devices">
-          <DevicesPanel />
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
-            Each browser is a device gated by password + approval. Approve a
-            pending device to grant it access; revoke to cut it off.
-          </p>
-        </Section>
-
-        <ServerSection />
-
-        <AboutSection />
-      </div>
-      </ScrollArea>
+      <MasterDetail
+        hasSelection={sel !== null}
+        onBack={() => setSel(null)}
+        backLabel="Settings"
+        masterClassName="w-full bg-sidebar/40 lg:w-56"
+        master={
+          <SettingsNav active={active} showActive={!isMobile} onSelect={setSel} />
+        }
+        detail={<SectionDetail id={active} />}
+      />
     </AppFrame>
   );
 }
