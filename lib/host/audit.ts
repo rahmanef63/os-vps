@@ -23,6 +23,8 @@ export type AuditAction =
   | "browser.type"
   | "browser.key"
   | "browser.scroll"
+  | "browser.fill"
+  | "browser.clickSelector"
   | "browser.back"
   | "browser.forward"
   | "browser.reload"

@@ -2,18 +2,26 @@
 // handled locally in @/lib/host (os-vps runs on the host). The only out-of-process
 // dependency left is the Playwright browser service (OS_BROWSER_URL), whose
 // shared secret lives here and NEVER reaches the client. Every /api/v1 route
-// verifies the signed-cookie session first.
+// verifies the signed-cookie session (or the agent token) first.
+import { createHash, timingSafeEqual } from "crypto";
 import { getSessionActor, requireSession } from "@/lib/auth/require-session";
 import { audit, type AuditAction } from "@/lib/host";
 
 const BROWSER_URL = (process.env.OS_BROWSER_URL ?? "").replace(/\/$/, "");
 const BROWSER_SECRET = process.env.OS_BROWSER_SECRET ?? "";
+// Service-to-service token. Lets a trusted backend (e.g. control-room's agent)
+// drive the browser through THIS app's authed + audited routes, WITHOUT ever
+// handing it OS_BROWSER_SECRET or the runtime port. os-vps stays the single auth
+// boundary in front of the browser. Empty (unset) = session cookie only.
+const AGENT_TOKEN = process.env.OS_AGENT_TOKEN ?? "";
 
-// Mutating browser actions get one audit line; reads (screenshot/state/content)
-// are too high-volume (the screenshot is polled) and carry no host risk.
+// Mutating browser actions get one audit line; reads (screenshot/state/content/
+// elements/info) are too high-volume or carry no host risk.
 const BROWSER_AUDIT: Record<string, AuditAction> = {
   "/navigate": "browser.navigate",
   "/click": "browser.click",
+  "/click-selector": "browser.clickSelector",
+  "/fill": "browser.fill",
   "/type": "browser.type",
   "/key": "browser.key",
   "/scroll": "browser.scroll",
@@ -29,12 +37,13 @@ export function browserConfigured(): boolean {
 
 // Calls the remote-browser service with the shared secret header, returning the
 // RAW Response so callers can `.json()` (state/navigate/...) or read the body
-// as bytes (the screenshot PNG).
+// as bytes (the screenshot). Agent-token callers have no cookie → attribute the
+// audit line to "agent" rather than dropping the actor.
 export async function browserFetch(path: string, init?: RequestInit): Promise<Response> {
   const action = BROWSER_AUDIT[path];
   if (action) {
     const target = typeof init?.body === "string" ? init.body : undefined;
-    audit({ action, actor: await getSessionActor(), target });
+    audit({ action, actor: (await getSessionActor()) ?? "agent", target });
   }
   const res = await fetch(BROWSER_URL + path, {
     ...init,
@@ -45,9 +54,19 @@ export async function browserFetch(path: string, init?: RequestInit): Promise<Re
   return res;
 }
 
-// Verifies the caller holds a valid signed-cookie session (sent automatically
-// on same-origin requests). The `req` arg is unused — kept so the /api/v1 route
-// handlers that call `verifyAuth(req)` need no edit.
-export async function verifyAuth(_req?: Request): Promise<boolean> {
+// Constant-time compare of the presented agent token against OS_AGENT_TOKEN.
+// Disabled (always false) unless a >=16-char token is configured.
+function agentTokenOk(req?: Request): boolean {
+  if (!req || AGENT_TOKEN.length < 16) return false;
+  const provided = req.headers.get("x-os-agent-token") ?? "";
+  const a = createHash("sha256").update(provided).digest();
+  const b = createHash("sha256").update(AGENT_TOKEN).digest();
+  return timingSafeEqual(a, b);
+}
+
+// Verifies the caller holds a valid signed-cookie session (sent automatically on
+// same-origin requests) OR a valid agent token header (service-to-service).
+export async function verifyAuth(req?: Request): Promise<boolean> {
+  if (agentTokenOk(req)) return true;
   return requireSession();
 }

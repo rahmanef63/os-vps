@@ -10,6 +10,7 @@ import { AppearanceSection } from "./components/appearance-section";
 import { ThemeSection } from "./components/theme-section";
 import { AiSection } from "./components/ai-section";
 import { ServerSection } from "./components/server-section";
+import { BrowserSection } from "./components/browser-section";
 import { AboutSection } from "./components/about-section";
 
 // macOS System Settings layout: nav rail (master) + one section per detail
@@ -35,6 +36,8 @@ function SectionBody({ id }: { id: SectionId }) {
       );
     case "server":
       return <ServerSection />;
+    case "browser":
+      return <BrowserSection />;
     case "about":
       return <AboutSection />;
   }

@@ -2,6 +2,7 @@
 
 import type { ComponentType } from "react";
 import {
+  Globe,
   Info,
   Paintbrush,
   Palette,
@@ -12,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export type SectionId =
-  | "appearance" | "theme" | "ai" | "devices" | "server" | "about";
+  | "appearance" | "theme" | "ai" | "devices" | "server" | "browser" | "about";
 
 export const SECTIONS: ReadonlyArray<{
   id: SectionId;
@@ -25,6 +26,7 @@ export const SECTIONS: ReadonlyArray<{
   { id: "ai", label: "AI", blurb: "Model and API key", icon: Sparkles },
   { id: "devices", label: "Devices", blurb: "Approved browsers and sessions", icon: ShieldCheck },
   { id: "server", label: "Server", blurb: "Mock or live host data", icon: Server },
+  { id: "browser", label: "Browser", blurb: "Remote Chromium runtime status", icon: Globe },
   { id: "about", label: "About", blurb: "System info and reset", icon: Info },
 ];
 
