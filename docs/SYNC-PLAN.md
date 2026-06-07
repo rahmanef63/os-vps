@@ -74,11 +74,11 @@ Verify: `pnpm typecheck && pnpm build` green; manual click-through of About/Moni
 Fix once here; Phases 2–3 carry them to os-vps. Each gets an e2e check in
 `os/scripts/e2e/`.
 
-- [ ] **Cascade clamp**: `features/appshell/lib/store.ts` `openWindow` — clamp spawn rect to `workArea()` (x, y, and keep `x+w`/`y+h` inside; respect chrome insets). Cascade wraps instead of marching off-screen.
-- [ ] **Focus-if-open default**: apps without `multi: true` already reuse; make reuse-or-focus the documented default and add a palette-visible behavior test (open Files twice → one window, focused).
-- [ ] **`document.title` sync**: new `lib/window-title.ts` — subscribes to shellStore focus, sets `document.title = "{focused app title} — {brand}"` (brand from manifest; falls back to app title only). Desktop + mobile surfaces. Consumer opt-out flag.
-- [ ] **e2e**: `f21-title.sh` (open Settings → title contains "Settings"), `f22-clamp.sh` (open 8 windows → all rects within viewport via palette-reported state or bounded marker).
-- [ ] Ship: typecheck + build + full e2e suite green → commit → push (Dokploy).
+- [x] **Cascade clamp**: `features/appshell/lib/store.ts` `openWindow` — clamp spawn rect to `workArea()` (x, y, and keep `x+w`/`y+h` inside; respect chrome insets). Cascade wraps instead of marching off-screen.
+- [x] **Focus-if-open default**: apps without `multi: true` already reuse; make reuse-or-focus the documented default and add a palette-visible behavior test (open Files twice → one window, focused).
+- [x] **`document.title` sync**: new `lib/window-title.ts` — subscribes to shellStore focus, sets `document.title = "{focused app title} — {brand}"` (brand from manifest; falls back to app title only). Desktop + mobile surfaces. Consumer opt-out flag.
+- [x] **e2e**: `f21-title.sh` (open Settings → title contains "Settings"), `f22-clamp.sh` (8 windows → e2e:bounds reports all rects in-viewport via the NC log). DONE 2026-06-07: app-rahmanef 3fbe2ca..25056a3; suite 21/21 green; bonus fix: clipboard monotonic ids (same-ms Date.now() collision).
+- [x] Ship: typecheck + build + full e2e suite green → commit → push (Dokploy).
 
 ## Phase 2 — rr lift `appshell@1.3.0` (app-shell → rr)
 
