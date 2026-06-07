@@ -9,3 +9,4 @@ export type { AppDescriptor } from "@/features/os-shell";
 export { usePublishInspector } from "@/features/os-shell";
 export { useOsApi, type FsEntry } from "@/lib/os-api";
 export type { OsApi as TerminalOsApi } from "@/lib/os-api";
+export { fmtGiBPair, fmtUptime } from "@/lib/os-api/format";

@@ -99,7 +99,7 @@ export default function TerminalApp() {
       className="h-full w-full overflow-y-auto bg-[#0d0e12] p-3.5 [padding-bottom:calc(0.875rem+var(--sai-bottom))] font-mono text-[12.5px] leading-relaxed text-[#dfe3ea] [font-family:var(--font-mono)] select-text"
     >
       {lines.map((l, i) => {
-        if (l.t === "fetch") return <Neofetch key={i} />;
+        if (l.t === "fetch") return <Neofetch key={i} rows={l.rows} />;
         if (l.t === "cmd")
           return (
             <div key={i} className="whitespace-pre-wrap">
@@ -141,7 +141,9 @@ function Prompt({ cwd }: { cwd: string }) {
   );
 }
 
-function Neofetch() {
+// Live stats rows come on the line itself; the mock NEOFETCH rows are the
+// demo-mode fallback.
+function Neofetch({ rows }: { rows?: [string, string][] }) {
   return (
     <div className="my-1.5 flex gap-[18px]">
       <div className="font-bold leading-tight" style={{ color: "#5be0c8" }}>
@@ -149,7 +151,7 @@ function Neofetch() {
       </div>
       <div className="leading-relaxed">
         <div style={{ color: "#7a8aff" }}>root@topside</div>
-        {NEOFETCH.rows.map(([k, v]) => (
+        {(rows ?? NEOFETCH.rows).map(([k, v]) => (
           <div key={k}>
             <span style={{ color: "#5be0c8" }}>{k.padEnd(8, "-")}</span> {v}
           </div>
