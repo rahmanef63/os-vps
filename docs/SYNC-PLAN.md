@@ -56,16 +56,16 @@ solid; zero console errors.
 
 All in os-vps, each small and independent. One commit per logical fix.
 
-- [ ] **Uptime bug**: `lib/host/sys.ts:43` — return `os.uptime()` (seconds), drop `* 1000`. Verify About + Monitor show ~real uptime.
-- [ ] **Unify byte formatting**: shared `formatBytes` (binary GiB) used by About (`os-settings/components/about-section.tsx`) and System Monitor (`system-monitor/lib/format.ts`). One machine → one set of numbers.
-- [ ] **neofetch live data**: in live mode, populate neofetch from `api.sys.stats()` (cores/mem/disk/uptime); keep mock only for demo mode. Label demo output `(demo)`.
-- [ ] **Terminal `ls` honesty**: in live mode, do NOT silently fall back to the mock FS on API error — print the error. Mock fallback stays demo-only (`os-terminal/commands.ts:51-65`).
-- [ ] **Destructive guard expansion**: `lib/host/exec.ts:19-27` — add patterns for `systemctl (stop|restart|disable|mask)`, `shutdown`, `reboot`, `poweroff`, `init 0|6`, `kill -9 1`. Blocked = same `code 126` + audit `exec.blocked` path. (Owner can still SSH for real ops; cockpit gets the guard.)
-- [ ] **Assistant exec review**: confirm chat path stays text-only; if/when tool-use exec lands, require an explicit in-UI confirm before any `exec/run` tool call. Audit-log every tool call, not only failures.
-- [ ] **Device ID masking**: `auth/components/devices-panel.tsx:92` — show `…last6` + copy-full button instead of full ID.
-- [ ] **Token out of plain localStorage**: stop persisting `server.token` inside `os-vps:tweaks` (`lib/appearance/store.tsx:46`). Move to `sessionStorage` (or keep in memory + re-enter), exclude from the tweaks JSON.
-- [ ] **FS defense-in-depth**: extend `isCredentialPath()` (`lib/host/paths.ts:57-66`) with a default-deny list for `~/.ssh`, `~/.gnupg`, `~/.secrets`, `~/vault`, `~/.bash_history`, `~/.npmrc` (read+list). Override via env (`OS_FS_ALLOW_SENSITIVE=1`) for the rare day it's needed. Document `OS_FS_READ_ROOTS` narrowing in INSTALL.md.
-- [ ] **Deep-link runtime repro**: with the dev server, hit `/settings` `/files` `/monitor` cold (no localStorage) and verify `use-url-sync` opens the window. If it reproduces, fix here; if not, close item 2 as env-related.
+- [x] **Uptime bug**: `lib/host/sys.ts:43` — return `os.uptime()` (seconds), RESOLVED differently: ms IS the contract (mock emits ms too) — annotated `SysStats.uptime` as ms and fixed About to use the shared `fmtUptime(ms)`.
+- [x] **Unify byte formatting**: shared `formatBytes` (binary GiB) used by About (`os-settings/components/about-section.tsx`) and System Monitor (`system-monitor/lib/format.ts`). One machine → one set of numbers.
+- [x] **neofetch live data**: in live mode, populate neofetch from `api.sys.stats()` (cores/mem/disk/uptime); keep mock only for demo mode. Label demo output `(demo)`.
+- [x] **Terminal `ls` honesty**: in live mode, do NOT silently fall back to the mock FS on API error — print the error. Mock fallback stays demo-only (`os-terminal/commands.ts:51-65`).
+- [x] **Destructive guard expansion**: `lib/host/exec.ts:19-27` — add patterns for `systemctl (stop|restart|disable|mask)`, `shutdown`, `reboot`, `poweroff`, `init 0|6`, `kill -9 1`. Blocked = same `code 126` + audit `exec.blocked` path. (Owner can still SSH for real ops; cockpit gets the guard.)
+- [x] **Assistant exec review**: confirm chat path stays text-only; if/when tool-use exec lands, require an explicit in-UI confirm before any `exec/run` tool call. VERIFIED 2026-06-07: chat = text-only streamReply; automation Run only toasts (no exec); /api/v1/exec/run audits every call (success, blocked, error). Confirm-UI rule stands for when tool-use exec lands.
+- [x] **Device ID masking**: `auth/components/devices-panel.tsx:92` — show `…last6` + copy-full button instead of full ID.
+- [x] **Token out of plain localStorage**: stop persisting `server.token` inside `os-vps:tweaks` (`lib/appearance/store.tsx:46`). Move to `sessionStorage` (or keep in memory + re-enter), exclude from the tweaks JSON.
+- [x] **FS defense-in-depth**: extend `isCredentialPath()` (`lib/host/paths.ts:57-66`) with a default-deny list for `~/.ssh`, `~/.gnupg`, `~/.secrets`, `~/vault`, `~/.bash_history`, `~/.npmrc` (read+list). Override via env (`OS_FS_ALLOW_SENSITIVE=1`) for the rare day it's needed. Document `OS_FS_READ_ROOTS` narrowing in INSTALL.md.
+- [x] **Deep-link runtime repro**: with the dev server, hit `/settings` `/files` `/monitor` cold (no localStorage) and verify `use-url-sync` opens the window. DONE 2026-06-07: /settings, /files, /monitor all auto-open their app (demo dev server :3217, headless Chromium). CLOSED — not reproducible; likely audited during a browser-service glitch.
 
 Verify: `pnpm typecheck && pnpm build` green; manual click-through of About/Monitor/Terminal numbers matching.
 
