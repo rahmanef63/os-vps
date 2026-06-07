@@ -1,33 +1,28 @@
 "use client";
 
-// The remote-browser surface: a screenshot <img> the user clicks/types/scrolls
-// over. Mouse offsets map into the 1280x800 remote viewport; keys forward to
-// /type (printable) or /key (Enter/Backspace/Tab/Arrow*). Wheel is throttled.
-import { useRef, useState } from "react";
+// The remote-browser surface: a frame <img> the user clicks/types/scrolls over.
+// Frames come from the live screencast stream (or the poll fallback) via the
+// hook — this component just renders `shot` and maps input into the 1280x800
+// remote viewport. A small badge shows whether the live stream is connected.
+import { useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { VIEW_W, VIEW_H } from "../lib/use-remote-browser";
-
-// Live MJPEG stream of the caller's tab (CDP screencast). Native <img> playback —
-// smooth + event-driven. Falls back to the polled screenshot if it errors.
-const STREAM_SRC = "/api/v1/browser/screencast";
 
 const KEYS = new Set(["Enter", "Backspace", "Tab", "Delete", "Escape"]);
 
 type RemoteViewProps = {
   shot: string | null;
   busy: boolean;
+  live: boolean;
   onClick: (x: number, y: number) => void;
   onType: (text: string) => void;
   onKey: (key: string) => void;
   onScroll: (dy: number) => void;
 };
 
-export function RemoteView({ shot, busy, onClick, onType, onKey, onScroll }: RemoteViewProps) {
+export function RemoteView({ shot, busy, live, onClick, onType, onKey, onScroll }: RemoteViewProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const wheelAt = useRef(0);
-  // Prefer the live stream; drop to the polled screenshot if it fails to load.
-  const [live, setLive] = useState(true);
-  const src = live ? STREAM_SRC : shot;
 
   // offset px → viewport px, scaled by the image's rendered size.
   const handleClick = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -61,15 +56,14 @@ export function RemoteView({ shot, busy, onClick, onType, onKey, onScroll }: Rem
       onWheel={handleWheel}
       className="absolute inset-0 overflow-hidden bg-background outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
     >
-      {src ? (
+      {shot ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           ref={imgRef}
-          src={src}
+          src={shot}
           alt="Remote browser viewport"
           draggable={false}
           onClick={handleClick}
-          onError={() => live && setLive(false)}
           className="size-full cursor-default object-contain select-none"
         />
       ) : (
@@ -77,6 +71,10 @@ export function RemoteView({ shot, busy, onClick, onType, onKey, onScroll }: Rem
           Loading remote browser…
         </div>
       )}
+      <div className="absolute top-2 left-2 flex items-center gap-1.5 rounded-full bg-card/90 px-2.5 py-1 text-[11px] font-medium shadow-sm backdrop-blur">
+        <span className={live ? "size-2 rounded-full bg-success" : "size-2 rounded-full bg-amber-500"} />
+        <span className="text-muted-foreground">{live ? "live" : "polling"}</span>
+      </div>
       {busy && (
         <div className="absolute top-2 right-2 flex items-center gap-1.5 rounded-full bg-card/90 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur">
           <Loader2 className="size-3 animate-spin text-primary" />

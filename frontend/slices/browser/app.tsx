@@ -99,6 +99,7 @@ export default function Browser() {
         <RemoteView
           shot={rb.shot}
           busy={rb.busy}
+          live={rb.live}
           onClick={(x, y) => void rb.click(x, y)}
           onType={(t) => void rb.type(t)}
           onKey={(k) => void rb.key(k)}

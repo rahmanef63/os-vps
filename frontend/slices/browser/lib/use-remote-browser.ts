@@ -1,10 +1,10 @@
 "use client";
 
-// Drives the single shared remote-browser page behind the BrowserAdapter
-// seam (lib/host.ts). Every action runs through the adapter, then refreshes
-// the screenshot; a short poll covers pages still settling after
-// navigate/click. Exposes one objectURL (revoked on replace) for an <img>
-// to render the 1280x800 viewport.
+// Drives the shared remote-browser page behind the BrowserAdapter seam
+// (lib/host.ts). The live frame comes from the CDP screencast MJPEG stream,
+// parsed in JS (reliable across browsers, unlike a raw MJPEG <img>) and fed to
+// one objectURL the viewer renders. If the stream can't open, it falls back to
+// JPEG screenshot polling so the view is never frozen.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useBrowserApi, type RemoteState } from "./host";
 
@@ -12,40 +12,53 @@ import { useBrowserApi, type RemoteState } from "./host";
 export const VIEW_W = 1280;
 export const VIEW_H = 800;
 
-const POLL_EVERY = 1200;
-const POLL_FOR = 6000;
+const POLL_EVERY = 1000;
+const POLL_FOR = 5000;
 
 export type { RemoteState } from "./host";
+
+// Find the first index of `\r\n\r\n` (header/body separator) at or after `from`.
+function headerEnd(b: Uint8Array, from: number): number {
+  for (let i = from; i + 3 < b.length; i++)
+    if (b[i] === 13 && b[i + 1] === 10 && b[i + 2] === 13 && b[i + 3] === 10) return i;
+  return -1;
+}
 
 export function useRemoteBrowser() {
   const api = useBrowserApi();
   const [shot, setShot] = useState<string | null>(null);
   const [state, setState] = useState<RemoteState>({ url: "", title: "" });
   const [busy, setBusy] = useState(false);
+  const [live, setLive] = useState(false);
   const urlRef = useRef<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const liveRef = useRef(false);
 
-  // Fetch the PNG → blob → objectURL, revoking the previous one.
+  // Swap the rendered frame, revoking the previous objectURL.
+  const setFrame = useCallback((blob: Blob) => {
+    const next = URL.createObjectURL(blob);
+    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    urlRef.current = next;
+    setShot(next);
+  }, []);
+
+  // Poll one JPEG frame (fallback path + post-action snappiness).
   const refresh = useCallback(async () => {
     try {
       const blob = await api.screenshot();
-      if (!blob) return;
-      const next = URL.createObjectURL(blob);
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-      urlRef.current = next;
-      setShot(next);
+      if (blob) setFrame(blob);
     } catch {
       /* transient — keep last frame */
     }
-  }, [api]);
+  }, [api, setFrame]);
 
-  // Refresh once, then poll for ~POLL_FOR while the page settles.
   const refreshSettling = useCallback(() => {
+    if (liveRef.current) return; // stream already shows changes live
     void refresh();
     if (pollRef.current) clearInterval(pollRef.current);
     const started = Date.now();
     pollRef.current = setInterval(() => {
-      if (Date.now() - started > POLL_FOR) {
+      if (Date.now() - started > POLL_FOR || liveRef.current) {
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
         return;
@@ -54,7 +67,6 @@ export function useRemoteBrowser() {
     }, POLL_EVERY);
   }, [refresh]);
 
-  // POST an action, fold any {url,title} into state, then refresh + settle.
   const act = useCallback(
     async (path: string, body?: unknown, settle = true) => {
       setBusy(true);
@@ -63,7 +75,7 @@ export function useRemoteBrowser() {
         if (typeof data.url === "string")
           setState({ url: data.url, title: data.title ?? data.url });
         if (settle) refreshSettling();
-        else await refresh();
+        else if (!liveRef.current) await refresh();
       } catch {
         /* surfaced as a stale frame; user can retry */
       } finally {
@@ -82,10 +94,68 @@ export function useRemoteBrowser() {
   const forward = useCallback(() => act("forward"), [act]);
   const reload = useCallback(() => act("reload"), [act]);
 
-  // Pull initial state + first frame on mount.
-  // Pull initial state + first frame on mount, then keep a slow heartbeat so the
-  // view stays live instead of freezing after the post-action settle burst ends.
-  // Paused while the tab is hidden so an idle window costs nothing.
+  // Live screencast: read the multipart stream, emit each JPEG part as a frame.
+  // Retries on drop; flips `live` off so polling covers any gap.
+  useEffect(() => {
+    let stopped = false;
+    let ctrl: AbortController | null = null;
+
+    const consume = async () => {
+      ctrl = new AbortController();
+      const res = await fetch("/api/v1/browser/screencast", { signal: ctrl.signal });
+      if (!res.ok || !res.body) throw new Error(`stream ${res.status}`);
+      liveRef.current = true;
+      setLive(true);
+      const reader = res.body.getReader();
+      let buf = new Uint8Array(0);
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done || stopped) break;
+        const merged = new Uint8Array(buf.length + value.length);
+        merged.set(buf);
+        merged.set(value, buf.length);
+        buf = merged;
+        // Drain every complete part currently in the buffer.
+        for (;;) {
+          const he = headerEnd(buf, 0);
+          if (he < 0) break;
+          const header = new TextDecoder().decode(buf.subarray(0, he));
+          const m = header.match(/content-length:\s*(\d+)/i);
+          if (!m) {
+            buf = buf.subarray(he + 4); // malformed header — skip it
+            continue;
+          }
+          const len = Number(m[1]);
+          const bodyStart = he + 4;
+          if (buf.length < bodyStart + len) break; // wait for more bytes
+          setFrame(new Blob([buf.subarray(bodyStart, bodyStart + len)], { type: "image/jpeg" }));
+          buf = buf.subarray(bodyStart + len + 2); // skip JPEG + trailing CRLF
+        }
+      }
+    };
+
+    const loop = async () => {
+      while (!stopped) {
+        try {
+          await consume();
+        } catch {
+          /* fall through to poll + retry */
+        }
+        liveRef.current = false;
+        setLive(false);
+        if (stopped) break;
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+    };
+    void loop();
+    return () => {
+      stopped = true;
+      ctrl?.abort();
+    };
+  }, [setFrame]);
+
+  // Initial state + a heartbeat that polls ONLY while the stream is down, so the
+  // fallback view stays fresh and an idle/hidden tab costs nothing.
   useEffect(() => {
     void (async () => {
       try {
@@ -93,12 +163,12 @@ export function useRemoteBrowser() {
       } catch {
         /* offline — leave blank */
       }
-      void refresh();
     })();
     const beat = setInterval(() => {
+      if (liveRef.current) return;
       if (typeof document !== "undefined" && document.hidden) return;
       void refresh();
-    }, 2000);
+    }, 1500);
     return () => clearInterval(beat);
   }, [api, refresh]);
 
@@ -110,5 +180,5 @@ export function useRemoteBrowser() {
     [],
   );
 
-  return { shot, state, busy, navigate, click, type, key, scroll, back, forward, reload, refresh };
+  return { shot, state, busy, live, navigate, click, type, key, scroll, back, forward, reload, refresh };
 }
