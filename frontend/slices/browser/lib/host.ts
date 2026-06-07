@@ -25,7 +25,9 @@ const api: BrowserAdapter = {
     return (await r.json()) as RemoteState;
   },
   screenshot: async () => {
-    const r = await fetch("/api/v1/browser/screenshot");
+    // JPEG, not PNG: ~5-10x smaller for a rendered page, so each polled frame
+    // transfers + decodes far faster (the viewer is a poll loop, not a stream).
+    const r = await fetch("/api/v1/browser/screenshot?type=jpeg&q=55");
     if (!r.ok) return null;
     return await r.blob();
   },

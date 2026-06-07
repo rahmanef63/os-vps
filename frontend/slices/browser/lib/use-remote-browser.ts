@@ -83,6 +83,9 @@ export function useRemoteBrowser() {
   const reload = useCallback(() => act("reload"), [act]);
 
   // Pull initial state + first frame on mount.
+  // Pull initial state + first frame on mount, then keep a slow heartbeat so the
+  // view stays live instead of freezing after the post-action settle burst ends.
+  // Paused while the tab is hidden so an idle window costs nothing.
   useEffect(() => {
     void (async () => {
       try {
@@ -92,6 +95,11 @@ export function useRemoteBrowser() {
       }
       void refresh();
     })();
+    const beat = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      void refresh();
+    }, 2000);
+    return () => clearInterval(beat);
   }, [api, refresh]);
 
   useEffect(
