@@ -53,14 +53,6 @@ export function ServerSection() {
           className="sm:w-56"
         />
       </Row>
-      <Row label="Access token">
-        <Input
-          type="password"
-          value={tweaks.server.token}
-          onChange={(e) => setServer({ token: e.target.value })}
-          className="sm:w-56"
-        />
-      </Row>
       <div className="flex items-center justify-between gap-3">
         <StatusChip test={test} />
         <Button
@@ -74,7 +66,8 @@ export function ServerSection() {
       </div>
       <p className="text-[11px] leading-relaxed text-muted-foreground">
         Live mode routes file/exec/system calls through the OsApi HTTP adapter to
-        your VPS agent. Token is stored locally only.
+        your VPS agent. Auth rides the signed session cookie — nothing secret is
+        stored in the browser.
       </p>
     </Section>
   );

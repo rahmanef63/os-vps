@@ -28,8 +28,18 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration restore: this provider wraps SSR'd markup (login screen reads the wallpaper tweak), so a lazy initializer reading localStorage would hydration-mismatch
-      if (raw) setState({ ...TWEAK_DEFAULTS, ...JSON.parse(raw) });
+      if (raw) {
+        const parsed = JSON.parse(raw) as Tweaks & { server?: { token?: string } };
+        // Scrub the legacy plaintext token from old caches (next persist
+        // rewrites the key without it). Auth is the session cookie.
+        if (parsed.server) delete parsed.server.token;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration restore: this provider wraps SSR'd markup (login screen reads the wallpaper tweak), so a lazy initializer reading localStorage would hydration-mismatch
+        setState({
+          ...TWEAK_DEFAULTS,
+          ...parsed,
+          server: { ...TWEAK_DEFAULTS.server, ...parsed.server },
+        });
+      }
     } catch {
       /* ignore corrupt cache */
     }

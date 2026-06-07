@@ -17,10 +17,11 @@ export type Appearance = {
   device: Device;
 };
 
+// No token field: the HTTP adapter authenticates with the signed session
+// cookie (same-origin); a bearer token in localStorage would be a leak vector.
 export type ServerConfig = {
   mode: ServerMode;
   url: string;
-  token: string;
 };
 
 export type Tweaks = Appearance & { server: ServerConfig };
@@ -41,5 +42,5 @@ export const TWEAK_DEFAULTS: Tweaks = {
   wallpaper: "auto",
   reduceGlass: false,
   device: "auto",
-  server: { mode: "mock", url: "", token: "" },
+  server: { mode: "mock", url: "" },
 };

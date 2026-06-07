@@ -89,7 +89,17 @@ export function DevicesPanel() {
               {d.label}
               {d.deviceId === thisId && <Badge variant="outline">This device</Badge>}
             </p>
-            <p className="truncate font-mono text-[11px] text-muted-foreground">{d.deviceId}</p>
+            {/* Masked — a full ID on screen is a shoulder-surf/screenshot leak.
+                Click copies the full ID for CLI approval flows. */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="block h-auto truncate p-0 text-left font-mono text-[11px] font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
+              title="Copy full device ID"
+              onClick={() => void navigator.clipboard.writeText(d.deviceId)}
+            >
+              …{d.deviceId.slice(-6)}
+            </Button>
           </div>
           {d.status === "pending" ? (
             <Button size="sm" onClick={() => void act("approve", d.deviceId)}>
