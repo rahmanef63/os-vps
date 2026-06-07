@@ -5,18 +5,15 @@ import path from "path";
 import { chromium } from "playwright";
 
 // os-browser — a REAL Chromium on the VPS host, driven over a tiny HTTP API.
-// One persistent context (cookies/cache/localStorage saved to disk) so a
-// logged-in session sticks across restarts — the os-vps web browser app AND the
-// CLI/agent share it, so no per-site API is needed for CRUD. Renders ANY site
-// (no X-Frame-Options problem — it's a browser, not an iframe). Loopback +
-// secret; os-vps reaches it on 127.0.0.1, ufw keeps it non-public. This is the
-// security boundary: an http(s) target CAN reach LAN/metadata by design, so the
-// ONLY caller allowed to drive it is os-vps (session-authed) — never expose this
-// port and never let an unauthenticated relay forward to it.
+// ONE persistent context (cookies/cache/localStorage saved to disk, so logins
+// stick across restarts) but ONE PAGE PER CONSUMER: the human viewer ("ui") and
+// the agent ("agent") each get their own tab, so they never fight over the same
+// page — while still SHARING the login/profile (a tab is cheap; a second
+// Chromium would not be). Loopback + secret; os-vps is the only caller. An
+// http(s) target CAN reach LAN/metadata by design, so never expose this port and
+// never let an unauthenticated relay forward here.
 
 const PORT = Number(process.env.OS_BROWSER_PORT || 4002);
-// Bind loopback by default — must never be internet-facing. Override
-// OS_BROWSER_HOST=0.0.0.0 only behind a private bridge.
 const HOST = process.env.OS_BROWSER_HOST || "127.0.0.1";
 const SECRET = process.env.OS_BROWSER_SECRET || "";
 const USER_DATA_DIR =
@@ -25,11 +22,9 @@ const VIEWPORT = {
   width: Number(process.env.OS_BROWSER_WIDTH || 1280),
   height: Number(process.env.OS_BROWSER_HEIGHT || 800),
 };
-// 0 = never. Otherwise reset the page to about:blank after this idle window to
-// free Chromium RAM (the context + profile stay, so login survives).
 const IDLE_MS = Number(process.env.OS_BROWSER_IDLE_MS || 0);
-// Headless by default. Loading an unpacked extension needs headed Chromium under
-// Xvfb — set OS_BROWSER_HEADLESS=0 and OS_BROWSER_EXTENSION_DIR together.
+// Hard cap on concurrent consumer tabs so a runaway can't spawn unbounded pages.
+const MAX_PAGES = Number(process.env.OS_BROWSER_MAX_PAGES || 6);
 const HEADLESS = process.env.OS_BROWSER_HEADLESS !== "0";
 const EXT_DIR = process.env.OS_BROWSER_EXTENSION_DIR || "";
 
@@ -48,21 +43,55 @@ const ctx = await chromium.launchPersistentContext(USER_DATA_DIR, {
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
   args,
 });
-const page = ctx.pages()[0] || (await ctx.newPage());
-await page.goto("about:blank").catch(() => {});
 
-// Serialize actions: one page, avoid interleaving navigate/screenshot.
-let chain = Promise.resolve();
-const run = (fn) => (chain = chain.then(fn, fn)).then((v) => v);
+// Per-consumer state: page + serialized action chain + last-touch timestamp. The
+// first existing tab is adopted as the "default" consumer's page.
+const sessions = new Map();
+function sanitize(c) {
+  return String(c || "default").replace(/[^a-z0-9_-]/gi, "").slice(0, 32) || "default";
+}
+async function getSession(consumer) {
+  const key = sanitize(consumer);
+  let s = sessions.get(key);
+  if (s && !s.page.isClosed()) {
+    s.touch = Date.now();
+    return s;
+  }
+  // Evict the least-recently-used tab when at the cap (never the live "default").
+  if (sessions.size >= MAX_PAGES) {
+    const victim = [...sessions.entries()]
+      .filter(([k]) => k !== "default")
+      .sort((a, b) => a[1].touch - b[1].touch)[0];
+    if (victim) {
+      await victim[1].page.close().catch(() => {});
+      sessions.delete(victim[0]);
+    }
+  }
+  const page = key === "default" && ctx.pages()[0] ? ctx.pages()[0] : await ctx.newPage();
+  await page.goto("about:blank").catch(() => {});
+  s = { page, chain: Promise.resolve(), touch: Date.now() };
+  sessions.set(key, s);
+  return s;
+}
+// Serialize per page so navigate/screenshot for one consumer never interleave.
+function run(s, fn) {
+  s.chain = s.chain.then(fn, fn);
+  return s.chain.then((v) => v);
+}
 
-// Idle reset — frees Chromium RAM after inactivity without losing the profile.
-let lastTouch = Date.now();
-const touch = () => (lastTouch = Date.now());
+// Idle reaper: reset "default" to about:blank, CLOSE other idle tabs to free RAM.
 if (IDLE_MS > 0)
   setInterval(() => {
-    if (Date.now() - lastTouch < IDLE_MS) return;
-    if (page.url() === "about:blank") return;
-    void run(() => page.goto("about:blank").catch(() => {}));
+    const now = Date.now();
+    for (const [key, s] of sessions) {
+      if (now - s.touch < IDLE_MS) continue;
+      if (key === "default") {
+        if (s.page.url() !== "about:blank") void run(s, () => s.page.goto("about:blank").catch(() => {}));
+      } else {
+        void s.page.close().catch(() => {});
+        sessions.delete(key);
+      }
+    }
   }, Math.min(IDLE_MS, 60000)).unref();
 
 function send(res, code, body, type = "application/json") {
@@ -83,19 +112,14 @@ function readJson(req) {
     });
   });
 }
-const state = async () => ({ url: page.url(), title: await page.title().catch(() => "") });
+const stateOf = async (page) => ({ url: page.url(), title: await page.title().catch(() => "") });
 
-// Constant-time secret check (hash both sides to equalize lengths) — matches
-// the timingSafeEqual discipline of the main app's auth.
 function secretOk(provided) {
   const a = createHash("sha256").update(String(provided ?? "")).digest();
   const b = createHash("sha256").update(SECRET).digest();
   return timingSafeEqual(a, b);
 }
 
-// In-page scan of interactive elements with a stable selector candidate per
-// hit, so an agent can act by selector (deterministic) instead of guessed
-// pixel coords. Visible elements only, capped to keep the payload small.
 function scanElements() {
   const sel = (el) => {
     if (el.id) return `#${CSS.escape(el.id)}`;
@@ -136,91 +160,91 @@ function scanElements() {
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, "http://x");
   const p = u.pathname;
-  if (p === "/health") return send(res, 200, { ok: true, url: page.url() });
+  if (p === "/health") return send(res, 200, { ok: true, consumers: sessions.size });
   if (!secretOk(req.headers["x-os-browser-secret"])) return send(res, 401, { error: "unauthorized" });
-  touch();
 
+  const consumer = sanitize(req.headers["x-os-browser-consumer"] || u.searchParams.get("consumer"));
+  if (p === "/info")
+    return send(res, 200, {
+      ok: true,
+      consumers: [...sessions.keys()],
+      profile: USER_DATA_DIR,
+      viewport: VIEWPORT,
+      headless: HEADLESS,
+      extension: EXT_DIR || null,
+      idleMs: IDLE_MS,
+      maxPages: MAX_PAGES,
+    });
+
+  const s = await getSession(consumer);
+  const page = s.page;
   try {
-    if (p === "/info")
-      return send(res, 200, {
-        ok: true,
-        url: page.url(),
-        profile: USER_DATA_DIR,
-        viewport: VIEWPORT,
-        headless: HEADLESS,
-        extension: EXT_DIR || null,
-        idleMs: IDLE_MS,
-      });
     if (p === "/screenshot" && req.method === "GET") {
       const jpeg = u.searchParams.get("type") === "jpeg";
       const opts = jpeg ? { type: "jpeg", quality: Number(u.searchParams.get("q") || 60) } : { type: "png" };
-      const buf = await run(() => page.screenshot(opts));
+      const buf = await run(s, () => page.screenshot(opts));
       return send(res, 200, buf, jpeg ? "image/jpeg" : "image/png");
     }
-    if (p === "/state") return send(res, 200, await run(state));
+    if (p === "/state") return send(res, 200, await run(s, () => stateOf(page)));
     if (p === "/content")
-      return send(res, 200, await run(async () => ({
-        ...(await state()),
+      return send(res, 200, await run(s, async () => ({
+        ...(await stateOf(page)),
         text: (await page.evaluate(() => document.body?.innerText || "")).slice(0, 200000),
       })));
     if (p === "/elements")
-      return send(res, 200, await run(async () => ({
-        ...(await state()),
+      return send(res, 200, await run(s, async () => ({
+        ...(await stateOf(page)),
         elements: await page.evaluate(scanElements),
       })));
 
     const body = req.method === "POST" ? await readJson(req) : {};
     if (p === "/navigate") {
       let target = String(body.url || "").trim();
-      // http(s) only — file://, chrome://, etc. would read local/internal
-      // surfaces the HTTP API should never expose. An http(s) target CAN still
-      // reach LAN/metadata addresses (it IS a real browser on the box) — that is
-      // why this service is loopback-bound and only os-vps may drive it.
       if (/^[a-z]+:\/\//i.test(target) && !/^https?:\/\//i.test(target))
         return send(res, 400, { error: "scheme_not_allowed" });
       if (target && !/^[a-z]+:\/\//i.test(target))
         target = /\.\w{2,}($|\/)/.test(target) ? "https://" + target : "https://www.google.com/search?q=" + encodeURIComponent(target);
-      return send(res, 200, await run(async () => {
+      return send(res, 200, await run(s, async () => {
         await page.goto(target, { waitUntil: "domcontentloaded", timeout: 30000 }).catch((e) => ({ e }));
-        return state();
+        return stateOf(page);
       }));
     }
     if (p === "/click")
-      return send(res, 200, await run(async () => {
+      return send(res, 200, await run(s, async () => {
         await page.mouse.click(Number(body.x) || 0, Number(body.y) || 0);
         await page.waitForTimeout(400);
-        return state();
+        return stateOf(page);
       }));
     if (p === "/click-selector")
-      return send(res, 200, await run(async () => {
+      return send(res, 200, await run(s, async () => {
         await page.click(String(body.selector || ""), { timeout: 5000 }).catch((e) => ({ e: String(e) }));
         await page.waitForTimeout(400);
-        return state();
+        return stateOf(page);
       }));
     if (p === "/fill")
-      return send(res, 200, await run(async () => {
+      return send(res, 200, await run(s, async () => {
         await page.fill(String(body.selector || ""), String(body.value ?? ""), { timeout: 5000 }).catch((e) => ({ e: String(e) }));
         return { ok: true };
       }));
     if (p === "/type")
-      return send(res, 200, await run(async () => {
+      return send(res, 200, await run(s, async () => {
         await page.keyboard.type(String(body.text || ""));
         return { ok: true };
       }));
     if (p === "/key")
-      return send(res, 200, await run(async () => {
+      return send(res, 200, await run(s, async () => {
         await page.keyboard.press(String(body.key || "Enter"));
         await page.waitForTimeout(400);
-        return state();
+        return stateOf(page);
       }));
     if (p === "/scroll")
-      return send(res, 200, await run(async () => {
+      return send(res, 200, await run(s, async () => {
         await page.mouse.wheel(0, Number(body.dy) || 0);
         return { ok: true };
       }));
-    if (p === "/back") return send(res, 200, await run(async () => { await page.goBack().catch(() => {}); return state(); }));
-    if (p === "/forward") return send(res, 200, await run(async () => { await page.goForward().catch(() => {}); return state(); }));
-    if (p === "/reload") return send(res, 200, await run(async () => { await page.reload().catch(() => {}); return state(); }));
+    if (p === "/back") return send(res, 200, await run(s, async () => { await page.goBack().catch(() => {}); return stateOf(page); }));
+    if (p === "/forward") return send(res, 200, await run(s, async () => { await page.goForward().catch(() => {}); return stateOf(page); }));
+    if (p === "/reload") return send(res, 200, await run(s, async () => { await page.reload().catch(() => {}); return stateOf(page); }));
 
     return send(res, 404, { error: "not found" });
   } catch (e) {
@@ -228,4 +252,4 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, HOST, () => console.log(`os-browser on ${HOST}:${PORT}, profile ${USER_DATA_DIR}`));
+server.listen(PORT, HOST, () => console.log(`os-browser on ${HOST}:${PORT}, profile ${USER_DATA_DIR}, max-pages ${MAX_PAGES}`));

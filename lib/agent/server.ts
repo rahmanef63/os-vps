@@ -40,14 +40,23 @@ export function browserConfigured(): boolean {
 // as bytes (the screenshot). Agent-token callers have no cookie → attribute the
 // audit line to "agent" rather than dropping the actor.
 export async function browserFetch(path: string, init?: RequestInit): Promise<Response> {
+  // Session callers (the human Browser app) and agent-token callers each drive
+  // their OWN tab in the runtime, so they never collide on one page. The actor
+  // doubles as the consumer key: a real device id → "ui", no session → "agent".
+  const actor = (await getSessionActor()) ?? "agent";
+  const consumer = actor === "agent" ? "agent" : "ui";
   const action = BROWSER_AUDIT[path];
   if (action) {
     const target = typeof init?.body === "string" ? init.body : undefined;
-    audit({ action, actor: (await getSessionActor()) ?? "agent", target });
+    audit({ action, actor, target });
   }
   const res = await fetch(BROWSER_URL + path, {
     ...init,
-    headers: { ...(init?.headers ?? {}), "x-os-browser-secret": BROWSER_SECRET },
+    headers: {
+      ...(init?.headers ?? {}),
+      "x-os-browser-secret": BROWSER_SECRET,
+      "x-os-browser-consumer": consumer,
+    },
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`browser ${res.status}`);
