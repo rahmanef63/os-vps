@@ -1,0 +1,13 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-manifest-schema.json",
+  "slug": "shell-clipboard",
+  "version": "0.1.0",
+  "generated": "stub",
+  "install": {
+    "frontend": "frontend/slices/shell-clipboard"
+  },
+  "files": [
+    "frontend/slices/shell-clipboard/index.ts",
+    "frontend/slices/shell-clipboard/components/clipboard-overlay.tsx"
+  ]
+}

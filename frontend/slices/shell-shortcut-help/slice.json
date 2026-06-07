@@ -1,0 +1,40 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "shell-shortcut-help",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Shell feature \u2014 Shortcut cheat-sheet",
+  "description": "\u2318/ keyboard-shortcut cheat-sheet over the appshell source-keyed shortcut-hint registry. Exports `shortcutHelpFeature` mounting into the `overlay` slot.",
+  "namespace": "@/features/shell-shortcut-help",
+  "frontend": {
+    "slicePath": "frontend/slices/shell-shortcut-help",
+    "configExport": "default"
+  },
+  "deps": {
+    "npm": [
+      "lucide-react"
+    ],
+    "shadcn": [
+      "button"
+    ],
+    "env": [],
+    "peers": [
+      {
+        "slug": "appshell",
+        "range": "^1.3",
+        "reason": "feature host (slots + registry + libs)"
+      }
+    ]
+  },
+  "audit": [
+    "bp:ui-consistency"
+  ],
+  "license": "MIT",
+  "tags": [
+    "shell",
+    "feature",
+    "shortcuts",
+    "help"
+  ]
+}

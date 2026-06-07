@@ -1,0 +1,40 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "shell-lock-screen",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Shell feature \u2014 Lock screen",
+  "description": "Privacy curtain with clock, idle auto-lock and a consumer-injectable unlock guard (appshell lib/lock). Exports `lockScreenFeature` mounting into the `overlay` slot.",
+  "namespace": "@/features/shell-lock-screen",
+  "frontend": {
+    "slicePath": "frontend/slices/shell-lock-screen",
+    "configExport": "default"
+  },
+  "deps": {
+    "npm": [
+      "lucide-react"
+    ],
+    "shadcn": [
+      "button"
+    ],
+    "env": [],
+    "peers": [
+      {
+        "slug": "appshell",
+        "range": "^1.3",
+        "reason": "feature host (slots + registry + libs)"
+      }
+    ]
+  },
+  "audit": [
+    "bp:ui-consistency"
+  ],
+  "license": "MIT",
+  "tags": [
+    "shell",
+    "feature",
+    "lock",
+    "security"
+  ]
+}

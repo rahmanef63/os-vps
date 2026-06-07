@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   useApps,
+  useCommands,
   useSpotlightOpen,
   useShellAppearance,
   useShellSearch,
@@ -14,32 +15,11 @@ import {
   minimizeAll,
   closeAll,
   toast,
-  type AppDescriptor,
   type SearchHit,
 } from "@/features/appshell";
 
-type Command = {
-  id: string;
-  label: string;
-  hint: string;
-  run: () => void;
-  app?: AppDescriptor;
-};
+import { matches, type Command } from "../lib";
 
-// Subsequence match (typing "cdr" hits "Code Editor"). Cheap, no fuzzy lib.
-function matches(q: string, label: string): boolean {
-  if (!q) return true;
-  const s = label.toLowerCase();
-  let i = 0;
-  for (const c of q.toLowerCase()) {
-    i = s.indexOf(c, i);
-    if (i === -1) return false;
-    i++;
-  }
-  return true;
-}
-
-// Spotlight / ⌘K command palette — open apps + run shell actions from one box.
 // The panel MOUNTS per open (and unmounts on close), so query/selection state
 // starts fresh every time without effect-driven resets (set-state-in-effect).
 export function Spotlight() {
@@ -49,6 +29,7 @@ export function Spotlight() {
 
 function SpotlightPanel() {
   const apps = useApps();
+  const dynamic = useCommands();
   const search = useShellSearch();
   const { theme, setTheme } = useShellAppearance();
   const [q, setQ] = useState("");
@@ -94,11 +75,19 @@ function SpotlightPanel() {
         run: () => setTheme(theme === "dark" ? "light" : "dark"),
       },
     ];
-    return [...appCmds, ...actions];
-  }, [apps, theme, setTheme]);
+    // Registry-contributed commands (apps/features/shells register at runtime).
+    const registered: Command[] = dynamic.map((c) => ({
+      id: c.id,
+      label: c.label,
+      hint: c.hint ?? "Action",
+      keywords: c.keywords,
+      run: c.run,
+    }));
+    return [...appCmds, ...actions, ...registered];
+  }, [apps, theme, setTheme, dynamic]);
 
   const results = useMemo(() => {
-    const base = commands.filter((c) => matches(q, c.label));
+    const base = commands.filter((c) => matches(q, c.keywords ? `${c.label} ${c.keywords}` : c.label));
     const folderCmds: Command[] = folderHits.map((h) => ({
       id: h.id,
       label: h.label,

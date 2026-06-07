@@ -1,0 +1,39 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "shell-share",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Shell feature \u2014 Share sheet",
+  "description": "Keyboard-first share sheet over the appshell share-target registry (copy + download built-ins; apps register more). Exports `shareFeature` mounting into the `overlay` slot.",
+  "namespace": "@/features/shell-share",
+  "frontend": {
+    "slicePath": "frontend/slices/shell-share",
+    "configExport": "default"
+  },
+  "deps": {
+    "npm": [
+      "lucide-react"
+    ],
+    "shadcn": [
+      "button"
+    ],
+    "env": [],
+    "peers": [
+      {
+        "slug": "appshell",
+        "range": "^1.3",
+        "reason": "feature host (slots + registry + libs)"
+      }
+    ]
+  },
+  "audit": [
+    "bp:ui-consistency"
+  ],
+  "license": "MIT",
+  "tags": [
+    "shell",
+    "feature",
+    "share"
+  ]
+}
