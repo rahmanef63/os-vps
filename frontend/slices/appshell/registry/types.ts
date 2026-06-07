@@ -14,7 +14,8 @@ export type SlotRegion =
   | "topPill" // mobile top-center status pill (e.g. dynamic island)
   | "controlCenter" // mobile pull-down control center
   | "menuBarStatus" // desktop menu-bar trailing cluster (e.g. control center)
-  | "today"; // mobile widgets / today page
+  | "today" // mobile widgets / today page
+  | "desktopWidgets"; // desktop wallpaper-layer widget stack (behind windows)
 
 /**
  * A pluggable shell feature (search, inspector, notifications, control-center,
@@ -53,6 +54,8 @@ export type ShellManifest = {
   capabilities?: ShellCapabilities;
   /** Mirror focused app + deep path to the URL (catch-all route). Default on. */
   routing?: boolean;
+  /** Sync document.title to the focused window ("App — Brand"). Default on. */
+  titleSync?: boolean;
   /** Initial shell (macOS/Windows/Dashboard/…). Unset = responsive auto. The
    *  user's live choice (Settings → Shell) overrides this and persists. */
   shell?: ShellId;

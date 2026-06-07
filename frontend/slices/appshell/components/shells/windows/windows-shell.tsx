@@ -31,6 +31,7 @@ function WindowsShell() {
           the desktop right-click; sits below the window layer so windows keep
           their own context menu. */}
       <div className="absolute inset-0" onContextMenu={menu.open} />
+      <Slot region="desktopWidgets" />
       <section className="absolute inset-0 z-[10]">
         {order.map((id) => (
           <Window key={id} id={id} variant="windows" />

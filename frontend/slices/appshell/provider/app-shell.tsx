@@ -1,7 +1,8 @@
 "use client";
 
-import type { ComponentType, ReactNode } from "react";
+import { useEffect, type ComponentType, type ReactNode } from "react";
 import { OsDesktop } from "../components/desktop";
+import { configureWindowTitle, startWindowTitleSync } from "../lib/window-title";
 import { BrandProvider } from "../registry/brand";
 import { FeatureRegistryProvider } from "../registry/feature-registry";
 import { ShellConfigProvider } from "../registry/shell-config";
@@ -24,6 +25,13 @@ function withProviders(
  */
 export function AppShell({ manifest }: { manifest: ShellManifest }) {
   const features = manifest.features ?? [];
+
+  // Tab title follows the focused window ("Files — Brand"); audit found it
+  // frozen on the SSR metadata. Opt out via manifest.titleSync: false.
+  useEffect(() => {
+    configureWindowTitle({ suffix: manifest.brand.name, enabled: manifest.titleSync !== false });
+    if (manifest.titleSync !== false) startWindowTitleSync();
+  }, [manifest.brand.name, manifest.titleSync]);
   const providers = features
     .map((f) => f.provider)
     .filter((p): p is ComponentType<{ children: ReactNode }> => Boolean(p));

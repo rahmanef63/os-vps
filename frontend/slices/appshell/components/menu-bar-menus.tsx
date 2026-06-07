@@ -1,6 +1,5 @@
 "use client";
-/* Menu-bar dropdown menus — the app/default/Window/Help menus + the shared
-   <Menu> trigger. Split from menu-bar.tsx (≤200-LOC modularity gate). */
+/* Menu-bar dropdown menus + shared <Menu> trigger (split from menu-bar.tsx). */
 import { Fragment } from "react";
 import {
   DropdownMenu,
@@ -25,6 +24,7 @@ import {
   restoreWindow,
   focusWindow,
 } from "../lib/store";
+import { togglePin } from "../lib/window-commands";
 import type { AppDescriptor } from "../lib/types";
 
 // execCommand is deprecated but the only zero-dep clipboard driver from a menu.
@@ -133,6 +133,8 @@ export function WindowMenu({ focusedId }: { focusedId: string | null }) {
       <DropdownMenuItem disabled={!focusedId} onSelect={() => focusedId && toggleMaximize(focusedId)}>
         Zoom
       </DropdownMenuItem>
+      <DropdownMenuItem disabled={!focusedId} onSelect={() => focusedId && togglePin(focusedId)}>
+        {focusedId && shellStore.getWindow(focusedId)?.pinned ? "Unpin Window" : "Pin Window on Top"}</DropdownMenuItem>
       <DropdownMenuItem disabled={windows.length === 0} onSelect={() => minimizeAll()}>
         Minimize All
       </DropdownMenuItem>

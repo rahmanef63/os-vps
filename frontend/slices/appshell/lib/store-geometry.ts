@@ -46,6 +46,8 @@ export function snapRect(zone: SnapZone): Rect {
   const rightX = GAP * 2 + halfW;
   const halfH = (availH - GAP) / 2; // GAP gutter between the two rows
   const rowB = top + halfH + GAP;
+  const thirdW = (vw - GAP * 3) / 3; // ⅓ column (same gutter scheme as halves)
+  const twoThirdW = thirdW * 2;
   const map: Record<SnapZone, Rect> = {
     left: { x: GAP, y: top, w: halfW, h: availH },
     right: { x: rightX, y: top, w: halfW, h: availH },
@@ -54,8 +56,31 @@ export function snapRect(zone: SnapZone): Rect {
     tr: { x: rightX, y: top, w: halfW, h: halfH },
     bl: { x: GAP, y: rowB, w: halfW, h: halfH },
     br: { x: rightX, y: rowB, w: halfW, h: halfH },
+    // tiling presets — ⅓/⅔ columns
+    l13: { x: GAP, y: top, w: thirdW, h: availH },
+    r23: { x: GAP * 2 + thirdW, y: top, w: twoThirdW, h: availH },
+    l23: { x: GAP, y: top, w: twoThirdW, h: availH },
+    r13: { x: GAP * 2 + twoThirdW, y: top, w: thirdW, h: availH },
   };
   return map[zone];
+}
+
+// Spawn placement: the classic cascade, but clamped to the work area so the
+// Nth window never marches off the right/bottom edge or under the bottom
+// chrome (audit: windows cascaded out of the viewport and behind the dock).
+// Oversized requests shrink to fit; SSR falls back to the raw cascade.
+export function spawnRect(n: number, w: number, h: number): Rect {
+  const offset = (n % 6) * 28;
+  if (typeof window === "undefined") return { x: 80 + offset, y: 64 + offset, w, h };
+  const { vw, top, bottom } = workArea();
+  const cw = Math.min(w, vw - GAP * 2);
+  const ch = Math.min(h, bottom - top);
+  return {
+    x: Math.max(GAP, Math.min(80 + offset, vw - GAP - cw)),
+    y: Math.max(top, Math.min(64 + offset, bottom - ch)),
+    w: cw,
+    h: ch,
+  };
 }
 
 // Zone from a pointer near the screen edges (drag-to-snap).

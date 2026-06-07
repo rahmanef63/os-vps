@@ -14,6 +14,7 @@
    they only call the existing store actions. */
 import { useSyncExternalStore, type ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
+import { registerCommands } from "../lib/commands";
 
 export type ShellId = "macos" | "windows" | "dashboard" | "mobile" | "ios" | "android";
 export type ShellSurface = "desktop" | "mobile";
@@ -41,6 +42,22 @@ const order: ShellId[] = ["dashboard", "macos", "windows", "mobile", "ios", "and
 
 export function registerShell(d: ShellDescriptor): void {
   REGISTRY.set(d.id, d);
+  syncShellCommands();
+}
+
+// Every registered shell is switchable from the command palette — registered
+// dynamically so consumer-added shells appear with zero extra wiring.
+function syncShellCommands(): void {
+  registerCommands(
+    "shells",
+    shellList().map((s) => ({
+      id: `shell:${s.id}`,
+      label: `Switch ${s.surface} shell: ${s.label}`,
+      hint: "Shell",
+      keywords: `os layout ${s.id}`,
+      run: () => setShell(s.surface, s.id),
+    })),
+  );
 }
 export function getShell(id: ShellId | null | undefined): ShellDescriptor | undefined {
   return id ? REGISTRY.get(id) : undefined;

@@ -24,18 +24,30 @@ export type WindowState = {
   snapZone?: SnapZone;
   /** Optional context handed to the app component (e.g. a file path to open). */
   payload?: unknown;
+  /** Always-on-top: rendered above the regular stack (PiP-style). */
+  pinned?: boolean;
+  /** Virtual desktop this window lives on (default 1). */
+  spaceId?: number;
+  /** Tab group — members render as ONE tabbed frame (top-z member shows). */
+  groupId?: string;
 };
 
 /** Props every app component receives. `payload` is whatever opened the window;
  * `winId` lets an app address its own window (e.g. register a close guard). */
 export type AppProps = { payload?: unknown; winId?: string };
 
-export type SnapZone = "left" | "right" | "top" | "tl" | "tr" | "bl" | "br";
+export type SnapZone =
+  | "left" | "right" | "top"
+  | "tl" | "tr" | "bl" | "br"
+  // tiling presets: thirds (left/right ⅓ and ⅔ columns)
+  | "l13" | "l23" | "r13" | "r23";
 
 export type ShellState = {
   windows: Record<WinId, WindowState>;
   order: WinId[];
   focused: WinId | null;
+  /** Active virtual desktop (Spaces) — windows on other spaces stay hidden. */
+  activeSpace: number;
   launcherOpen: boolean;
   spotlightOpen: boolean;
   inspectorOpen: boolean;
@@ -87,5 +99,5 @@ export type AppMenuItem =
 /** Serialisable slice of a window persisted to Convex (no z/focus churn). */
 export type PersistedWindow = Pick<
   WindowState,
-  "id" | "app" | "title" | "x" | "y" | "w" | "h" | "minimized" | "maximized"
+  "id" | "app" | "title" | "x" | "y" | "w" | "h" | "minimized" | "maximized" | "pinned" | "spaceId" | "groupId"
 >;

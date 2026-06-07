@@ -1,6 +1,6 @@
 import type { WindowState, WinId, PersistedWindow } from "./types";
 import { M, emit, patch, topZ } from "./store-state";
-import { GAP, workArea } from "./store-geometry";
+import { GAP, workArea, spawnRect } from "./store-geometry";
 // Store barrel: state in store-state; geometry in store-geometry; snap in store-snap.
 
 export { shellStore } from "./store-state";
@@ -27,19 +27,16 @@ export function openWindow(
     }
   }
   const id = `w${++M.seq}`;
-  const offset = (M.state.order.length % 6) * 28;
   const win: WindowState = {
     id,
     app,
     title,
-    x: 80 + offset,
-    y: 64 + offset,
-    w: size?.w ?? 720,
-    h: size?.h ?? 460,
+    ...spawnRect(M.state.order.length, size?.w ?? 720, size?.h ?? 460),
     z: topZ() + 1,
     minimized: false,
     maximized: false,
     payload,
+    spaceId: M.state.activeSpace,
   };
   M.state = {
     ...M.state,
@@ -182,6 +179,7 @@ export function hydrate(persisted: PersistedWindow[]) {
     windows,
     order,
     focused: order[order.length - 1] ?? null,
+    activeSpace: 1,
     launcherOpen: false,
     spotlightOpen: false,
     inspectorOpen: M.state.inspectorOpen,

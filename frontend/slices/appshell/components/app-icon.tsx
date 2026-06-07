@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { AppDescriptor } from "../lib/types";
+import { AppBadge } from "./app-badge";
 
 // macOS-style squircle app icon: gradient tile + soft full-height top light
 // (no hard iOS-glass line), hairline edge ring, layered drop shadow and a
@@ -26,6 +27,7 @@ export function AppIcon({
       {/* hairline ring keeps the tile defined on bright wallpapers */}
       <span className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/15" />
       <Icon className="relative z-[1] size-[52%] drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]" strokeWidth={2.1} />
+      <AppBadge appId={app.id} />
     </span>
   );
 }

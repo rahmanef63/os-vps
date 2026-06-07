@@ -21,15 +21,18 @@ import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
 import { ContextMenu, useContextMenu } from "./shells/context-menu";
 import { registerShell, resolveShell, useShellPrefs } from "../registry/shells";
-import "./shells/windows/windows-shell"; // side-effect: registers the windows shell
-import "./shells/android/android-shell"; // side-effect: registers the android shell
-// NOTE: the Dashboard + Mobile shells live in the APP layer (components/shells/*)
-// because they read @/features/data; the app registers them via page.tsx so the
-// appshell slice stays data-agnostic.
+// side-effects: shell + palette-command registrations
+import "./shells/windows/windows-shell";
+import "./shells/android/android-shell";
+import "../lib/window-commands";
+import "../lib/spaces";
+import "../lib/window-tabs";
+import "../lib/focus-mode";
+import "../lib/profiles";
+// NOTE: Dashboard/Mobile shells live in the APP layer (data-agnostic slice).
 import type { AppDescriptor } from "../lib/types";
 
-// The OS surface. Receives apps from the app layer (no hardcoded list). Only
-// subscribes to `order`, so dragging a window never re-renders the desktop.
+// The OS surface. Apps come from the app layer; subscribes only to `order`.
 export function OsDesktop({ apps }: { apps: AppDescriptor[] }) {
   const { device } = useShellAppearance();
   return (
@@ -159,6 +162,7 @@ function DesktopChrome() {
   return (
     <>
       <MenuBar />
+      <Slot region="desktopWidgets" />
       <section
         className="absolute inset-x-0 bottom-0 top-[30px] z-[10]"
         // Only the empty desktop opens the menu — clicks inside an app window

@@ -12,7 +12,11 @@ import {
   focusWindow,
   snapRect,
 } from "../lib/store";
+import { deliverDrop, dragCarriesPayload, readDragData } from "../lib/dnd";
+import { spaceOf, useActiveSpace } from "../lib/spaces";
+import { useGroupTop } from "../lib/window-tabs";
 import { TrafficLights } from "./traffic-lights";
+import { TabStrip } from "./window-tabs";
 import { WindowContent } from "./window-content";
 import type { WinId } from "../lib/types";
 
@@ -23,10 +27,14 @@ import type { WinId } from "../lib/types";
 export const Window = memo(function Window({ id, variant = "macos" }: { id: WinId; variant?: "macos" | "windows" }) {
   const win = useWindow(id);
   const focused = useFocused() === id;
+  const activeSpace = useActiveSpace();
+  const groupTopId = useGroupTop(win?.groupId);
   const ref = useRef<HTMLDivElement>(null);
   const { startDrag, startResize, zone } = useWindowDrag(id, ref);
 
   if (!win || win.minimized) return null;
+  if (spaceOf(win) !== activeSpace) return null; // lives on another Space
+  if (win.groupId && groupTopId !== id) return null; // a tab behind the group's active frame
   const preview = zone ? snapRect(zone) : null;
   const isWin = variant === "windows";
 
@@ -45,7 +53,8 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
         className={cn(
           "absolute flex flex-col overflow-hidden border border-border bg-card shadow-[var(--shadow-win)]",
           isWin ? "rounded-md" : "rounded-[var(--radius-win)]",
-          focused ? "z-50" : "z-10",
+          // pinned (always-on-top) windows beat even the focused regular window
+          win.pinned ? (focused ? "z-[70]" : "z-[60]") : focused ? "z-50" : "z-10",
         )}
         style={{ left: win.x, top: win.y, width: win.w, height: win.h }}
         onMouseDown={() => focusWindow(id)}
@@ -85,7 +94,23 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
           </div>
         )}
 
-        <div className="relative min-h-0 flex-1 overflow-hidden bg-background [container-type:inline-size]">
+        {win.groupId && <TabStrip groupId={win.groupId} activeId={id} />}
+
+        <div
+          className="relative min-h-0 flex-1 overflow-hidden bg-background [container-type:inline-size]"
+          // Cross-app DnD: shell payloads route to the app's drop handler;
+          // native drags (file uploads) pass through untouched.
+          onDragOver={(e) => {
+            if (dragCarriesPayload(e)) {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "copy";
+            }
+          }}
+          onDrop={(e) => {
+            const data = readDragData(e);
+            if (data && deliverDrop(win.app, data)) e.preventDefault();
+          }}
+        >
           <WindowContent app={win.app} payload={win.payload} winId={id} />
         </div>
 

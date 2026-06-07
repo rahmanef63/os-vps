@@ -18,6 +18,7 @@ import {
   markNotificationsRead,
   type NotificationItem,
 } from "../lib/toast";
+import { useBrand } from "../registry/brand";
 
 export function NotificationCenter() {
   const open = useNotificationCenterOpen();
@@ -75,15 +76,30 @@ const TONE_DOT: Record<NotificationItem["tone"], string> = {
 };
 
 function NotifCard({ n }: { n: NotificationItem }) {
+  const brand = useBrand();
   return (
     <div className="group relative rounded-2xl border border-border bg-background/70 p-3 pr-8 shadow-sm">
       <div className="flex items-center gap-2">
         <span className={cn("size-2 shrink-0 rounded-full", TONE_DOT[n.tone])} />
         <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Rahman OS · {relTime(n.ts)}
+          {brand.name} · {relTime(n.ts)}
         </span>
       </div>
       <p className="mt-1 text-[13px] leading-snug text-foreground">{n.message}</p>
+      {n.action && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            n.action?.onClick();
+            dismissNotification(n.id);
+          }}
+          className="mt-2 h-auto rounded-lg px-2.5 py-1 text-xs font-medium"
+        >
+          {n.action.label}
+        </Button>
+      )}
       <Button type="button" variant="ghost"
         aria-label="Dismiss"
         onClick={() => dismissNotification(n.id)}

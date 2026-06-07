@@ -13,6 +13,7 @@ export const M = {
     windows: {},
     order: [],
     focused: null,
+    activeSpace: 1,
     launcherOpen: false,
     spotlightOpen: false,
     inspectorOpen: false,
@@ -52,6 +53,9 @@ export const shellStore = {
   },
   getNotificationCenterOpen(): boolean {
     return M.state.notificationCenterOpen;
+  },
+  getActiveSpace(): number {
+    return M.state.activeSpace;
   },
 };
 

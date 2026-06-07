@@ -27,6 +27,7 @@ export {
   snapWindow,
   minimizeAll,
   closeAll,
+  serialize,
 } from "./lib/store";
 export {
   useWindow,
@@ -53,6 +54,25 @@ export {
 export type { NotificationItem } from "./lib/toast";
 export { setActivity, clearActivity, useActivities } from "./lib/activity";
 export type { Activity } from "./lib/activity";
+// F1–F20 window-manager + productivity libs (each module exports its own
+// public surface — commands/badges/layouts/recents/window-commands/window-title/
+// spaces/window-tabs/clipboard/share/lock/profiles/shortcuts/focus-mode/dnd/quick-look).
+export * from "./lib/commands";
+export * from "./lib/badges";
+export * from "./lib/layouts";
+export * from "./lib/recents";
+export * from "./lib/window-commands";
+export * from "./lib/window-title";
+export * from "./lib/spaces";
+export * from "./lib/window-tabs";
+export * from "./lib/clipboard";
+export * from "./lib/share";
+export * from "./lib/lock";
+export * from "./lib/profiles";
+export * from "./lib/shortcuts";
+export * from "./lib/focus-mode";
+export * from "./lib/dnd";
+export * from "./lib/quick-look";
 export {
   usePublishInspector,
   publishInspector,

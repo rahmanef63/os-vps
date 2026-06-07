@@ -64,6 +64,20 @@ export function MobileNotifications({ open, onClose }: { open: boolean; onClose:
                 <div className="min-w-0 flex-1">
                   <div className="line-clamp-2 text-[13px] font-medium">{n.message}</div>
                   <div className="mt-0.5 text-[11px] text-white/60">{rel(n.ts)}</div>
+                  {n.action && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        n.action?.onClick();
+                        dismissNotification(n.id);
+                      }}
+                      className="mt-1.5 h-auto rounded-lg bg-white/20 px-2.5 py-1 text-xs font-medium hover:bg-white/30"
+                    >
+                      {n.action.label}
+                    </Button>
+                  )}
                 </div>
                 <Button type="button" variant="ghost"
                   aria-label="Dismiss"
