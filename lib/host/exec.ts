@@ -24,6 +24,13 @@ const DESTRUCTIVE: { re: RegExp; why: string }[] = [
   { re: />\s*\/dev\/(?:sd|nvme|vd|xvd|hd)\w/, why: "redirect to a block device" },
   { re: /:\s*\(\s*\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:/, why: "fork bomb" },
   { re: /\b(?:chmod|chown)\b(?:\s+-\S*)*\s+-\S*R\S*\s+\S+\s+\/(?:\s|$)/, why: "recursive chmod/chown on /" },
+  // Power/service control: a cockpit-issued restart can kill the cockpit's own
+  // service (or the box) mid-request. status/list/start stay allowed.
+  { re: /\bsystemctl\b[^\n;|&]*\b(?:stop|restart|disable|mask|isolate|kill)\b/, why: "systemctl stop/restart/disable — manage services over SSH" },
+  { re: /\bservice\s+\S+\s+(?:stop|restart)\b/, why: "service stop/restart — manage services over SSH" },
+  { re: /\b(?:shutdown|reboot|poweroff|halt)\b/, why: "shutdown/reboot/poweroff" },
+  { re: /\binit\s+[06]\b/, why: "init 0/6" },
+  { re: /\bkill\s+(?:-(?:9|KILL|SIGKILL)\s+)?1(?:\s|$)/, why: "kill PID 1" },
 ];
 
 // Returns the reason a command is refused, or null when it may run.
