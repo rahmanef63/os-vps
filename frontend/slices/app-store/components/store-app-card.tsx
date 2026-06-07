@@ -34,7 +34,7 @@ export function StoreAppCard({
         className="relative grid size-12 shrink-0 place-items-center rounded-xl text-white shadow-sm"
         style={{ background: app.gradient }}
       >
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl bg-white/20" />
+        <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.30),rgba(255,255,255,0.06)_45%,rgba(0,0,0,0.06))]" />
         {/* createElement: dynamic stateless lookup, not a render-created component */}
         {createElement(glyphIcon(app.glyph), { className: "relative size-6" })}
       </div>
