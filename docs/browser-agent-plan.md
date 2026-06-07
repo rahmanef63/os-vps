@@ -126,8 +126,16 @@ wait, assertText. `runCrudFlow` is logged + recovers a bad click by re-scanning
   extension path, navigate + scan worked. **Prod stays headless** (the runtime
   already scans the DOM via `/elements`, so the extension adds ~no capability
   today and headed is heavier/flakier). Flip runbook below.
-- Still open: viewer JPEG adoption; Settings start/stop/restart (needs a safe
-  systemd hook).
+- **Viewer JPEG + heartbeat — DONE (b2b7c02).** The Browser app polled full-page
+  PNGs and froze after the 6s settle burst. Now the viewer requests JPEG
+  (screenshot route forwards `?type=jpeg&q` + echoes content-type) and a 2s
+  heartbeat (paused when hidden) keeps it live. ~2–10× smaller frames.
+- **Viewer CDP screencast — IN PROGRESS.** Polling is lighter now but never
+  video-smooth. Adding `Page.startScreencast` (CDP) per consumer → an MJPEG
+  `multipart/x-mixed-replace` stream the viewer renders in a native `<img>`.
+  Event-driven (frames only on visual change) so it's smoother AND lighter than
+  fixed polling; lazy (only runs while a client watches). Poll stays as fallback.
+- Still open: Settings start/stop/restart (needs a safe systemd hook).
 
 #### Extension flip runbook (reversible)
 ```
