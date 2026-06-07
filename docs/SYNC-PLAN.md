@@ -112,8 +112,8 @@ wholesale (they're additive libs + feature slices).
 
 ## Phase 5 — app-shell hardening (os-vps → app-shell)
 
-- [ ] **Gate Convex functions**: `convex/files.ts` + `convex/dashboards.ts` are fully public today — anyone with the deployment URL can write/delete. Decide auth story (@convex-dev/auth is already a dep): minimum = a shared-secret arg checked server-side; better = real identity. **Decision needed from rahman before implementing.**
-- [ ] Keep Convex strictly in app-shell (rule 1).
+- [x] **Gate Convex functions**: `convex/files.ts` + `convex/dashboards.ts` are fully public today — anyone with the deployment URL can write/delete. DONE 2026-06-07 (app-rahmanef 96cf2fe): shared write key — every mutation takes key?, checked vs OS_WRITE_KEY on the deployment (convex/guard.ts); reads stay public. UNARMED until `npx convex env set OS_WRITE_KEY <secret>` runs; then enter the key once per device in Settings → Sync. Per rahman: no real-identity auth — fitur minim, gak perlu diberatkan.
+- [x] Keep Convex strictly in app-shell (rule 1). Verified: grep gate green on the ported slice + new shell-* slices.
 
 ## Quarantine — browser (DO NOT TOUCH this plan cycle)
 
@@ -126,4 +126,4 @@ wholesale (they're additive libs + feature slices).
 - Phase 0: all validated os-vps bugs fixed, numbers consistent across About/Monitor/Terminal, guard + masking shipped.
 - Phase 1–3: os-vps runs appshell 1.3.0 with all 20 features + framework fixes, zero Convex, vitest + e2e green on BOTH repos.
 - Phase 4: appearance contract shared; per-shell screenshots reviewed.
-- Phase 5: no unauthenticated writes to app-shell's Convex.
+- Phase 5: no unauthenticated writes to app-shell's Convex once OS_WRITE_KEY is armed (one command — see P5).
