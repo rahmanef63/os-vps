@@ -5,20 +5,11 @@ import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOsApi } from "@/lib/os-api";
 import type { SysStats, FsUsage } from "@/lib/os-api";
+import { fmtGiB, fmtUptime } from "@/lib/os-api/format";
 import { Section } from "./section";
 
 const APP_NAME = "Topside";
 const APP_TAGLINE = "VPS cockpit";
-
-function gb(bytes: number) {
-  return `${Math.round(bytes / 1e9)} GB`;
-}
-
-function uptime(sec: number) {
-  const d = Math.floor(sec / 86400);
-  const h = Math.floor((sec % 86400) / 3600);
-  return d > 0 ? `${d}d ${h}h` : `${h}h`;
-}
 
 // Wipes appearance + device identity, then reloads fresh. Storage keys keep the
 // historical "os-vps" prefix (changing them would orphan existing device ids).
@@ -58,10 +49,10 @@ export function AboutSection() {
 
   const rows: [string, string][] = [
     ["Cores", stats ? String(stats.cpu.cores) : "—"],
-    ["Memory", stats ? gb(stats.mem.total) : "—"],
-    ["Disk", stats ? gb(stats.disk.total) : "—"],
-    ["Uptime", stats ? uptime(stats.uptime) : "—"],
-    ["Storage used", usage ? `${gb(usage.used)} of ${gb(usage.total)}` : "—"],
+    ["Memory", stats ? fmtGiB(stats.mem.total) : "—"],
+    ["Disk", stats ? fmtGiB(stats.disk.total) : "—"],
+    ["Uptime", stats ? fmtUptime(stats.uptime) : "—"],
+    ["Storage used", usage ? `${fmtGiB(usage.used)} of ${fmtGiB(usage.total)}` : "—"],
   ];
 
   return (

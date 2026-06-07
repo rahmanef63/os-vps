@@ -9,6 +9,7 @@ export type SysStats = {
   mem: { used: number; total: number };
   disk: { used: number; total: number };
   net?: { rx: number; tx: number };
+  /** Host uptime in MILLISECONDS (mock + host adapter both emit ms). */
   uptime: number;
 };
 
