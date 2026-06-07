@@ -39,12 +39,15 @@ export function browserConfigured(): boolean {
 // RAW Response so callers can `.json()` (state/navigate/...) or read the body
 // as bytes (the screenshot). Agent-token callers have no cookie → attribute the
 // audit line to "agent" rather than dropping the actor.
-export async function browserFetch(path: string, init?: RequestInit): Promise<Response> {
-  // Session callers (the human Browser app) and agent-token callers each drive
-  // their OWN tab in the runtime, so they never collide on one page. The actor
-  // doubles as the consumer key: a real device id → "ui", no session → "agent".
+export async function browserFetch(path: string, init?: RequestInit, req?: Request): Promise<Response> {
+  // Each caller drives its OWN runtime tab (consumer) so they never collide on
+  // one page. The human Browser app picks a per-tab consumer via `?tab=ui-<n>`
+  // (multitab); agent-token callers with no tab default to "agent"; a plain
+  // session with no tab defaults to "ui".
   const actor = (await getSessionActor()) ?? "agent";
-  const consumer = actor === "agent" ? "agent" : "ui";
+  let consumer = actor === "agent" ? "agent" : "ui";
+  const tab = req ? new URL(req.url).searchParams.get("tab") : null;
+  if (tab) consumer = tab.replace(/[^a-z0-9_-]/gi, "").slice(0, 32) || consumer;
   const action = BROWSER_AUDIT[path];
   if (action) {
     const target = typeof init?.body === "string" ? init.body : undefined;

@@ -24,7 +24,7 @@ const VIEWPORT = {
 };
 const IDLE_MS = Number(process.env.OS_BROWSER_IDLE_MS || 0);
 // Hard cap on concurrent consumer tabs so a runaway can't spawn unbounded pages.
-const MAX_PAGES = Number(process.env.OS_BROWSER_MAX_PAGES || 6);
+const MAX_PAGES = Number(process.env.OS_BROWSER_MAX_PAGES || 12);
 const HEADLESS = process.env.OS_BROWSER_HEADLESS !== "0";
 const EXT_DIR = process.env.OS_BROWSER_EXTENSION_DIR || "";
 // Use a real installed browser (e.g. "chrome") instead of bundled Chromium —
@@ -240,6 +240,14 @@ const server = http.createServer(async (req, res) => {
     // whole service, taking the Browser app down with it.
     const s = await getSession(consumer);
     const page = s.page;
+    if (p === "/close" && req.method === "POST") {
+      if (consumer !== "default" && consumer !== "agent") {
+        await stopScreencast(s);
+        await s.page.close().catch(() => {});
+        sessions.delete(consumer);
+      }
+      return send(res, 200, { ok: true });
+    }
     if (p === "/screencast" && req.method === "GET") {
       res.writeHead(200, {
         "content-type": "multipart/x-mixed-replace; boundary=frame",

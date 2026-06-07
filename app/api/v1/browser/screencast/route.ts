@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   try {
-    const r = await browserFetch("/screencast", { signal: req.signal });
+    const r = await browserFetch("/screencast", { signal: req.signal }, req);
     return new NextResponse(r.body, {
       headers: {
         "content-type": r.headers.get("content-type") ?? "multipart/x-mixed-replace; boundary=frame",

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   try {
-    const r = await browserFetch("/forward", { method: "POST" });
+    const r = await browserFetch("/forward", { method: "POST" }, req);
     return NextResponse.json(await r.json());
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 502 });

@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
   const qs = new URL(req.url).search; // forwards ?type=jpeg&q=..
   try {
-    const r = await browserFetch(`/screenshot${qs}`);
+    const r = await browserFetch(`/screenshot${qs}`, undefined, req);
     const buf = await r.arrayBuffer();
     return new NextResponse(buf, {
       headers: {

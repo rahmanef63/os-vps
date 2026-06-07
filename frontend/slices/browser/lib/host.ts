@@ -1,43 +1,54 @@
 "use client";
 
-// os-vps side of the slice's host seam: the shell inspector re-exports from
-// os-shell, and the BrowserAdapter is the HTTP client for /api/v1/browser/*
-// (session-cookie auth, same-origin). The rr catalog copy replaces this
-// file with a self-contained version (offline canvas demo renderer) —
-// every other file is line-identical.
+// os-vps side of the slice's host seam: the BrowserAdapter is the HTTP client
+// for /api/v1/browser/*. Every call carries a `tab` consumer id so each UI tab
+// drives its own runtime page (multitab). Session-cookie auth, same-origin.
 
 export type { AppDescriptor } from "@/features/os-shell";
 export { usePublishInspector } from "@/features/os-shell";
 
 export type RemoteState = { url: string; title: string };
-/** Action paths the UI sends: navigate/click/type/key/scroll/back/forward/reload. */
+export type AgentLogEntry = { ts?: string; action: string; actor?: string; target?: string };
+
+/** The screencast MJPEG stream URL for a tab (read by the hook's stream reader). */
+export function streamUrl(tab: string): string {
+  return `/api/v1/browser/screencast?tab=${encodeURIComponent(tab)}`;
+}
+
 export type BrowserAdapter = {
-  state: () => Promise<RemoteState>;
-  screenshot: () => Promise<Blob | null>;
-  act: (path: string, body?: unknown) => Promise<Partial<RemoteState>>;
+  state: (tab: string) => Promise<RemoteState>;
+  screenshot: (tab: string) => Promise<Blob | null>;
+  act: (path: string, body: unknown, tab: string) => Promise<Partial<RemoteState>>;
+  close: (tab: string) => Promise<void>;
+  agentLog: () => Promise<AgentLogEntry[]>;
 };
 
-// Stable identity — hooks keep this in effect deps.
 const api: BrowserAdapter = {
-  state: async () => {
-    const r = await fetch("/api/v1/browser/state");
+  state: async (tab) => {
+    const r = await fetch(`/api/v1/browser/state?tab=${encodeURIComponent(tab)}`);
     if (!r.ok) throw new Error(`http_${r.status}`);
     return (await r.json()) as RemoteState;
   },
-  screenshot: async () => {
-    // JPEG, not PNG: ~5-10x smaller for a rendered page, so each polled frame
-    // transfers + decodes far faster (the viewer is a poll loop, not a stream).
-    const r = await fetch("/api/v1/browser/screenshot?type=jpeg&q=55");
+  screenshot: async (tab) => {
+    const r = await fetch(`/api/v1/browser/screenshot?type=jpeg&q=55&tab=${encodeURIComponent(tab)}`);
     if (!r.ok) return null;
     return await r.blob();
   },
-  act: async (path, body) => {
-    const r = await fetch(`/api/v1/browser/${path}`, {
+  act: async (path, body, tab) => {
+    const r = await fetch(`/api/v1/browser/${path}?tab=${encodeURIComponent(tab)}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     return (await r.json().catch(() => ({}))) as Partial<RemoteState>;
+  },
+  close: async (tab) => {
+    await fetch(`/api/v1/browser/close?tab=${encodeURIComponent(tab)}`, { method: "POST" }).catch(() => {});
+  },
+  agentLog: async () => {
+    const r = await fetch("/api/v1/browser/agent-log", { cache: "no-store" });
+    if (!r.ok) return [];
+    return ((await r.json()) as { entries?: AgentLogEntry[] }).entries ?? [];
   },
 };
 

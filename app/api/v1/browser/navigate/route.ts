@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ url: String(body.url ?? "") }),
-    });
+    }, req);
     return NextResponse.json(await r.json());
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 502 });

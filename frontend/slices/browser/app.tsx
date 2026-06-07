@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useBrowserInspector } from "./lib/use-inspector";
 import { Omnibar } from "./components/omnibar";
+import { TabBar } from "./components/tab-bar";
+import { AiPanel } from "./components/ai-panel";
 import { BookmarkBar } from "./components/bookmark-bar";
 import { HistoryView } from "./components/history-view";
 import { RemoteView } from "./components/remote-view";
@@ -30,6 +32,7 @@ export default function Browser() {
     [],
   );
   const [showHistory, setShowHistory] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const url = rb.state.url;
   const blank = !url;
@@ -74,6 +77,16 @@ export default function Browser() {
   return (
     <div className="flex h-full flex-col bg-card">
       <style>{`@keyframes browser-load{0%{left:-40%}50%{left:30%}100%{left:100%}}`}</style>
+      <TabBar
+        tabs={rb.tabs}
+        activeId={rb.activeId}
+        aiOpen={aiOpen}
+        onSwitch={rb.switchTab}
+        onClose={rb.closeTab}
+        onNew={rb.newTab}
+        onToggleAi={() => setAiOpen((o) => !o)}
+      />
+      <AiPanel open={aiOpen} onOpenChange={setAiOpen} fetchLog={rb.agentLog} />
       <Omnibar
         url={url}
         isNewTab={blank}
@@ -88,7 +101,7 @@ export default function Browser() {
         onHome={home}
         onSubmit={navigate}
         onToggleBookmark={toggleBookmark}
-        onNewTab={home}
+        onNewTab={rb.newTab}
         onHistory={() => setShowHistory(true)}
         onCopyLink={copyLink}
         onClearHistory={() => setHistory([])}

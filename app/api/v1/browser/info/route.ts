@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   try {
-    const r = await browserFetch("/info");
+    const r = await browserFetch("/info", undefined, req);
     return NextResponse.json(await r.json());
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 502 });
