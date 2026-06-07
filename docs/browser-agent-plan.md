@@ -93,33 +93,25 @@ Still open (tracked, not in this change set):
 Acceptance: `pnpm build` green; `curl :4002/info` (with secret) returns status;
 `/api/v1/browser/elements` returns selectors; agent token gates a no-cookie call.
 
-### Phase 1 — app-rahmanef viewer (mock only)
-Branch: `feature/browser-viewer-mock`.
-Add a Browser app to the demo using a **mock adapter** (mirror os-vps
-`lib/os-api/mock-adapter.ts`): canvas/screenshot stub, omnibar, click/type/scroll
-handlers — pure client state, **no** API route that reaches a runtime.
-Acceptance: `pnpm build` green; viewer usable; `grep -r "4002\|OS_BROWSER_SECRET"`
-in app-rahmanef returns nothing.
+### Phase 1 — app-rahmanef viewer (mock only) — **DONE (529c4f2)**
+Added `components/apps/BrowserApp.tsx` (mock viewer: omnibar, nav, detected-
+elements inspector, action log) + catalog entry. Pure client state, **no** API
+route reaching a runtime. Build green; `grep "4002|OS_BROWSER_SECRET"` clean.
 
-### Phase 2 — resource-site extension + protocol spec
-Branch: `feature/browser-extension`.
-`packages/browser-extension/` (manifest + content-script DOM/form/interactive
-scanner + page bridge) and `packages/browser-protocol/` (the request/response
-shapes the runtime + clients agree on) as **reusable templates/docs**, validated
-by the existing slice/validate tooling. The runtime opt-in-loads it via
-`OS_BROWSER_EXTENSION_DIR` (headed + Xvfb).
-Acceptance: extension loads in a headed run; scanner output matches `/elements`
-shape; repo validate passes.
+### Phase 2 — resource-site extension + protocol spec — **DONE (e2126548)**
+`packages/browser-protocol` (shared types + `actionToRequest()`, the runtime/
+extension/agent contract) + `packages/browser-extension` (MV3: scanner +
+content-script + page-bridge + background, output = `/elements` shape). Both
+excluded from root build (`tsconfig exclude packages/**`), typechecked
+standalone. Runtime opt-in-loads via `OS_BROWSER_EXTENSION_DIR` (headed + Xvfb).
 
-### Phase 3 — control-room agent CRUD
-Branch: `feature/browser-crud-agent`.
-`agent/tools/browser.ts` wraps os-vps `/api/v1/browser/*` with
-`x-os-agent-token` (from `OS_AGENT_TOKEN`). Tools: navigate, screenshot, readDom
-(`/elements`+`/content`), click, clickSelector, fill, type, key, scroll, wait,
-assertText. Eval: full CRUD against app-rahmanef **through the browser UI**, with
-recovery on bad click (re-scan `/elements`) + per-action log.
-Acceptance: CRUD eval green; control-room never holds `OS_BROWSER_SECRET`; all
-actions in os-vps audit log attributed to `agent`.
+### Phase 3 — control-room agent CRUD — **DONE (10c3cc7)**
+`agent/src/browser/{client,crud,http}.ts` wraps os-vps `/api/v1/browser/*` with
+`x-os-agent-token` (from `OS_AGENT_TOKEN`). BrowserClient: navigate, screenshot,
+readDom (`/elements`+`/content`), click, clickSelector, fill, type, key, scroll,
+wait, assertText. `runCrudFlow` is logged + recovers a bad click by re-scanning
+`/elements`. Eval green (4/4 unit; live CRUD env-gated). control-room never holds
+`OS_BROWSER_SECRET`; os-vps audits agent actions as actor `agent`.
 
 ### Phase 4 — os-vps final polish
 Multi-consumer policy, viewer JPEG, extension on by default (if Xvfb stable),
