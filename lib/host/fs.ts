@@ -6,6 +6,7 @@ import path from "path";
 import type { FsList, FsUsage } from "@/lib/os-api/types";
 import {
   assertNotRoot,
+  isSensitivePath,
   isUnderRoot,
   resolveReadable,
   resolveRoots,
@@ -22,6 +23,9 @@ export async function listDir(requested: string, includeHidden = true): Promise<
   const raw = await fs.readdir(real, { withFileTypes: true });
   const entries = raw
     .filter((e) => includeHidden || !e.name.startsWith("."))
+    // Sensitive credential dirs don't even appear in listings (they're also
+    // unreadable via resolveReadable — this just removes the temptation).
+    .filter((e) => !isSensitivePath(path.join(real, e.name)))
     .map((e) => {
       const isDir = e.isDirectory() || e.isSymbolicLink();
       return {

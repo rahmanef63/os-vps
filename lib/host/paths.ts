@@ -54,15 +54,31 @@ const APP_DIR = (() => {
   }
 })();
 
+// Defense-in-depth: high-value credential material in $HOME is blocked even
+// though the session belongs to the owner — a hijacked session shouldn't walk
+// away with SSH keys or shell history. Override with OS_FS_ALLOW_SENSITIVE=1
+// (or narrow the roots entirely via OS_FS_READ_ROOTS).
+const SENSITIVE_HOME = [".ssh", ".gnupg", ".secrets", ".bash_history", ".npmrc", "vault"];
+
+export function isSensitivePath(real: string): boolean {
+  if (process.env.OS_FS_ALLOW_SENSITIVE === "1") return false;
+  const h = homeDir();
+  return SENSITIVE_HOME.some((n) => {
+    const p = path.join(h, n);
+    return real === p || isUnderRoot(real, p);
+  });
+}
+
 function isCredentialPath(real: string): boolean {
   const store = path.join(homeDir(), ".os-vps");
   if (real === store || isUnderRoot(real, store)) return true;
+  if (isSensitivePath(real)) return true;
   const base = path.basename(real);
   return path.dirname(real) === APP_DIR && base.startsWith(".env") && base !== ".env.example";
 }
 
 function assertNotCredential(real: string): void {
-  if (isCredentialPath(real)) throw new Error("Access to os-vps credential files is blocked");
+  if (isCredentialPath(real)) throw new Error("Access to credential/sensitive files is blocked");
 }
 
 async function realRoots(list: string[]): Promise<string[]> {

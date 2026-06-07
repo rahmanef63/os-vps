@@ -67,7 +67,16 @@ After you have one approved device, you can approve new ones from the UI
 # widen reads to the whole box (read-only browsing), keep writes narrow:
 OS_FS_READ_ROOTS=/
 OS_FS_WRITE_ROOTS=~:~/projects
+
+# narrow reads to projects only (hides the rest of $HOME entirely):
+OS_FS_READ_ROOTS=~/projects
 ```
+
+Even inside legal roots, credential material is always blocked: `~/.os-vps`,
+the app's own `.env*`, and the sensitive-home denylist (`~/.ssh`, `~/.gnupg`,
+`~/.secrets`, `~/vault`, `~/.bash_history`, `~/.npmrc`) — those paths are
+unreadable AND hidden from listings. Escape hatch for a supervised session:
+`OS_FS_ALLOW_SENSITIVE=1`.
 
 **Rotation.** To rotate the session secret just change `OS_SESSION_SECRET`
 and restart — every session is invalidated, approved devices stay approved.
