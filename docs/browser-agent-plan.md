@@ -114,8 +114,36 @@ wait, assertText. `runCrudFlow` is logged + recovers a bad click by re-scanning
 `OS_BROWSER_SECRET`; os-vps audits agent actions as actor `agent`.
 
 ### Phase 4 — os-vps final polish
-Multi-consumer policy, viewer JPEG, extension on by default (if Xvfb stable),
-Settings start/stop/restart (if a safe systemd hook is added).
+- **Per-consumer tabs — DONE (649bde9).** One persistent context, one tab per
+  consumer (`ui` = session, `agent` = agent-token), forwarded as
+  `x-os-browser-consumer`. Agent + human no longer collide; login/profile shared.
+  Bounded by `OS_BROWSER_MAX_PAGES` (LRU-evict) + idle reaper. Verified live.
+- **Dashboard CRUD console — DONE (control-room 2f84cdf).** `/browser` page +
+  `app/api/browser/crud` proxy drive the agent from the UI.
+- **Extension headed+Xvfb — proven in isolation (resource-site).** Built with
+  esbuild (`npm run build` → flat `dist/`), loaded into a headed Chromium under
+  `xvfb-run` on a throwaway port: `/info` reported `headless:false` + the
+  extension path, navigate + scan worked. **Prod stays headless** (the runtime
+  already scans the DOM via `/elements`, so the extension adds ~no capability
+  today and headed is heavier/flakier). Flip runbook below.
+- Still open: viewer JPEG adoption; Settings start/stop/restart (needs a safe
+  systemd hook).
+
+#### Extension flip runbook (reversible)
+```
+# 1. build the extension (resource-site)
+cd packages/browser-extension && npm i && npm run build   # → dist/
+
+# 2. point the runtime at it + go headed, then restart under Xvfb
+#    os-browser.service: wrap ExecStart in `xvfb-run -a` and set:
+#      OS_BROWSER_HEADLESS=0
+#      OS_BROWSER_EXTENSION_DIR=/abs/path/to/dist
+sudo systemctl daemon-reload && sudo systemctl restart os-browser.service
+
+# 3. health-check; rollback on any failure
+curl -s -H "x-os-browser-secret: $SEC" 127.0.0.1:4002/info   # headless:false, extension set
+#    rollback: unset the two envs + drop xvfb-run + restart → back to headless
+```
 
 ---
 
