@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
@@ -49,6 +50,7 @@
     "eslint-config-next": "^16.0.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.8"
   }
 }
