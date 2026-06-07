@@ -57,19 +57,21 @@ async function getSession(consumer) {
     s.touch = Date.now();
     return s;
   }
-  // Evict the least-recently-used tab when at the cap (never the live "default").
+  // Evict the least-recently-used tab when at the cap. Never the live "default",
+  // never a tab someone is actively streaming (has screencast watchers).
   if (sessions.size >= MAX_PAGES) {
     const victim = [...sessions.entries()]
-      .filter(([k]) => k !== "default")
+      .filter(([k, v]) => k !== "default" && v.watchers.size === 0)
       .sort((a, b) => a[1].touch - b[1].touch)[0];
     if (victim) {
+      await stopScreencast(victim[1]);
       await victim[1].page.close().catch(() => {});
       sessions.delete(victim[0]);
     }
   }
   const page = key === "default" && ctx.pages()[0] ? ctx.pages()[0] : await ctx.newPage();
   await page.goto("about:blank").catch(() => {});
-  s = { page, chain: Promise.resolve(), touch: Date.now() };
+  s = { page, chain: Promise.resolve(), touch: Date.now(), watchers: new Set(), cdp: null, lastFrame: null };
   sessions.set(key, s);
   return s;
 }
@@ -79,16 +81,56 @@ function run(s, fn) {
   return s.chain.then((v) => v);
 }
 
+// --- CDP screencast: a live MJPEG stream per consumer, driven by CDP frame
+// events (only fire on visual change) → smoother AND lighter than fixed polling.
+// Lazy: started when the first watcher connects, stopped when the last leaves.
+function writeFrame(res, buf) {
+  try {
+    res.write(`--frame\r\nContent-Type: image/jpeg\r\nContent-Length: ${buf.length}\r\n\r\n`);
+    res.write(buf);
+    res.write("\r\n");
+  } catch {
+    /* client gone — close handler will drop it */
+  }
+}
+async function ensureScreencast(s) {
+  if (s.cdp) return;
+  const cdp = await ctx.newCDPSession(s.page);
+  cdp.on("Page.screencastFrame", (e) => {
+    s.lastFrame = Buffer.from(e.data, "base64");
+    for (const w of s.watchers) writeFrame(w, s.lastFrame);
+    cdp.send("Page.screencastFrameAck", { sessionId: e.sessionId }).catch(() => {});
+  });
+  s.cdp = cdp;
+  await cdp
+    .send("Page.startScreencast", {
+      format: "jpeg",
+      quality: 50,
+      everyNthFrame: 1,
+      maxWidth: VIEWPORT.width,
+      maxHeight: VIEWPORT.height,
+    })
+    .catch(() => {});
+}
+async function stopScreencast(s) {
+  if (!s.cdp) return;
+  const cdp = s.cdp;
+  s.cdp = null;
+  await cdp.send("Page.stopScreencast").catch(() => {});
+  await cdp.detach().catch(() => {});
+}
+
 // Idle reaper: reset "default" to about:blank, CLOSE other idle tabs to free RAM.
 if (IDLE_MS > 0)
   setInterval(() => {
     const now = Date.now();
     for (const [key, s] of sessions) {
       if (now - s.touch < IDLE_MS) continue;
+      if (s.watchers.size) continue; // someone is streaming this tab — keep it
       if (key === "default") {
         if (s.page.url() !== "about:blank") void run(s, () => s.page.goto("about:blank").catch(() => {}));
       } else {
-        void s.page.close().catch(() => {});
+        void stopScreencast(s).then(() => s.page.close().catch(() => {}));
         sessions.delete(key);
       }
     }
@@ -157,6 +199,11 @@ function scanElements() {
   return out;
 }
 
+// Last-resort net: a single bad request (or a teardown race) must never crash
+// the whole browser service. Log and keep serving.
+process.on("unhandledRejection", (e) => console.error("unhandledRejection:", String(e)));
+process.on("uncaughtException", (e) => console.error("uncaughtException:", String(e)));
+
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, "http://x");
   const p = u.pathname;
@@ -176,9 +223,27 @@ const server = http.createServer(async (req, res) => {
       maxPages: MAX_PAGES,
     });
 
-  const s = await getSession(consumer);
-  const page = s.page;
   try {
+    // Inside the try: getSession can reject (e.g. a request racing a shutdown —
+    // "context has been closed"); an uncaught rejection here would kill the
+    // whole service, taking the Browser app down with it.
+    const s = await getSession(consumer);
+    const page = s.page;
+    if (p === "/screencast" && req.method === "GET") {
+      res.writeHead(200, {
+        "content-type": "multipart/x-mixed-replace; boundary=frame",
+        "cache-control": "no-store",
+        connection: "keep-alive",
+      });
+      s.watchers.add(res);
+      await ensureScreencast(s);
+      if (s.lastFrame) writeFrame(res, s.lastFrame);
+      req.on("close", () => {
+        s.watchers.delete(res);
+        if (s.watchers.size === 0) void stopScreencast(s);
+      });
+      return; // long-lived: frames pushed from the CDP event, never send()
+    }
     if (p === "/screenshot" && req.method === "GET") {
       const jpeg = u.searchParams.get("type") === "jpeg";
       const opts = jpeg ? { type: "jpeg", quality: Number(u.searchParams.get("q") || 60) } : { type: "png" };

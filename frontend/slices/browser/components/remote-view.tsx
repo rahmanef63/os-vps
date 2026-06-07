@@ -3,9 +3,13 @@
 // The remote-browser surface: a screenshot <img> the user clicks/types/scrolls
 // over. Mouse offsets map into the 1280x800 remote viewport; keys forward to
 // /type (printable) or /key (Enter/Backspace/Tab/Arrow*). Wheel is throttled.
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { VIEW_W, VIEW_H } from "../lib/use-remote-browser";
+
+// Live MJPEG stream of the caller's tab (CDP screencast). Native <img> playback —
+// smooth + event-driven. Falls back to the polled screenshot if it errors.
+const STREAM_SRC = "/api/v1/browser/screencast";
 
 const KEYS = new Set(["Enter", "Backspace", "Tab", "Delete", "Escape"]);
 
@@ -21,6 +25,9 @@ type RemoteViewProps = {
 export function RemoteView({ shot, busy, onClick, onType, onKey, onScroll }: RemoteViewProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const wheelAt = useRef(0);
+  // Prefer the live stream; drop to the polled screenshot if it fails to load.
+  const [live, setLive] = useState(true);
+  const src = live ? STREAM_SRC : shot;
 
   // offset px → viewport px, scaled by the image's rendered size.
   const handleClick = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -54,14 +61,15 @@ export function RemoteView({ shot, busy, onClick, onType, onKey, onScroll }: Rem
       onWheel={handleWheel}
       className="absolute inset-0 overflow-hidden bg-background outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
     >
-      {shot ? (
+      {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           ref={imgRef}
-          src={shot}
+          src={src}
           alt="Remote browser viewport"
           draggable={false}
           onClick={handleClick}
+          onError={() => live && setLive(false)}
           className="size-full cursor-default object-contain select-none"
         />
       ) : (
