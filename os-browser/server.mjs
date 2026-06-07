@@ -27,6 +27,10 @@ const IDLE_MS = Number(process.env.OS_BROWSER_IDLE_MS || 0);
 const MAX_PAGES = Number(process.env.OS_BROWSER_MAX_PAGES || 6);
 const HEADLESS = process.env.OS_BROWSER_HEADLESS !== "0";
 const EXT_DIR = process.env.OS_BROWSER_EXTENSION_DIR || "";
+// Use a real installed browser (e.g. "chrome") instead of bundled Chromium —
+// Google sign-in rejects bundled Chromium ("browser may not be secure"). Unset
+// = bundled Chromium.
+const CHANNEL = process.env.OS_BROWSER_CHANNEL || undefined;
 
 if (!SECRET || SECRET.length < 16) {
   console.error("OS_BROWSER_SECRET missing/short (>=16) — refusing to start");
@@ -44,6 +48,7 @@ if (EXT_DIR) args.push(`--disable-extensions-except=${EXT_DIR}`, `--load-extensi
 
 const ctx = await chromium.launchPersistentContext(USER_DATA_DIR, {
   headless: HEADLESS,
+  channel: CHANNEL,
   viewport: VIEWPORT,
   userAgent:
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
@@ -283,13 +288,13 @@ const server = http.createServer(async (req, res) => {
     if (p === "/click")
       return send(res, 200, await run(s, async () => {
         await page.mouse.click(Number(body.x) || 0, Number(body.y) || 0);
-        await page.waitForTimeout(400);
+        await page.waitForTimeout(60);
         return stateOf(page);
       }));
     if (p === "/click-selector")
       return send(res, 200, await run(s, async () => {
         await page.click(String(body.selector || ""), { timeout: 5000 }).catch((e) => ({ e: String(e) }));
-        await page.waitForTimeout(400);
+        await page.waitForTimeout(60);
         return stateOf(page);
       }));
     if (p === "/fill")
@@ -305,7 +310,7 @@ const server = http.createServer(async (req, res) => {
     if (p === "/key")
       return send(res, 200, await run(s, async () => {
         await page.keyboard.press(String(body.key || "Enter"));
-        await page.waitForTimeout(400);
+        await page.waitForTimeout(60);
         return stateOf(page);
       }));
     if (p === "/scroll")
