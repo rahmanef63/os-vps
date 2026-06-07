@@ -33,6 +33,7 @@ export function useRemoteBrowser() {
   const urlRef = useRef<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const liveRef = useRef(false);
+  const activityRef = useRef(0); // last interaction — polls fast right after, idles down
 
   // Swap the rendered frame, revoking the previous objectURL.
   const setFrame = useCallback((blob: Blob) => {
@@ -70,6 +71,7 @@ export function useRemoteBrowser() {
   const act = useCallback(
     async (path: string, body?: unknown, settle = true) => {
       setBusy(true);
+      activityRef.current = Date.now();
       try {
         const data = await api.act(path, body);
         if (typeof data.url === "string")
@@ -154,8 +156,12 @@ export function useRemoteBrowser() {
     };
   }, [setFrame]);
 
-  // Initial state + a heartbeat that polls ONLY while the stream is down, so the
-  // fallback view stays fresh and an idle/hidden tab costs nothing.
+  // Initial state + a FAST adaptive poll used whenever the live stream isn't
+  // connected (many mobile/embedded browsers won't consume a fetch stream). It
+  // ticks every 350ms but only actually fetches at ~3 fps right after activity,
+  // backing off to ~1 fps when idle — so "polling" mode still feels live without
+  // pegging the box, and pauses entirely when the tab is hidden.
+  const lastPollRef = useRef(0);
   useEffect(() => {
     void (async () => {
       try {
@@ -165,10 +171,15 @@ export function useRemoteBrowser() {
       }
     })();
     const beat = setInterval(() => {
-      if (liveRef.current) return;
+      if (liveRef.current) return; // stream is carrying frames
       if (typeof document !== "undefined" && document.hidden) return;
+      const now = Date.now();
+      const idle = now - activityRef.current > 8000;
+      const minGap = idle ? 1000 : 320;
+      if (now - lastPollRef.current < minGap) return;
+      lastPollRef.current = now;
       void refresh();
-    }, 1500);
+    }, 320);
     return () => clearInterval(beat);
   }, [api, refresh]);
 

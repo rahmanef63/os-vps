@@ -33,7 +33,13 @@ if (!SECRET || SECRET.length < 16) {
   process.exit(1);
 }
 
-const args = ["--no-sandbox", "--disable-dev-shm-usage"];
+// AutomationControlled off so sites (notably Google sign-in) don't flag the
+// session as a bot and loop on "this browser may not be secure" / cookie nags.
+const args = [
+  "--no-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-blink-features=AutomationControlled",
+];
 if (EXT_DIR) args.push(`--disable-extensions-except=${EXT_DIR}`, `--load-extension=${EXT_DIR}`);
 
 const ctx = await chromium.launchPersistentContext(USER_DATA_DIR, {
