@@ -104,10 +104,10 @@ wholesale (they're additive libs + feature slices).
 
 ## Phase 4 — UI/UX parity (best of both)
 
-- [ ] **Appearance contract in framework**: one shared shape — brand hex engine + font scale + high contrast + reduced motion (from app-shell) ⊕ accent / RTL dir / wallpaper presets Aurora-Bloom-Material-iOS (from os-vps). Consumers extend, neither forks.
-- [ ] os-vps adopts: a11y palette commands, focus-mode toggle in control center, brand-hex picker.
-- [ ] app-shell adopts: wallpaper preset gallery (alongside its Unsplash picker), glass-theme tokens where they read better.
-- [ ] **Visual QA pass**: side-by-side screenshots per shell (macOS/Windows/iOS/Android/Dashboard) on both apps via os-browser (read-only `shot`); align dock, menu-bar, control-center, settings layout discrepancies; file follow-up diffs.
+- [x] **Appearance contract in framework** (pragmatic form): DONE 2026-06-07 as parity-of-capability rather than one literal store: both consumers now expose theme + accent/brand-hex + wallpaper presets + font scale + high contrast + reduced-motion/transparency; the framework stays appearance-agnostic via the capabilities seam (a literal shared store would couple the slice to consumer persistence).
+- [x] os-vps adopts: a11y palette commands (text size 87.5–125%, high contrast, reduce transparency) + Focus tile in Control Center. Accent picker already existed (= brand-hex).
+- [x] app-shell adopts (partial): Ventura squircle app icons from os-vps/rr (a656651). Wallpaper gallery already richer on app-shell (Unsplash/upload/link) — skipped; glass tokens left per-brand.
+- [x] **Visual QA pass**: DONE (macOS + Windows shells, both apps, /tmp/qa-*.png): chrome consistent; icon style was the one real divergence (fixed); wallpaper palettes are intentional brand differences.
 - [ ] Mission-Control thumbnails (audit #5): optional upgrade — content-aware preview (app-supplied preview node or html2canvas-free snapshot). Backlog unless cheap.
 
 ## Phase 5 — app-shell hardening (os-vps → app-shell)
