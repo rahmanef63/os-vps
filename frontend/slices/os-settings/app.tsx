@@ -86,6 +86,8 @@ export default function OsSettings() {
         { label: "Mode", value: tweaks.theme },
         { label: "Accent", value: tweaks.accent },
         { label: "Device", value: tweaks.device },
+        { label: "Font", value: `${Math.round(tweaks.fontScale * 100)}%` },
+        { label: "Wallpaper", value: tweaks.wallpaperImage ? "custom image" : tweaks.wallpaper },
         { label: "Server target", value: serverTarget?.label ?? tweaks.server.mode },
         { label: "AI model", value: model },
       ],
@@ -96,7 +98,7 @@ export default function OsSettings() {
         "Explain device approval",
       ],
     },
-    [tweaks.theme, tweaks.preset, tweaks.accent, tweaks.device, tweaks.server.mode, serverTarget?.label, model],
+    [tweaks.theme, tweaks.preset, tweaks.accent, tweaks.device, tweaks.fontScale, tweaks.wallpaper, tweaks.wallpaperImage, tweaks.server.mode, serverTarget?.label, model],
   );
 
   return (

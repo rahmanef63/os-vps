@@ -1,3 +1,6 @@
+import type { CSSProperties } from "react";
+import type { ImageValue } from "@/features/image-picker";
+
 export type Theme = "light" | "dark";
 export type Dir = "aqua" | "graphite" | "vivid";
 // "auto" follows the active shell's own backdrop (per-OS fidelity); the rest
@@ -45,6 +48,8 @@ export type Appearance = {
   preset: string | null;
   dir: Dir;
   wallpaper: Wallpaper;
+  wallpaperImage: ImageValue | null;
+  wallpaperStyle?: CSSProperties;
   reduceGlass: boolean;
   device: Device;
   /** Root font-size multiplier (a11y) — one of FONT_SCALES. */
@@ -83,6 +88,7 @@ export const TWEAK_DEFAULTS: Tweaks = {
   preset: null,
   dir: "aqua",
   wallpaper: "auto",
+  wallpaperImage: null,
   reduceGlass: false,
   device: "auto",
   fontScale: 1,

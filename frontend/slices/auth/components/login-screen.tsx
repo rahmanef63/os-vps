@@ -59,7 +59,10 @@ export function LoginScreen({ onAuthed }: { onAuthed: () => void }) {
 
   return (
     <div className="relative grid h-dvh w-screen place-items-center overflow-hidden">
-      <div className={cn(`wp-${tweaks.wallpaper === "auto" ? "aurora" : tweaks.wallpaper}`, "absolute inset-0 -z-10")} />
+      <div
+        className={cn(!tweaks.wallpaperStyle && `wp-${tweaks.wallpaper === "auto" ? "aurora" : tweaks.wallpaper}`, "absolute inset-0 -z-10 bg-cover bg-center")}
+        style={tweaks.wallpaperStyle}
+      />
       <div className="glass w-[min(380px,92vw)] space-y-4 rounded-2xl border border-border bg-card/80 p-6 shadow-[var(--shadow-win)]">
         <div className="space-y-1 text-center">
           <span className="mx-auto grid size-10 place-items-center rounded-xl bg-primary text-sm font-extrabold text-primary-foreground">

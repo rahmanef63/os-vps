@@ -36,7 +36,10 @@ function Splash() {
   const { tweaks } = useAppearance();
   return (
     <div className="relative grid h-dvh w-screen place-items-center">
-      <div className={cn(`wp-${tweaks.wallpaper === "auto" ? "aurora" : tweaks.wallpaper}`, "absolute inset-0 -z-10")} />
+      <div
+        className={cn(!tweaks.wallpaperStyle && `wp-${tweaks.wallpaper === "auto" ? "aurora" : tweaks.wallpaper}`, "absolute inset-0 -z-10 bg-cover bg-center")}
+        style={tweaks.wallpaperStyle}
+      />
       <Loader2 className="size-6 animate-spin text-white drop-shadow" />
     </div>
   );

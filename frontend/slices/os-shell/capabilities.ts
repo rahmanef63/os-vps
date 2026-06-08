@@ -19,6 +19,7 @@ export const topsideCapabilities: ShellCapabilities = {
       setTheme: (t) => setTweaks({ theme: t }),
       device: tweaks.device,
       wallpaper: tweaks.wallpaper,
+      wallpaperStyle: tweaks.wallpaperStyle,
     };
   },
   useCpuPercent: () => {

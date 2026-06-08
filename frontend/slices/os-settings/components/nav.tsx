@@ -21,8 +21,8 @@ export const SECTIONS: ReadonlyArray<{
   blurb: string;
   icon: ComponentType<{ className?: string }>;
 }> = [
-  { id: "appearance", label: "Appearance", blurb: "Style, wallpaper, accent, layout", icon: Palette },
-  { id: "theme", label: "Theme", blurb: "Color presets for the whole OS", icon: Paintbrush },
+  { id: "appearance", label: "Appearance", blurb: "Style, accent, wallpaper, device", icon: Palette },
+  { id: "theme", label: "Theme", blurb: "Mode, presets, font, contrast", icon: Paintbrush },
   { id: "ai", label: "AI", blurb: "Model and API key", icon: Sparkles },
   { id: "devices", label: "Devices", blurb: "Approved browsers and sessions", icon: ShieldCheck },
   { id: "server", label: "Server", blurb: "Mock or live host data", icon: Server },

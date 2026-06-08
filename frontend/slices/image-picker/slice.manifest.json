@@ -1,0 +1,10 @@
+{
+  "name": "image-picker",
+  "description": "One-button image/wallpaper chooser — ImagePickerButton opens a dialog: Gallery (colours/gradients/textures), Upload (inject storage), Link (URL), Unsplash (curated + live search). ImageBanner is the optional reposition-able band (page cover / profile header / hero). Props-driven, imports no other slice + no backend.",
+  "deps": {
+    "shared": ["lib/utils"],
+    "slices": [],
+    "convex": []
+  },
+  "notes": "Pure client-side slice, not coupled to Notion. The upload backend + Unsplash search are INJECTED: wire onUpload to the `files` slice (useFileUpload) and searchUnsplash to a server route via unsplashSearchVia('/api/unsplash') that holds UNSPLASH_ACCESS_KEY server-side (never NEXT_PUBLIC). Ships a curated Unsplash fallback + texture gallery so it works with zero config. resolvedUrl for upload (FileRef) values is resolved by the host (files useFileUrl). Headline API = ImagePickerButton; ImageBanner adds drag-to-reposition for cover/hero use."
+}

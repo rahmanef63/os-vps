@@ -1,0 +1,22 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "image-picker",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "ui",
+  "title": "Image Picker — one-button image/wallpaper chooser (gallery · upload · link · Unsplash · reposition)",
+  "description": "Generic image/wallpaper picker. The headline API is ONE button (ImagePickerButton) that opens a dialog with 4 tabs: Gallery (12 colours + 8 gradients + Notion textures), Upload (drag/click, ≤8MB), Link (paste any https image URL), Unsplash (bundled curated landscapes + live search). On pick, onChange fires with an ImageValue ({ type, value, positionY?, metadata? }). ImageBanner is the optional reposition-able band (page cover / profile header / card hero) with hover Change / Reposition (drag the vertical focal point) / Remove. Not coupled to Notion — drop it anywhere you let a user set an image. The slice imports NO other slice and NO backend — the upload backend and Unsplash search are INJECTED as props (onUpload + searchUnsplash): wire onUpload to the `files` slice and searchUnsplash to a server route via unsplashSearchVia('/api/unsplash') that holds UNSPLASH_ACCESS_KEY server-side (never NEXT_PUBLIC). Ships a curated Unsplash + gallery fallback so it works with zero config. parseImage normalizes legacy raw-string values; imageStyle builds the focal-point CSS.",
+  "namespace": "@/features/image-picker",
+  "registers": [],
+  "audit": [],
+  "frontend": {
+    "slicePath": "frontend/slices/image-picker",
+    "configExport": ""
+  },
+  "deps": {
+    "npm": [],
+    "shadcn": ["dialog", "button", "input"],
+    "env": ["UNSPLASH_ACCESS_KEY"],
+    "peers": []
+  }
+}
