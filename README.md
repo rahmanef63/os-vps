@@ -129,6 +129,33 @@ updating): **[docs/INSTALL.md](./docs/INSTALL.md)**. Common questions:
 [docs/FAQ.md](./docs/FAQ.md). Something broken:
 [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md).
 
+## Resource usage and hardware sizing
+
+Measured on the production `os-vps.service` after `next build` + `next start`
+(Node 22.22.1 / pnpm 10.32.1, 2026-06-08):
+
+| Component | Observed memory | Notes |
+|---|---:|---|
+| `os-vps.service` cgroup | ~79 MiB current / ~81 MiB peak | systemd `MemoryCurrent` / `MemoryPeak` |
+| Next.js process RSS | ~117 MiB RSS | `next-server` child process; RSS includes shared pages |
+| npm wrapper + shell | ~62 MiB + ~2 MiB RSS | wrapper around `next start` |
+| optional `os-browser.service` | ~276 MiB current / ~366 MiB peak | Playwright bridge only; active browser tabs can add more |
+| built `.next/` output | ~51 MiB disk | production build artifact |
+| `node_modules/` | ~730 MiB disk | install footprint on this host |
+
+Practical hardware range:
+
+| Use case | Minimum | Comfortable | Notes |
+|---|---|---|---|
+| App only, production runtime | 1 vCPU, 512 MiB RAM | 1 vCPU, 1 GiB RAM | Good for light single-owner use behind TLS/VPN. |
+| App + local builds on the VPS | 1 vCPU, 1 GiB RAM + swap | 2 vCPU, 2 GiB RAM | `pnpm build` can spike above runtime usage. |
+| App + optional remote Browser | 1-2 vCPU, 1.5-2 GiB RAM | 2 vCPU, 2-4 GiB RAM | Chromium/Playwright is the main RAM variable. |
+| Disk | 2 GiB free | 4-8 GiB free | More if you keep uploads, browser profiles, logs, or multiple builds. |
+
+Rule of thumb: **512 MiB RAM is enough for the Topside app itself**, but choose
+**1 GiB minimum** for a smoother VPS and **2 GiB+** if you enable the remote
+Browser app or build directly on the server.
+
 ## Configuration
 
 See [`.env.example`](./.env.example) for every variable. Key ones:
