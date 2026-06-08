@@ -16,7 +16,7 @@ export function AccentSwatches({
   onSelect: (color: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2.5">
       {options.map((color) => {
         const active = value === color;
         return (
@@ -30,7 +30,7 @@ export function AccentSwatches({
             onClick={() => onSelect(color)}
             style={{ background: color }}
             className={cn(
-              "flex size-6 items-center justify-center rounded-full p-0 transition-transform hover:scale-110",
+              "flex size-8 items-center justify-center rounded-full p-0 transition-transform hover:scale-110 sm:size-7",
               active && "ring-2 ring-ring ring-offset-2 ring-offset-background",
             )}
           >

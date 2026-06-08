@@ -29,7 +29,7 @@ function Segmented<T extends string>({
           type="button"
           onClick={() => onChange(o.value)}
           className={cn(
-            "flex-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
+            "flex-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors min-h-9 sm:min-h-8",
             value === o.value
               ? "bg-primary text-primary-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",

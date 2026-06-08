@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppearance } from "@/lib/appearance";
+import { effectiveServerTarget, selectServerTarget, useAppearance } from "@/lib/appearance";
 import { useOsApi } from "@/lib/os-api";
 import { IS_DEMO } from "@/lib/demo";
 import { streamReply } from "@/lib/ai/stream";
@@ -81,12 +81,16 @@ export const topsideCapabilities: ShellCapabilities = {
   // Control-center server-mode tile (mock|live; locked + relabelled in demo).
   useServerToggle: () => {
     const { tweaks, setTweaks } = useAppearance();
-    const live = tweaks.server.mode === "live";
+    const active = effectiveServerTarget(tweaks.server, IS_DEMO);
+    const live = active?.kind === "local";
     return {
       live,
-      label: IS_DEMO ? "Mock · demo" : live ? "Live" : "Mock",
+      label: IS_DEMO ? "Mock · demo" : active?.kind === "ssh" ? active.label : live ? "Live" : "Mock",
       locked: IS_DEMO,
-      toggle: () => setTweaks({ server: { ...tweaks.server, mode: live ? "mock" : "live" } }),
+      toggle: () =>
+        setTweaks({
+          server: selectServerTarget(tweaks.server, live ? "mock" : "vps"),
+        }),
     };
   },
 };

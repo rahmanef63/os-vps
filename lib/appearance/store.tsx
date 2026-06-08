@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { TWEAK_DEFAULTS, type Tweaks, type ServerConfig } from "./types";
+import { ensureServerTargets } from "./server-targets";
 import { applyPreset, clearPreset } from "./presets/apply";
 
 const KEY = "os-vps:tweaks";
@@ -38,7 +39,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         setState({
           ...TWEAK_DEFAULTS,
           ...parsed,
-          server: { ...TWEAK_DEFAULTS.server, ...parsed.server },
+          server: ensureServerTargets({ ...TWEAK_DEFAULTS.server, ...parsed.server }),
         });
       }
     } catch {
@@ -75,7 +76,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   );
   const setServer = useCallback(
     (patch: Partial<ServerConfig>) =>
-      setState((t) => ({ ...t, server: { ...t.server, ...patch } })),
+      setState((t) => ({ ...t, server: ensureServerTargets({ ...t.server, ...patch }) })),
     [],
   );
 

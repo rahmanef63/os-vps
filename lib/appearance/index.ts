@@ -18,4 +18,8 @@ export {
   type Wallpaper,
   type Device,
   type ServerMode,
+  type ServerTarget,
+  type ServerTargetKind,
+  type SshServerTarget,
 } from "./types";
+export { addSshTarget, effectiveServerTarget, ensureServerTargets, selectServerTarget, updateServerTarget } from "./server-targets";

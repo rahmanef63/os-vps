@@ -10,8 +10,10 @@ import {
   presetSwatches,
   type PresetGroup,
   type PresetItem,
+  type Theme,
 } from "@/lib/appearance";
-import { SettingsSection as Section } from "@/features/shell-settings";
+import { Segmented } from "@/components/ui/segmented";
+import { SettingsSection as Section, SettingsRow as Row } from "@/features/shell-settings";
 import { cn } from "@/lib/utils";
 
 // Theme preset picker (ported from rr theme-presets / tweakcn registry).
@@ -33,7 +35,7 @@ function PresetChip({
       onClick={onSelect}
       aria-pressed={active}
       className={cn(
-        "flex items-center gap-2.5 rounded-lg border border-border bg-card/60 px-2.5 py-2 text-left transition-colors hover:bg-accent",
+        "flex min-h-11 items-center gap-2.5 rounded-lg border border-border bg-card/60 px-2.5 py-2 text-left transition-colors hover:bg-accent",
         active && "border-ring ring-1 ring-ring",
       )}
     >
@@ -50,6 +52,11 @@ function PresetChip({
   );
 }
 
+const THEME_MODE_OPTS = [
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
+
 export function ThemeSection() {
   const { tweaks, setTweaks } = useAppearance();
   const [groups, setGroups] = useState<PresetGroup[] | null>(null);
@@ -63,7 +70,16 @@ export function ThemeSection() {
 
   return (
     <Section icon={<Paintbrush />} title="Theme">
-      <div className="flex items-center justify-between gap-2">
+      <Row label="Light / dark">
+        <Segmented
+          options={THEME_MODE_OPTS}
+          value={tweaks.theme}
+          onChange={(v) => setTweaks({ theme: v as Theme })}
+          className="w-full flex-wrap sm:w-auto"
+        />
+      </Row>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[11px] leading-relaxed text-muted-foreground">
           Color presets restyle the whole OS — bars, windows and apps. Accent
           and wallpaper stay yours to override.

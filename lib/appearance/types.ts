@@ -7,6 +7,33 @@ export type Wallpaper =
   | "win11" | "material" | "ios";
 export type Device = "auto" | "desktop" | "phone";
 export type ServerMode = "mock" | "live";
+export type ServerTargetKind = "mock" | "local" | "ssh";
+
+export type MockServerTarget = {
+  id: string;
+  kind: "mock";
+  label: string;
+};
+
+export type LocalServerTarget = {
+  id: string;
+  kind: "local";
+  label: string;
+  /** Same-origin URL for the running Topside service; empty means current origin. */
+  url: string;
+};
+
+export type SshServerTarget = {
+  id: string;
+  kind: "ssh";
+  label: string;
+  /** Tailscale MagicDNS name or tailnet IP. No passwords/private keys are stored here. */
+  host: string;
+  user: string;
+  port: number;
+};
+
+export type ServerTarget = MockServerTarget | LocalServerTarget | SshServerTarget;
 
 /** Accessibility text-scale steps (root font-size multiplier). */
 export const FONT_SCALES = [0.875, 1, 1.125, 1.25] as const;
@@ -29,8 +56,14 @@ export type Appearance = {
 // No token field: the HTTP adapter authenticates with the signed session
 // cookie (same-origin); a bearer token in localStorage would be a leak vector.
 export type ServerConfig = {
+  /** Legacy effective mode kept for adapters/control-center: mock or same-origin live. */
   mode: ServerMode;
+  /** Legacy live URL field; empty means current origin. */
   url: string;
+  /** Active Settings tab/target. SSH targets are config-only until a backend bridge is enabled. */
+  activeTargetId?: string;
+  /** Saved targets. Contains only public connection metadata — never passwords or private keys. */
+  targets?: ServerTarget[];
 };
 
 export type Tweaks = Appearance & { server: ServerConfig };
@@ -54,5 +87,14 @@ export const TWEAK_DEFAULTS: Tweaks = {
   device: "auto",
   fontScale: 1,
   highContrast: false,
-  server: { mode: "mock", url: "" },
+  server: {
+    mode: "mock",
+    url: "",
+    activeTargetId: "mock",
+    targets: [
+      { id: "mock", kind: "mock", label: "Mock" },
+      { id: "vps", kind: "local", label: "This VPS", url: "" },
+      { id: "laptop", kind: "ssh", label: "Laptop", host: "", user: "", port: 22 },
+    ],
+  },
 };

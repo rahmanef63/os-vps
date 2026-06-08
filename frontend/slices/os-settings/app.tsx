@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAppearance } from "@/lib/appearance";
+import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
 import { AppFrame, MasterDetail, usePublishInspector, useResponsive } from "@/features/os-shell";
 import { DevicesPanel } from "@/features/auth";
 import { SettingsNav, SECTIONS, type SectionId } from "./components/nav";
@@ -47,7 +47,7 @@ function SectionDetail({ id }: { id: SectionId }) {
   const meta = SECTIONS.find((s) => s.id === id);
   return (
     <ScrollArea className="h-full">
-      <div className="space-y-5 p-5">
+      <div className="min-w-0 space-y-4 overflow-x-hidden p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:space-y-5 sm:p-5">
         {meta && (
           <header className="space-y-0.5">
             <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>
@@ -67,6 +67,7 @@ export default function OsSettings() {
   const [model, setModel] = useState("default");
   const [sel, setSel] = useState<SectionId | null>(null);
   const active = sel ?? "appearance";
+  const serverTarget = effectiveServerTarget(tweaks.server);
 
   useEffect(() => {
     fetch("/api/config", { cache: "no-store" })
@@ -85,17 +86,17 @@ export default function OsSettings() {
         { label: "Mode", value: tweaks.theme },
         { label: "Accent", value: tweaks.accent },
         { label: "Device", value: tweaks.device },
-        { label: "Server mode", value: tweaks.server.mode },
+        { label: "Server target", value: serverTarget?.label ?? tweaks.server.mode },
         { label: "AI model", value: model },
       ],
-      context: `Settings: theme ${tweaks.theme}, server ${tweaks.server.mode}`,
+      context: `Settings: theme ${tweaks.theme}, server target ${serverTarget?.label ?? tweaks.server.mode}`,
       suggestions: [
-        "What does Live mode do?",
+        "What do server target tabs do?",
         "Recommended settings",
         "Explain device approval",
       ],
     },
-    [tweaks.theme, tweaks.preset, tweaks.accent, tweaks.device, tweaks.server.mode, model],
+    [tweaks.theme, tweaks.preset, tweaks.accent, tweaks.device, tweaks.server.mode, serverTarget?.label, model],
   );
 
   return (

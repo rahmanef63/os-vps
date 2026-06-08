@@ -15,7 +15,8 @@ export type SegSetting = {
  * the ones the consumer provides are shown. */
 export type AppearanceAdapter = {
   style?: SegSetting;
-  theme: SegSetting;
+  /** Optional: consumers may render light/dark mode in a dedicated Theme page. */
+  theme?: SegSetting;
   /** Accent swatches — options are literal color values (their own data). */
   accent?: { value: string; options: string[]; onChange: (color: string) => void };
   wallpaper?: SegSetting;

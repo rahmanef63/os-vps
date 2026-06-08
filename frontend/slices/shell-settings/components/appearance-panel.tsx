@@ -11,7 +11,7 @@ import type { AppearanceAdapter, SegSetting } from "../lib/types";
 function SegRow({ label, seg }: { label: string; seg: SegSetting }) {
   return (
     <SettingsRow label={label}>
-      <Segmented options={seg.options} value={seg.value} onChange={seg.onChange} className="flex-wrap" />
+      <Segmented options={seg.options} value={seg.value} onChange={seg.onChange} className="w-full flex-wrap sm:w-auto" />
     </SettingsRow>
   );
 }
@@ -24,7 +24,7 @@ export function AppearancePanel({ appearance: a }: { appearance: AppearanceAdapt
     <>
       <SettingsSection icon={<Palette />} title="Appearance">
         {a.style && <SegRow label="Style" seg={a.style} />}
-        <SegRow label="Theme" seg={a.theme} />
+        {a.theme && <SegRow label="Mode" seg={a.theme} />}
         {a.accent && (
           <SettingsRow label="Accent">
             <AccentSwatches value={a.accent.value} options={a.accent.options} onSelect={a.accent.onChange} />

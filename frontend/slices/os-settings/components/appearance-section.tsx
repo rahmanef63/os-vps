@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppearance, ACCENTS, type Device, type Dir, type Theme, type Wallpaper } from "@/lib/appearance";
+import { useAppearance, ACCENTS, type Device, type Dir, type Wallpaper } from "@/lib/appearance";
 import { AppearancePanel, type AppearanceAdapter } from "@/features/shell-settings";
 import { useShellPrefs, setShell, shellsForSurface, type ShellId } from "@/features/os-shell";
 
@@ -10,10 +10,6 @@ const STYLE_OPTS = [
   { value: "aqua", label: "Aqua" },
   { value: "graphite", label: "Graphite" },
   { value: "vivid", label: "Vivid" },
-];
-const THEME_OPTS = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
 ];
 const WALLPAPER_OPTS = [
   { value: "auto", label: "Auto (OS)" },
@@ -44,7 +40,6 @@ export function AppearanceSection() {
 
   const appearance: AppearanceAdapter = {
     style: { value: tweaks.dir, options: STYLE_OPTS, onChange: (v) => setTweaks({ dir: v as Dir }) },
-    theme: { value: tweaks.theme, options: THEME_OPTS, onChange: (v) => setTweaks({ theme: v as Theme }) },
     accent: { value: tweaks.accent, options: [...ACCENTS], onChange: (c) => setTweaks({ accent: c }) },
     wallpaper: { value: tweaks.wallpaper, options: WALLPAPER_OPTS, onChange: (v) => setTweaks({ wallpaper: v as Wallpaper }) },
     shellDesktop: { value: prefs.desktop, options: shellOpts("desktop"), onChange: (v) => setShell("desktop", v as ShellId) },

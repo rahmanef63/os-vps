@@ -17,7 +17,7 @@ export function SettingsRow({
   return (
     <div className={cn("flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", className)}>
       <span className="text-sm text-foreground">{label}</span>
-      <div className="shrink-0">{children}</div>
+      <div className="min-w-0 w-full sm:w-auto sm:shrink-0">{children}</div>
     </div>
   );
 }

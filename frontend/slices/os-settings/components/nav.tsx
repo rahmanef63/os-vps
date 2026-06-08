@@ -43,7 +43,7 @@ export function SettingsNav({
   onSelect: (id: SectionId) => void;
 }) {
   return (
-    <nav className="flex flex-col gap-0.5 p-2">
+    <nav className={cn("flex flex-col", showActive ? "gap-0.5 p-2" : "gap-2 p-3")}>
       {SECTIONS.map(({ id, label, blurb, icon: Icon }) => {
         const on = showActive && id === active;
         return (
@@ -53,20 +53,22 @@ export function SettingsNav({
             onClick={() => onSelect(id)}
             aria-current={on ? "true" : undefined}
             className={cn(
-              "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors",
+              showActive
+                ? "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors"
+                : "flex w-full items-center gap-3 rounded-2xl border border-border bg-card/65 px-3 py-3 text-left shadow-sm transition-colors active:scale-[0.99]",
               on ? "bg-primary text-primary-foreground" : "hover:bg-accent",
             )}
           >
             <span
               className={cn(
-                "grid size-6 shrink-0 place-items-center rounded-md",
+                showActive ? "grid size-6 shrink-0 place-items-center rounded-md" : "grid size-9 shrink-0 place-items-center rounded-xl",
                 on ? "bg-primary-foreground/20" : "bg-primary/12 text-primary",
               )}
             >
-              <Icon className="size-3.5" />
+              <Icon className={cn(showActive ? "size-3.5" : "size-4")} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-medium leading-tight">
+              <span className={cn("block truncate font-medium leading-tight", showActive ? "text-[13px]" : "text-sm")}>
                 {label}
               </span>
               <span
