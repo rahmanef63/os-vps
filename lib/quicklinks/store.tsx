@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePrefsSync } from "@/lib/prefs/use-prefs-sync";
 
 // User-curated website shortcuts (Settings → Quicklink). Each is just a URL +
 // label; the favicon is derived from the URL. Persisted to localStorage like the
@@ -82,6 +83,13 @@ export function QuicklinksProvider({ children }: { children: ReactNode }) {
       /* quota / private mode */
     }
   }, [items]);
+
+  // Cross-device sync (lib/prefs): server list wins on initial load, local edits
+  // debounce back up. No-op in demo / before login (silent 401 → retry on auth).
+  const applyServer = useCallback((xs: Quicklink[]) => {
+    if (Array.isArray(xs)) setItems(xs);
+  }, []);
+  usePrefsSync({ section: "quicklinks", value: items, apply: applyServer });
 
   const add = useCallback((url: string, title?: string) => {
     const u = normalizeUrl(url);

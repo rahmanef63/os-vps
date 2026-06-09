@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { AUTHED_EVENT } from "@/lib/prefs/use-prefs-sync";
 
 export type SessionStatus = "loading" | "out" | "in";
 
@@ -24,7 +25,12 @@ export function useSession() {
   }, []);
 
   const refresh = useCallback(async () => {
-    setStatus(await probe());
+    const s = await probe();
+    setStatus(s);
+    // The appearance/quicklinks providers mount OUTSIDE AuthGate, so their initial
+    // GET /api/prefs 401s on the login screen. Announce the login (no reload
+    // happens) so the prefs sync re-pulls with the fresh session cookie.
+    if (s === "in") window.dispatchEvent(new Event(AUTHED_EVENT));
   }, [probe]);
 
   useEffect(() => {

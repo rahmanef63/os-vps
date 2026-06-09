@@ -5,10 +5,12 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { parseImage, imageStyle, isCssImage, type ImageValue } from "@/features/image-picker";
+import { usePrefsSync } from "@/lib/prefs/use-prefs-sync";
 import { TWEAK_DEFAULTS, type Tweaks, type ServerConfig } from "./types";
 import { ensureServerTargets } from "./server-targets";
 import { fontStack } from "./fonts";
@@ -111,6 +113,24 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       /* quota / private mode */
     }
   }, [tweaks]);
+
+  // Cross-device sync (lib/prefs): server-stored tweaks win over the local cache
+  // on initial load; local edits debounce back up. wallpaperStyle is computed from
+  // wallpaperImage (withWallpaperStyle), so it's stripped from the synced payload
+  // and recomputed on apply — same shape as the localStorage hydrate above.
+  const applyServerTweaks = useCallback((t: Omit<Tweaks, "wallpaperStyle">) => {
+    setState(withWallpaperStyle({
+      ...TWEAK_DEFAULTS,
+      ...t,
+      wallpaperImage: parseImage(t.wallpaperImage ?? null),
+      server: ensureServerTargets({ ...TWEAK_DEFAULTS.server, ...t.server }),
+    }));
+  }, []);
+  const syncedTweaks = useMemo(() => {
+    const { wallpaperStyle: _computed, ...rest } = tweaks;
+    return rest;
+  }, [tweaks]);
+  usePrefsSync({ section: "tweaks", value: syncedTweaks, apply: applyServerTweaks });
 
   const setTweaks = useCallback(
     (patch: Partial<Tweaks>) => setState((t) => withWallpaperStyle({ ...t, ...patch })),
