@@ -87,11 +87,15 @@ export function RegisterSW() {
     window.addEventListener("error", onError);
     window.addEventListener("unhandledrejection", onRejection);
 
+    // SW update plumbing torn down on unmount.
+    let updateTimer: number | undefined;
+    let onVisible: (() => void) | undefined;
+
     if ("serviceWorker" in navigator) {
-      // Auto-apply a new deploy: the SW skipWaiting()s, so when it takes control
-      // the controller changes — reload ONCE to pick up fresh assets. Guarded to
-      // an UPDATE (a controller already existed); the first-ever install (no
-      // prior controller) must NOT reload. A one-shot flag prevents any loop.
+      // The waiting SW activates only when the user taps the "new version" toast
+      // (SKIP_WAITING). Control then passes to the new SW → controllerchange →
+      // reload ONCE for fresh assets. Guarded to an UPDATE (a controller already
+      // existed); the first-ever install must NOT reload. One-shot flag = no loop.
       if (navigator.serviceWorker.controller) {
         let refreshing = false;
         navigator.serviceWorker.addEventListener("controllerchange", () => {
@@ -113,8 +117,12 @@ export function RegisterSW() {
               if (sw.state === "installed") promptUpdate(reg);
             });
           });
-          // Re-check for a new deploy when the tab regains focus.
-          const onVisible = () => {
+          // Mobile PWAs check for SW updates lazily — force it now, on focus, and
+          // on a slow interval so a fresh deploy surfaces the toast promptly
+          // instead of only on the next cold launch.
+          void reg.update();
+          updateTimer = window.setInterval(() => void reg.update(), 60_000);
+          onVisible = () => {
             if (document.visibilityState === "visible") void reg.update();
           };
           document.addEventListener("visibilitychange", onVisible);
@@ -124,6 +132,8 @@ export function RegisterSW() {
 
     return () => {
       clearTimeout(t);
+      if (updateTimer) window.clearInterval(updateTimer);
+      if (onVisible) document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("error", onError);
       window.removeEventListener("unhandledrejection", onRejection);
     };

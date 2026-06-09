@@ -13,10 +13,12 @@ const SW = `// os-vps service worker — build ${BUILD_ID}
 const CACHE = "os-vps-${BUILD_ID}";
 const ASSETS = ["/icon-192.png", "/icon-512.png", "/manifest.webmanifest"];
 self.addEventListener("install", (e) => {
-  // Take over as soon as the new SW is installed — don't sit in "waiting" until
-  // the user taps a reload toast (easy to miss on mobile, so a phone can stay
-  // stuck on an old cached shell). The page reloads once on controllerchange.
-  self.skipWaiting();
+  // Do NOT skipWaiting here. Auto-activating skipped the "waiting" state, so the
+  // client's "new version" toast (which needs reg.waiting) never showed and the
+  // update relied on a silent controllerchange reload that did not fire on mobile
+  // PWAs. Now the new SW sits in waiting → client toasts → user taps Reload →
+  // SKIP_WAITING message (below) activates it → controllerchange reload. The
+  // first-ever install (no old SW controlling clients) still activates at once.
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {})));
 });
 self.addEventListener("message", (e) => {
