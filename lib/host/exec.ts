@@ -12,6 +12,12 @@ import { homeDir, isUnderRoot, writeRootList } from "./paths";
 const TIMEOUT_MS = 30_000;
 const MAX_OUTPUT = 1_000_000; // 1 MiB per stream
 
+// Live exec runs on whatever host serves Topside: bash on the Linux VPS (or
+// macOS), the platform shell on Windows (local dev). Hardcoding /bin/bash broke
+// EVERY command when the cockpit ran on a non-Linux host — so the shell tracks
+// the actual server connection (vps vs local).
+const SHELL = process.platform === "win32" ? process.env.ComSpec || "cmd.exe" : "/bin/bash";
+
 // High-confidence catastrophic patterns. The owner has a full shell by design,
 // but these are commands that wreck the whole box and are almost never run on
 // purpose through a web cockpit — blocked unless OS_EXEC_ALLOW_DESTRUCTIVE=1.
@@ -78,7 +84,7 @@ export async function runCommand(cmd: string, cwd?: string): Promise<ExecResult>
   return new Promise<ExecResult>((resolve) => {
     exec(
       cmd,
-      { cwd: dir, timeout: TIMEOUT_MS, maxBuffer: MAX_OUTPUT, env: process.env, shell: "/bin/bash" },
+      { cwd: dir, timeout: TIMEOUT_MS, maxBuffer: MAX_OUTPUT, env: process.env, shell: SHELL },
       (err, stdout, stderr) => {
         const e = err as (Error & { code?: number; killed?: boolean }) | null;
         const code = e && typeof e.code === "number" ? e.code : e ? 1 : 0;
