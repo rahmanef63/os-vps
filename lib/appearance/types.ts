@@ -81,9 +81,12 @@ export const TWEAK_DEFAULTS: Tweaks = {
   fontScale: 1,
   highContrast: false,
   server: {
-    mode: "mock",
+    // Owner cockpit defaults to driving its own host (terminal/files/monitor are
+    // live out of the box). Demo is separately forced to mock via IS_DEMO in
+    // lib/os-api, so this only affects authenticated, approved-device sessions.
+    mode: "live",
     url: "",
-    activeTargetId: "mock",
+    activeTargetId: "vps",
     targets: [
       { id: "mock", kind: "mock", label: "Mock" },
       { id: "vps", kind: "local", label: "This VPS", url: "" },

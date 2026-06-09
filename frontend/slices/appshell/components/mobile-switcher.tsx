@@ -51,7 +51,7 @@ export function MobileSwitcher({
       >
         {cards.length > 0 ? (
           <>
-            <span className="text-[13px] text-white/70">Tap to open · swipe up to close</span>
+            <span className="text-[13px] text-white/70">Tap to open · ✕ or swipe up to close</span>
             <Button
               type="button"
               variant="ghost"
@@ -115,9 +115,13 @@ function SwitcherCard({
         card.style.opacity = `${1 - Math.min(-up, 300) / 400}`;
       }
     };
-    const up = (ev: PointerEvent) => {
+    const cleanup = () => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+    const up = (ev: PointerEvent) => {
+      cleanup();
       const dy = ev.clientY - sy;
       if (dragging && dy < -90) {
         if (card) {
@@ -140,6 +144,10 @@ function SwitcherCard({
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
+    // Android Chrome fires pointercancel (not pointerup) when its scroll/gesture
+    // arbiter claims the touch — without this the swipe-up close silently no-ops
+    // (worked on iOS, dead on Android). Treat cancel as a release: snap back.
+    window.addEventListener("pointercancel", up);
   };
 
   return (
@@ -160,7 +168,23 @@ function SwitcherCard({
         <span className="size-6">
           <AppIcon app={app} />
         </span>
-        <strong className="text-[13px]">{app.title}</strong>
+        <strong className="flex-1 truncate text-[13px]">{app.title}</strong>
+        {/* Explicit close — the swipe-up gesture is unreliable on Android PWA, so
+            a tappable ✕ guarantees a way to kill a session on every platform. */}
+        <button
+          type="button"
+          aria-label={`Close ${app.title}`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation(); // don't let the card's onClick resume the app
+            closeWindow(winId);
+          }}
+          className="-mr-1 flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/10 active:bg-foreground/20"
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
       </div>
       <div className="pointer-events-none relative min-h-0 flex-1 overflow-hidden">
         <div className="absolute inset-0 h-[143%] w-[143%] origin-top-left scale-[0.7]">
