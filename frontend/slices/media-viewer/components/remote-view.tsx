@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ImageIcon, FileText, Film, Music, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { openWindow, usePublishInspector } from "@/features/os-shell";
+import { AppFrame, openWindow, usePublishInspector } from "@/features/os-shell";
 import { rawUrl } from "@/lib/os-api";
 import { cn } from "@/lib/utils";
 import { editorFor } from "../lib/media";
@@ -60,19 +60,23 @@ export function RemoteView({ file }: { file: RemoteFile }) {
   const isPdf = file.kind === "pdf";
 
   return (
-    <div className="flex h-full flex-col bg-background">
-      <header className="flex items-center gap-2 border-b bg-background/60 px-3 py-2">
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold">{file.name}</span>
-        <Badge variant="secondary" className="font-mono text-[10px] uppercase">
-          {file.kind}
-        </Badge>
-        {editor && (
-          <Button size="sm" variant="ghost" onClick={openInEditor} aria-label={`Open in ${editor.label}`}>
-            <Pencil className="size-3.5" />
-          </Button>
-        )}
-      </header>
-
+    <AppFrame
+      className="bg-background"
+      header={
+        <header className="flex items-center gap-2 bg-background/60 px-3 py-2">
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold">{file.name}</span>
+          <Badge variant="secondary" className="font-mono text-[10px] uppercase">
+            {file.kind}
+          </Badge>
+          {editor && (
+            <Button size="sm" variant="ghost" onClick={openInEditor} aria-label={`Open in ${editor.label}`}>
+              <Pencil className="size-3.5" />
+            </Button>
+          )}
+        </header>
+      }
+      bodyClassName="flex flex-col"
+    >
       {/* PDF fills the window edge-to-edge; visual media sits on a padded
           checkerboard stage and scales to fit (up or down). */}
       <div
@@ -111,7 +115,7 @@ export function RemoteView({ file }: { file: RemoteFile }) {
           <iframe src={src} title={file.name} className="h-full w-full border-0 bg-white" />
         )}
       </div>
-    </div>
+    </AppFrame>
   );
 }
 

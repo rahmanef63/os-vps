@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AppFrame } from "@/features/os-shell";
 import { useBrowserInspector } from "./lib/use-inspector";
 import { Omnibar } from "./components/omnibar";
 import { TabBar } from "./components/tab-bar";
@@ -95,60 +96,66 @@ export default function Browser() {
   });
 
   return (
-    <div className="flex h-full flex-col bg-card">
-      <style>{`@keyframes browser-load{0%{left:-40%}50%{left:30%}100%{left:100%}}`}</style>
-      <TabBar
-        tabs={rb.tabs}
-        activeId={rb.activeId}
-        aiOpen={aiOpen}
-        onSwitch={rb.switchTab}
-        onClose={rb.closeTab}
-        onNew={rb.newTab}
-        onToggleAi={() => setAiOpen((o) => !o)}
-      />
-      <AiPanel open={aiOpen} onOpenChange={setAiOpen} fetchLog={rb.agentLog} />
-      <Omnibar
-        url={url}
-        isNewTab={blank}
-        loading={rb.busy}
-        canBack
-        canForward
-        bookmarked={bookmarked}
-        onBack={() => void rb.back()}
-        onForward={() => void rb.forward()}
-        onReload={() => void rb.reload()}
-        onStop={() => void rb.refresh()}
-        onHome={home}
-        onSubmit={navigate}
-        onToggleBookmark={toggleBookmark}
-        onNewTab={rb.newTab}
-        onHistory={() => setShowHistory(true)}
-        onCopyLink={copyLink}
-        onClearHistory={() => setHistory([])}
-      />
-      <BookmarkBar bookmarks={bookmarks} onOpen={navigate} />
-
-      <div className="relative min-h-0 flex-1 bg-background">
-        <RemoteView
-          shot={rb.shot}
-          busy={rb.busy}
-          live={rb.live}
-          onClick={(x, y) => void rb.click(x, y)}
-          onType={(t) => void rb.type(t)}
-          onKey={(k) => void rb.key(k)}
-          onScroll={(dy) => void rb.scroll(dy)}
-          onSaveScreenshot={() => void saveScreenshot()}
-          savingScreenshot={savingShot}
-          savedScreenshotPath={savedShotPath}
+    <AppFrame
+      className="bg-card"
+      header={
+        <TabBar
+          tabs={rb.tabs}
+          activeId={rb.activeId}
+          aiOpen={aiOpen}
+          onSwitch={rb.switchTab}
+          onClose={rb.closeTab}
+          onNew={rb.newTab}
+          onToggleAi={() => setAiOpen((o) => !o)}
         />
-        {showHistory && (
-          <HistoryView
-            history={history}
-            onOpen={navigate}
-            onClose={() => setShowHistory(false)}
+      }
+      toolbar={
+        <>
+          <Omnibar
+            url={url}
+            isNewTab={blank}
+            loading={rb.busy}
+            canBack
+            canForward
+            bookmarked={bookmarked}
+            onBack={() => void rb.back()}
+            onForward={() => void rb.forward()}
+            onReload={() => void rb.reload()}
+            onStop={() => void rb.refresh()}
+            onHome={home}
+            onSubmit={navigate}
+            onToggleBookmark={toggleBookmark}
+            onNewTab={rb.newTab}
+            onHistory={() => setShowHistory(true)}
+            onCopyLink={copyLink}
+            onClearHistory={() => setHistory([])}
           />
-        )}
-      </div>
-    </div>
+          <BookmarkBar bookmarks={bookmarks} onOpen={navigate} />
+        </>
+      }
+      bodyClassName="relative overflow-hidden bg-background"
+    >
+      <style>{`@keyframes browser-load{0%{left:-40%}50%{left:30%}100%{left:100%}}`}</style>
+      <AiPanel open={aiOpen} onOpenChange={setAiOpen} fetchLog={rb.agentLog} />
+      <RemoteView
+        shot={rb.shot}
+        busy={rb.busy}
+        live={rb.live}
+        onClick={(x, y) => void rb.click(x, y)}
+        onType={(t) => void rb.type(t)}
+        onKey={(k) => void rb.key(k)}
+        onScroll={(dy) => void rb.scroll(dy)}
+        onSaveScreenshot={() => void saveScreenshot()}
+        savingScreenshot={savingShot}
+        savedScreenshotPath={savedShotPath}
+      />
+      {showHistory && (
+        <HistoryView
+          history={history}
+          onOpen={navigate}
+          onClose={() => setShowHistory(false)}
+        />
+      )}
+    </AppFrame>
   );
 }

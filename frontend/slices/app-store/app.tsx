@@ -4,9 +4,13 @@ import { useMemo, useState } from "react";
 import { Search, Store } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { AppFrame, useContainer } from "@/features/os-shell";
 import { usePublishInspector } from "./lib/host";
-import { StoreSidebar, type StoreFilter } from "./components/store-sidebar";
+import {
+  StoreFilterChips,
+  StoreSidebar,
+  type StoreFilter,
+} from "./components/store-sidebar";
 import { FeaturedCard } from "./components/featured-card";
 import { StoreAppCard } from "./components/store-app-card";
 import { SystemCard } from "./components/system-card";
@@ -27,6 +31,10 @@ export default function AppStore() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<StoreFilter>("Featured");
   const [busy, setBusy] = useState<string | null>(null);
+  // Pane-width bucket (JS, not CSS): the sidebar/chip swap must share ONE
+  // measurement, and the chips live inside the AppFrame's own @container.
+  const [paneRef, pane] = useContainer<HTMLDivElement>();
+  const compact = pane === "xs" || pane === "sm";
 
   const rows = useApps();
   const disabled = useDisabledIds();
@@ -98,33 +106,36 @@ export default function AppStore() {
   );
 
   return (
-    <div className="flex h-full">
-      <StoreSidebar value={filter} onChange={setFilter} />
+    <div ref={paneRef} className="flex h-full">
+      {!compact && <StoreSidebar value={filter} onChange={setFilter} />}
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="space-y-3 p-4">
-          <div className="flex items-center gap-2">
-            <Store className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold">App Store</h2>
-            <span className="ml-auto text-[11px] text-muted-foreground">
-              {count} {count === 1 ? noun : `${noun}s`}
-            </span>
-          </div>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={isSystem ? `Search ${noun}s` : "Search apps"}
-              className="h-9 pl-8"
-            />
-          </div>
-        </header>
-
-        <Separator />
-
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="@container p-4">
+      <AppFrame
+        className="min-w-0 flex-1"
+        safeArea={false}
+        header={
+          <header className="space-y-3 p-4">
+            <div className="flex items-center gap-2">
+              <Store className="size-4 text-primary" />
+              <h2 className="text-sm font-semibold">App Store</h2>
+              <span className="ml-auto text-[11px] text-muted-foreground">
+                {count} {count === 1 ? noun : `${noun}s`}
+              </span>
+            </div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={isSystem ? `Search ${noun}s` : "Search apps"}
+                className="h-9 pl-8"
+              />
+            </div>
+            {compact && <StoreFilterChips value={filter} onChange={setFilter} />}
+          </header>
+        }
+      >
+        <ScrollArea className="h-full">
+          <div className="p-4 [padding-bottom:calc(1rem+var(--sai-bottom))]">
             {isSystem ? (
               <>
                 <p className="mb-3 text-xs text-muted-foreground">
@@ -132,7 +143,7 @@ export default function AppStore() {
                   them, uninstall to remove. Uninstalled items vanish from the dock, Launchpad,
                   and Spotlight.
                 </p>
-                <div className="grid grid-cols-1 gap-3 @md:grid-cols-2 @4xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 @md:grid-cols-2 @4xl:grid-cols-3 @7xl:grid-cols-4">
                   {systemList.map((e) => (
                     <SystemCard
                       key={e.id}
@@ -158,7 +169,7 @@ export default function AppStore() {
                     No apps match &ldquo;{query}&rdquo;.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-3 @md:grid-cols-2 @4xl:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-3 @md:grid-cols-2 @4xl:grid-cols-3 @7xl:grid-cols-4">
                     {list.map((app) => (
                       <StoreAppCard
                         key={app.appId}
@@ -173,7 +184,7 @@ export default function AppStore() {
             )}
           </div>
         </ScrollArea>
-      </div>
+      </AppFrame>
     </div>
   );
 }

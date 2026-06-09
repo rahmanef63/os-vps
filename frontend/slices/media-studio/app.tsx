@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ImageEditor, type EditorApi } from "@/features/image-editor";
 import { rawUrl } from "@/lib/os-api";
-import { closeWindow, setCloseGuard, toast } from "@/features/os-shell";
+import { closeWindow, setCloseGuard, toast, useContainer, useIsMobile } from "@/features/os-shell";
 import type { AppProps } from "@/features/os-shell";
 import {
   AlertDialog,
@@ -29,6 +29,11 @@ export default function MediaStudio({ payload, winId }: AppProps) {
   const dirty = useRef(false);
   const api = useRef<EditorApi | null>(null);
   const closeAfterSave = useRef(false);
+  // Container-first responsiveness: the editor reflows off its PANE width (a
+  // 390px desktop window gets the compact layout, not just phones).
+  const [paneRef, pane] = useContainer<HTMLDivElement>();
+  const isMobile = useIsMobile();
+  const compact = isMobile || pane === "xs" || pane === "sm";
 
   // Register a close guard: if there are unsaved edits, veto the close and show
   // the prompt instead. Cleared on unmount.
@@ -70,6 +75,7 @@ export default function MediaStudio({ payload, winId }: AppProps) {
   const onDialogSaved = () => { markClean(); if (closeAfterSave.current) { closeAfterSave.current = false; forceClose(); } };
 
   const common = {
+    compact,
     onSave,
     onSaveAs,
     onClose: () => winId && closeWindow(winId), // routes through the guard (prompts if dirty)
@@ -80,21 +86,23 @@ export default function MediaStudio({ payload, winId }: AppProps) {
 
   return (
     <>
-      {isDoc ? (
-        <ImageEditor
-          {...common}
-          projectSrc={rawUrl(p!.path!)}
-          onSaveDoc={(doc) => {
-            void fetch("/api/v1/fs/write", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ path: p!.path, content: JSON.stringify(doc) }),
-            });
-          }}
-        />
-      ) : (
-        <ImageEditor {...common} initialImage={p?.path && (!p.kind || p.kind === "image") ? rawUrl(p.path) : undefined} />
-      )}
+      <div ref={paneRef} className="h-full w-full">
+        {isDoc ? (
+          <ImageEditor
+            {...common}
+            projectSrc={rawUrl(p!.path!)}
+            onSaveDoc={(doc) => {
+              void fetch("/api/v1/fs/write", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ path: p!.path, content: JSON.stringify(doc) }),
+              });
+            }}
+          />
+        ) : (
+          <ImageEditor {...common} initialImage={p?.path && (!p.kind || p.kind === "image") ? rawUrl(p.path) : undefined} />
+        )}
+      </div>
 
       <SaveImageDialog
         dataUrl={pending}

@@ -10,10 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GLYPH_KEYS } from "@/features/app-store/lib/glyph";
 import { createApp } from "@/features/app-store";
-import { usePublishInspector } from "@/features/os-shell";
+import { AppFrame, usePublishInspector } from "@/features/os-shell";
 import { cn } from "@/lib/utils";
 import { IconPreview } from "./components/icon-preview";
 import { GlyphPicker } from "./components/glyph-picker";
+import { Field } from "./components/field";
 
 type Runtime = "html" | "node" | "python" | "shell";
 
@@ -106,92 +107,94 @@ export default function CreateApp() {
     }
   };
 
+  // Single column on compact panes; the manifest preview + submit move into a
+  // second column only when the PANE is wide (@xl container variant — above the
+  // 520px default window so the desktop default stays visually unchanged).
   return (
-    <ScrollArea className="h-full">
-      <div className="mx-auto max-w-md space-y-5 p-5">
-        <header className="flex items-center gap-3">
-          <IconPreview glyph={glyph} gradient={gradient} />
-          <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold">{name.trim() || "New app"}</h2>
-            <p className="truncate font-mono text-[11px] text-muted-foreground">/apps/{slug}</p>
-          </div>
-        </header>
+    <AppFrame safeArea={false}>
+      <ScrollArea className="h-full">
+        <div className="mx-auto max-w-md p-5 [padding-bottom:calc(1.25rem+var(--sai-bottom))] @xl:max-w-3xl">
+          <header className="flex items-center gap-3">
+            <IconPreview glyph={glyph} gradient={gradient} />
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-semibold">{name.trim() || "New app"}</h2>
+              <p className="truncate font-mono text-[11px] text-muted-foreground">/apps/{slug}</p>
+            </div>
+          </header>
 
-        <Separator />
+          <Separator className="my-5" />
 
-        <Field label="Name">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="My App" autoFocus />
-        </Field>
+          <div className="grid grid-cols-1 gap-5 @xl:grid-cols-2 @xl:gap-x-8">
+            <div className="space-y-5">
+              <Field label="Name">
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="My App" autoFocus />
+              </Field>
 
-        <Field label="Runtime">
-          <Segmented options={RUNTIMES} value={runtime} onChange={pickRuntime} className="w-full" />
-        </Field>
+              <Field label="Runtime">
+                <Segmented options={RUNTIMES} value={runtime} onChange={pickRuntime} className="w-full" />
+              </Field>
 
-        <Field label="Entry point">
-          <Input value={entry} onChange={(e) => setEntry(e.target.value)} className="font-mono text-xs" />
-        </Field>
+              <Field label="Entry point">
+                <Input value={entry} onChange={(e) => setEntry(e.target.value)} className="font-mono text-xs" />
+              </Field>
 
-        <Field label="Glyph">
-          <GlyphPicker value={glyph} onChange={setGlyph} />
-        </Field>
+              <Field label="Glyph">
+                <GlyphPicker value={glyph} onChange={setGlyph} />
+              </Field>
 
-        <Field label="Accent">
-          <div className="flex gap-2">
-            {GRADIENTS.map((g, i) => (
-              <Button
-                key={g}
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Accent ${i + 1}`}
-                onClick={() => setGradient(g)}
-                style={{ background: g }}
-                className={cn(
-                  "size-7 rounded-full p-0 ring-offset-2 ring-offset-background transition",
-                  gradient === g ? "ring-2 ring-primary" : "ring-1 ring-border hover:ring-foreground/40",
+              <Field label="Accent">
+                <div className="flex gap-2">
+                  {GRADIENTS.map((g, i) => (
+                    <Button
+                      key={g}
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Accent ${i + 1}`}
+                      onClick={() => setGradient(g)}
+                      style={{ background: g }}
+                      className={cn(
+                        "size-7 rounded-full p-0 ring-offset-2 ring-offset-background transition",
+                        gradient === g ? "ring-2 ring-primary" : "ring-1 ring-border hover:ring-foreground/40",
+                      )}
+                    />
+                  ))}
+                </div>
+              </Field>
+            </div>
+
+            <div className="space-y-5">
+              <Field label="manifest.json">
+                <pre className="overflow-x-auto rounded-md border border-border bg-secondary/50 p-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
+                  {manifest}
+                </pre>
+              </Field>
+
+              <Button className="w-full" disabled={created} onClick={handleCreate}>
+                {created ? (
+                  <>
+                    <Check className="size-4" /> Created
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="size-4" /> Create app
+                  </>
                 )}
-              />
-            ))}
+              </Button>
+
+              {error && <p className="text-center text-xs text-destructive">{error}</p>}
+
+              {created && (
+                <div className="flex justify-center">
+                  <Badge variant="secondary">
+                    <Check className="size-3" /> Added to dock
+                  </Badge>
+                </div>
+              )}
+            </div>
           </div>
-        </Field>
-
-        <Field label="manifest.json">
-          <pre className="overflow-x-auto rounded-md border border-border bg-secondary/50 p-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
-            {manifest}
-          </pre>
-        </Field>
-
-        <Button className="w-full" disabled={created} onClick={handleCreate}>
-          {created ? (
-            <>
-              <Check className="size-4" /> Created
-            </>
-          ) : (
-            <>
-              <Rocket className="size-4" /> Create app
-            </>
-          )}
-        </Button>
-
-        {error && <p className="text-center text-xs text-destructive">{error}</p>}
-
-        {created && (
-          <div className="flex justify-center">
-            <Badge variant="secondary">
-              <Check className="size-3" /> Added to dock
-            </Badge>
-          </div>
-        )}
-      </div>
-    </ScrollArea>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
-      {children}
-    </div>
+        </div>
+      </ScrollArea>
+    </AppFrame>
   );
 }

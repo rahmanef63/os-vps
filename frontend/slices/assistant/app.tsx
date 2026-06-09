@@ -74,7 +74,7 @@ export default function Assistant() {
   return (
     <div className="flex h-full flex-col bg-background">
       {tab !== "chat" ? (
-        <div className="flex items-center justify-end border-b border-border bg-card/40 px-3 py-2">
+        <div className="flex items-center justify-end overflow-x-auto border-b border-border bg-card/40 px-3 py-2 [scrollbar-width:none]">
           <TabBar tab={tab} setTab={setTab} />
         </div>
       ) : null}
@@ -87,7 +87,7 @@ export default function Assistant() {
           switcher={
             <>
               <AgentSwitcher store={store} onNew={() => setForm({ kind: "agent" })} />
-              <div className="ml-auto">
+              <div className="ml-auto shrink-0">
                 <TabBar tab={tab} setTab={setTab} />
               </div>
             </>
@@ -122,7 +122,7 @@ export default function Assistant() {
 function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
   return (
     <Tabs>
-      <TabsList>
+      <TabsList className="shrink-0">
         {TABS.map(([v, l]) => (
           <TabsTrigger key={v} active={tab === v} onClick={() => setTab(v)}>
             {l}

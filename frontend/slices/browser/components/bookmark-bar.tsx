@@ -12,7 +12,9 @@ type BookmarkBarProps = {
 export function BookmarkBar({ bookmarks, onOpen }: BookmarkBarProps) {
   if (bookmarks.length === 0) return null;
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto border-b bg-card px-2 py-1">
+    // border-t splits it from the omnibar; AppFrame's toolbar slot owns the
+    // bottom border. Scrolls horizontally on narrow panes (no wrap).
+    <div className="flex items-center gap-0.5 overflow-x-auto border-t bg-card px-2 py-1">
       {bookmarks.map((b, i) => (
         <Button
           key={`${b.url}-${i}`}

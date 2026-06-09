@@ -19,7 +19,7 @@ export function HistoryView({ history, onOpen, onClose }: HistoryViewProps) {
       <div className="absolute inset-0 bg-black/20" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-2 right-2 flex max-h-[min(360px,90%)] w-80 flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-lg"
+        className="absolute top-2 right-2 flex max-h-[min(360px,90%)] w-80 max-w-[calc(100%-1rem)] flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-lg"
       >
         <div className="flex items-center gap-2 border-b px-3 py-2">
           <HistoryIcon className="size-3.5 text-muted-foreground" />

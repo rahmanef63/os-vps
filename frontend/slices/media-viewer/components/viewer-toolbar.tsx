@@ -48,8 +48,11 @@ export function ViewerToolbar({
   const editor = editorFor(file.kind);
 
   return (
-    <header className="flex items-center gap-2 border-b bg-background/60 px-3 py-2 backdrop-blur">
-      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+    // Wide: one row (title + controls). Compact (@max-[480px]): the title takes
+    // the full first row and the controls wrap underneath with bigger targets.
+    // The bottom border is owned by AppFrame's header slot.
+    <header className="flex flex-wrap items-center gap-x-2 gap-y-1 bg-background/60 px-3 py-2 backdrop-blur">
+      <span className="min-w-0 flex-1 truncate text-sm font-semibold @max-[480px]:basis-full">
         {file.name}
       </span>
       <Badge variant="secondary" className="font-mono text-[10px] uppercase">
@@ -58,7 +61,7 @@ export function ViewerToolbar({
 
       {isImage && (
         <>
-          <Separator orientation="vertical" className="mx-1 h-5" />
+          <Separator orientation="vertical" className="mx-1 h-5 @max-[480px]:hidden" />
           <IconBtn label="Zoom out" onClick={onZoomOut} disabled={zoom <= 0.4}>
             <ZoomOut className="size-4" />
           </IconBtn>
@@ -71,7 +74,7 @@ export function ViewerToolbar({
         </>
       )}
 
-      <Separator orientation="vertical" className="mx-1 h-5" />
+      <Separator orientation="vertical" className="mx-1 h-5 @max-[480px]:hidden" />
       <IconBtn label="Download" onClick={onDownload}>
         <Download className="size-4" />
       </IconBtn>
@@ -90,7 +93,7 @@ export function ViewerToolbar({
         </IconBtn>
       )}
 
-      <Separator orientation="vertical" className="mx-1 h-5" />
+      <Separator orientation="vertical" className="mx-1 h-5 @max-[480px]:hidden" />
       <IconBtn label="Previous" onClick={onPrev}>
         <ChevronLeft className="size-4" />
       </IconBtn>
@@ -116,7 +119,8 @@ function IconBtn({
         <Button
           size="icon"
           variant="ghost"
-          className={cn("size-7", className)}
+          // Slightly larger hit target when the pane is compact (touch).
+          className={cn("size-7 @max-[480px]:size-8", className)}
           {...rest}
         >
           {children}

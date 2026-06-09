@@ -19,8 +19,9 @@ type TabBarProps = {
 // opens the agent-activity panel.
 export function TabBar({ tabs, activeId, aiOpen, onSwitch, onClose, onNew, onToggleAi }: TabBarProps) {
   return (
-    <div className="flex items-center gap-1 border-b bg-card/50 px-1.5 pt-1.5">
-      <div className="flex min-w-0 flex-1 items-end gap-1 overflow-x-auto">
+    <div className="flex items-center gap-1 bg-card/50 px-1.5 pt-1.5">
+      {/* Tabs never wrap — they scroll horizontally when the pane is narrow. */}
+      <div className="flex min-w-0 flex-1 items-end gap-1 overflow-x-auto overscroll-x-contain">
         {tabs.map((t) => {
           const on = t.id === activeId;
           return (
@@ -28,7 +29,7 @@ export function TabBar({ tabs, activeId, aiOpen, onSwitch, onClose, onNew, onTog
               key={t.id}
               onClick={() => onSwitch(t.id)}
               className={cn(
-                "group flex min-w-[110px] max-w-[190px] shrink-0 cursor-default items-center gap-1.5 rounded-t-md px-2.5 py-1.5 text-xs",
+                "group flex min-w-[110px] max-w-[190px] shrink-0 cursor-default items-center gap-1.5 rounded-t-md px-2.5 py-1.5 text-xs @max-[480px]:min-w-[96px] @max-[480px]:max-w-[150px]",
                 on ? "bg-background font-medium" : "text-muted-foreground hover:bg-accent/60",
               )}
             >
@@ -40,7 +41,12 @@ export function TabBar({ tabs, activeId, aiOpen, onSwitch, onClose, onNew, onTog
                   onClose(t.id);
                 }}
                 aria-label="Close tab"
-                className="grid size-4 shrink-0 place-items-center rounded opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
+                className={cn(
+                  // Hover-revealed on wide panes; always visible (and a bigger
+                  // hit target) on the active tab + compact/touch panes.
+                  "grid size-4 shrink-0 place-items-center rounded opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100 @max-[480px]:size-6 @max-[480px]:opacity-100",
+                  on && "opacity-100",
+                )}
               >
                 <X className="size-3" />
               </button>

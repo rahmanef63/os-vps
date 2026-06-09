@@ -31,8 +31,9 @@ export function ChatComposer({
     }
   }
 
+  // Pinned to the pane bottom — pad past the home-bar on mobile (--sai-bottom).
   return (
-    <div className="flex items-end gap-2 border-t bg-background/60 p-3">
+    <div className="flex items-end gap-2 border-t bg-background/60 p-3 [padding-bottom:calc(0.75rem+var(--sai-bottom))]">
       <Textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}

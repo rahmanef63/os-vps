@@ -4,6 +4,8 @@ import {
   MoreVertical,
   Plus,
   RotateCw,
+  ArrowRight,
+  Home,
   History,
   Link2,
   Trash2,
@@ -23,10 +25,13 @@ import { cn } from "@/lib/utils";
 type BrowserMenuProps = {
   onNewTab: () => void;
   onReload: () => void;
+  onForward: () => void;
+  onHome: () => void;
   onHistory: () => void;
   onCopyLink: () => void;
   onClearHistory: () => void;
   canReload: boolean;
+  canForward: boolean;
   canCopy: boolean;
 };
 
@@ -50,10 +55,13 @@ function Row({
 export function BrowserMenu({
   onNewTab,
   onReload,
+  onForward,
+  onHome,
   onHistory,
   onCopyLink,
   onClearHistory,
   canReload,
+  canForward,
   canCopy,
 }: BrowserMenuProps) {
   return (
@@ -71,6 +79,13 @@ export function BrowserMenu({
         <DropdownMenuItem onSelect={onReload} disabled={!canReload}>
           <Row icon={RotateCw} label="Reload" />
           <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        {/* Mirrors the toolbar buttons hidden on compact panes. */}
+        <DropdownMenuItem onSelect={onForward} disabled={!canForward}>
+          <Row icon={ArrowRight} label="Forward" />
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={onHome}>
+          <Row icon={Home} label="Home" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onHistory}>

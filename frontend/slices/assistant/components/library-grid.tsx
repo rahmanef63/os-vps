@@ -38,7 +38,7 @@ export function LibraryGrid({
 
   return (
     <ScrollArea className="flex-1">
-      <div className="p-5">
+      <div className="p-5 [padding-bottom:calc(1.25rem+var(--sai-bottom))]">
         <div className="mb-3.5 flex items-center">
           <div>
             <div className="text-base font-bold tracking-tight">{isAgent ? "Agents" : "Skills"}</div>

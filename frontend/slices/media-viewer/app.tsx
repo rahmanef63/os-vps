@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { AppProps } from "@/features/os-shell";
-import { openWindow, usePublishInspector } from "@/features/os-shell";
+import { AppFrame, openWindow, usePublishInspector } from "@/features/os-shell";
 import { SAMPLES } from "./lib/samples";
 import { editorFor } from "./lib/media";
 import { ViewerToolbar } from "./components/viewer-toolbar";
@@ -63,19 +63,24 @@ function SampleGallery() {
   );
 
   return (
-    <div className="flex h-full flex-col bg-background">
-      <ViewerToolbar
-        file={file}
-        index={index}
-        count={SAMPLES.length}
-        zoom={zoom}
-        onPrev={() => go(-1)}
-        onNext={() => go(1)}
-        onZoomIn={() => setZoom((z) => Math.min(3, +(z + 0.2).toFixed(2)))}
-        onZoomOut={() => setZoom((z) => Math.max(0.4, +(z - 0.2).toFixed(2)))}
-        onDownload={onDownload}
-      />
+    <AppFrame
+      className="bg-background"
+      header={
+        <ViewerToolbar
+          file={file}
+          index={index}
+          count={SAMPLES.length}
+          zoom={zoom}
+          onPrev={() => go(-1)}
+          onNext={() => go(1)}
+          onZoomIn={() => setZoom((z) => Math.min(3, +(z + 0.2).toFixed(2)))}
+          onZoomOut={() => setZoom((z) => Math.max(0.4, +(z - 0.2).toFixed(2)))}
+          onDownload={onDownload}
+        />
+      }
+      bodyClassName="flex flex-col"
+    >
       <MediaStage file={file} zoom={zoom} />
-    </div>
+    </AppFrame>
   );
 }

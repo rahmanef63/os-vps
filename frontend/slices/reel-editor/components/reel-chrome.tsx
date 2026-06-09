@@ -16,7 +16,7 @@ export function ReelChrome({
   canRedo,
   layout,
   savedAt,
-  isMobile,
+  compact,
   addMedia,
   ratio,
   undo,
@@ -43,7 +43,8 @@ export function ReelChrome({
   canRedo: boolean;
   layout: string;
   savedAt: number | null;
-  isMobile: boolean;
+  /** Narrow pane (mobile shell OR a narrow desktop window) — container-derived. */
+  compact: boolean;
   addMedia: (m: MediaRef, name: string) => void;
   ratio: (w: number, h: number) => void;
   undo: () => void;
@@ -82,7 +83,7 @@ export function ReelChrome({
         onTogglePanel={togglePanel}
         onMode={(m) => {
           setMode(m);
-          if (isMobile) setPanelSheet(true);
+          if (compact) setPanelSheet(true);
           else setShowPanel(true);
         }}
         onAddTrack={addTrack}

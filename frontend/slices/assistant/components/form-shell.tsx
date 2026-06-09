@@ -24,11 +24,16 @@ export function FormShell({
   return (
     <div className="flex h-full w-full bg-background">
       <ScrollArea className="min-w-0 flex-1">
-        <div className="p-6">
-          <div className="mb-4 flex items-center">
-            <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+        <div className="p-6 [padding-bottom:calc(1.5rem+var(--sai-bottom))]">
+          <div className="mb-4 flex items-center gap-2">
+            <h2 className="min-w-0 truncate text-lg font-bold tracking-tight">{title}</h2>
             <Button variant="ghost" size="sm" className="ml-auto" onClick={onClose}>
               Cancel
+            </Button>
+            {/* The preview pane (with the save CTA) hides on compact panes —
+                surface save in the header there so the form stays submittable. */}
+            <Button size="sm" className="hidden @max-[700px]:inline-flex" onClick={onSave}>
+              {editing ? "Save" : "Create"}
             </Button>
           </div>
           {children}

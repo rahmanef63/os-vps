@@ -58,14 +58,16 @@ export function Omnibar(props: OmnibarProps) {
 
   return (
     <TooltipProvider delayDuration={400}>
-      <div className="relative flex items-center gap-1 border-b bg-card px-2 py-1.5">
+      <div className="relative flex items-center gap-1 bg-card px-2 py-1.5">
         <NavButton label="Back" disabled={!canBack} onClick={props.onBack}>
           <ArrowLeft />
         </NavButton>
+        {/* Compact panes keep Back + Reload only; Forward/Home live in the menu. */}
         <NavButton
           label="Forward"
           disabled={!canForward}
           onClick={props.onForward}
+          className="@max-[480px]:hidden"
         >
           <ArrowRight />
         </NavButton>
@@ -82,7 +84,11 @@ export function Omnibar(props: OmnibarProps) {
             <RotateCw />
           </NavButton>
         )}
-        <NavButton label="Home" onClick={props.onHome}>
+        <NavButton
+          label="Home"
+          onClick={props.onHome}
+          className="@max-[480px]:hidden"
+        >
           <Home />
         </NavButton>
 
@@ -131,10 +137,13 @@ export function Omnibar(props: OmnibarProps) {
         <BrowserMenu
           onNewTab={props.onNewTab}
           onReload={props.onReload}
+          onForward={props.onForward}
+          onHome={props.onHome}
           onHistory={props.onHistory}
           onCopyLink={props.onCopyLink}
           onClearHistory={props.onClearHistory}
           canReload={!isNewTab}
+          canForward={canForward}
           canCopy={!isNewTab}
         />
 
@@ -153,11 +162,13 @@ function NavButton({
   children,
   disabled,
   onClick,
+  className,
 }: {
   label: string;
   children: React.ReactNode;
   disabled?: boolean;
   onClick: () => void;
+  className?: string;
 }) {
   return (
     <Tooltip>
@@ -165,7 +176,7 @@ function NavButton({
         <Button
           variant="ghost"
           size="icon"
-          className="size-7"
+          className={cn("size-7", className)}
           aria-label={label}
           disabled={disabled}
           onClick={onClick}

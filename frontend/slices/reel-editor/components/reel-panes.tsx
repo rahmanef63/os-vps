@@ -12,12 +12,13 @@ import { Timeline } from "./timeline";
 import { SidePanel } from "./side-panel";
 import { LayoutCanvas } from "./layout-canvas";
 import { FilesPane } from "./files-pane";
+import { CompactPanes } from "./compact-panes";
 import { findLayout } from "../lib/layout";
-import { AppInspector } from "../lib/host";
 
-// Builds the three position-agnostic panes (preview / properties / timeline) and
-// arranges them: desktop = config-driven resizable split tree (LayoutCanvas) per
-// the chosen workspace preset; mobile = stacked with properties in a sheet.
+// Builds the position-agnostic panes (preview / properties / timeline / files)
+// and arranges them: wide = config-driven resizable split tree (LayoutCanvas)
+// per the chosen workspace preset; compact (narrow pane — mobile shell OR a
+// narrow desktop window) = preview stacked over a tabbed lower region.
 export function ReelPanes({
   comp,
   frame,
@@ -33,7 +34,7 @@ export function ReelPanes({
   dropTrack,
   layout,
   showPanel,
-  isMobile,
+  compact,
   panelSheet,
   setFrame,
   setPlaying,
@@ -68,7 +69,8 @@ export function ReelPanes({
   dropTrack: string | null;
   layout: string;
   showPanel: boolean;
-  isMobile: boolean;
+  /** Narrow pane (mobile shell OR a narrow desktop window) — container-derived. */
+  compact: boolean;
   panelSheet: boolean;
   setFrame: (f: number) => void;
   setPlaying: React.Dispatch<React.SetStateAction<boolean>>;
@@ -110,9 +112,9 @@ export function ReelPanes({
       />
     </div>
   );
-  const sidePanel = (
+  const sidePanel = (m: PanelMode) => (
     <SidePanel
-      mode={mode}
+      mode={m}
       comp={comp}
       frame={frame}
       selected={selected}
@@ -142,16 +144,18 @@ export function ReelPanes({
     />
   );
 
-  if (isMobile)
+  if (compact)
     return (
       <>
-        <div className="flex min-h-0 flex-1">
-          {previewCol}
-          <AppInspector open={panelSheet} onOpenChange={setPanelSheet} railOpen={showPanel} title="Properties" railClassName="w-56 bg-card">
-            {sidePanel}
-          </AppInspector>
-        </div>
-        <div className="h-[210px] flex-none">{timeline}</div>
+        <div className="flex min-h-0 flex-1">{previewCol}</div>
+        <CompactPanes
+          mode={mode}
+          panelRequest={panelSheet}
+          onPanelRequestDone={() => setPanelSheet(false)}
+          timeline={timeline}
+          panel={sidePanel}
+          files={<FilesPane onAdd={addMedia} />}
+        />
       </>
     );
 
@@ -164,7 +168,7 @@ export function ReelPanes({
         onCollapsedChange={(v) => setShowPanel(!v)}
         panes={{
           preview: previewCol,
-          properties: <div className="flex h-full flex-col bg-card">{sidePanel}</div>,
+          properties: <div className="flex h-full flex-col bg-card">{sidePanel(mode)}</div>,
           timeline,
           files: <FilesPane onAdd={addMedia} />,
         }}

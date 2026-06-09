@@ -56,6 +56,12 @@ export type ImageEditorProps = {
   onDirty?: (dirty: boolean) => void;
   /** Hands the consumer an imperative API (render PNG, mark clean) on mount. */
   onReady?: (api: EditorApi) => void;
+  /**
+   * Container-first layout override: the host passes its PANE width verdict
+   * (e.g. a 390px desktop window) so the compact layout isn't keyed off the
+   * viewport alone. Omitted (standalone use) → falls back to useIsMobile().
+   */
+  compact?: boolean;
   className?: string;
 }
 
@@ -134,12 +140,14 @@ type ShellProps = {
   autoRestore: boolean;
   saveDoc?: (doc: Doc) => void;
   ready?: boolean;
+  compact?: boolean;
 };
 
-function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveDoc, ready }: ShellProps) {
+function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveDoc, ready, compact }: ShellProps) {
   useKeyboard();
   useAutosave(autoRestore, saveDoc, ready);
-  const mobile = useIsMobile();
+  const autoMobile = useIsMobile();
+  const mobile = compact ?? autoMobile;
   const { version, canUndo, stageRef } = useEditor();
   // Dirty = history moved past the last save. Derived (no effect-driven
   // setState): loadProject/autosave don't push history so opening a file never
@@ -167,7 +175,7 @@ function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveD
 }
 
 // Standalone, self-contained image editor. Drops into any height-bearing box.
-export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height, onSave, onSaveAs, onClose, onDirty, onReady, className }: ImageEditorProps) {
+export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height, onSave, onSaveAs, onClose, onDirty, onReady, compact, className }: ImageEditorProps) {
   const initialDoc = useMemo<Doc>(() => {
     const d = blankDoc(width ?? imageEditorConfig.defaultWidth, height ?? imageEditorConfig.defaultHeight);
     if (initialImage) d.layers.push(createLayer("image", { name: "Image", src: initialImage }));
@@ -180,7 +188,7 @@ export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height
     <div className={cn("h-full w-full", className)}>
       <EditorProvider initialDoc={initialDoc}>
         {projectSrc && <ProjectLoader src={projectSrc} onDone={() => setReady(true)} />}
-        <Shell onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} onDirty={onDirty} onReady={onReady} autoRestore={!initialImage && !projectSrc} saveDoc={onSaveDoc} ready={ready} />
+        <Shell onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} onDirty={onDirty} onReady={onReady} autoRestore={!initialImage && !projectSrc} saveDoc={onSaveDoc} ready={ready} compact={compact} />
       </EditorProvider>
     </div>
   );

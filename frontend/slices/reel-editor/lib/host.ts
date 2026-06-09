@@ -7,10 +7,10 @@
 
 export {
   toast,
-  AppInspector,
   usePublishInspector,
   setActivity,
   clearActivity,
+  useContainer,
   type AppDescriptor,
 } from "@/features/os-shell";
 

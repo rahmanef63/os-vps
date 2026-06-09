@@ -76,8 +76,9 @@ export function MenuBar(p: MenuBarProps) {
       <FilePicker ref={vidRef} accept="video/*" onFiles={onFiles("video")} />
       <FilePicker ref={audRef} accept="audio/*" onFiles={onFiles("audio")} />
 
-      <Clapperboard className="mx-1 size-4 text-primary" />
-      <strong className="mr-1 text-[13px]">Video Editor</strong>
+      <Clapperboard className="mx-1 size-4 shrink-0 text-primary" />
+      {/* Brand label yields first on a narrow pane (@container on the app root). */}
+      <strong className="mr-1 hidden text-[13px] @md:inline">Video Editor</strong>
 
       <Menu label="File">
         <DropdownMenuItem onSelect={p.onNewProject}>New project</DropdownMenuItem>
@@ -176,7 +177,7 @@ export function MenuBar(p: MenuBarProps) {
 
       <div className="ml-auto flex items-center gap-2">
         {p.savedAt != null && (
-          <span className="text-[10px] text-muted-foreground" title="Draft auto-saved in this browser">
+          <span className="hidden text-[10px] text-muted-foreground @md:inline" title="Draft auto-saved in this browser">
             ✓ Saved {new Date(p.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
         )}

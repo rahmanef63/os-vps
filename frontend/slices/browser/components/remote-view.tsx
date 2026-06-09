@@ -68,7 +68,7 @@ export function RemoteView({
       tabIndex={0}
       onKeyDown={handleKey}
       onWheel={handleWheel}
-      className="absolute inset-0 overflow-hidden bg-background outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      className="relative size-full overflow-hidden bg-background outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
     >
       {shot ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -97,7 +97,7 @@ export function RemoteView({
       )}
       <div className="absolute right-2 bottom-2 flex max-w-[min(24rem,calc(100%-1rem))] items-center gap-2">
         {savedScreenshotPath && (
-          <div className="hidden items-center gap-1.5 truncate rounded-full bg-card/90 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur sm:flex">
+          <div className="hidden items-center gap-1.5 truncate rounded-full bg-card/90 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur @sm:flex">
             <CheckCircle2 className="size-3 shrink-0 text-success" />
             <span className="truncate">Saved {savedScreenshotPath}</span>
           </div>
