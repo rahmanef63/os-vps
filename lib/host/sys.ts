@@ -53,13 +53,16 @@ export async function processes(): Promise<Process[]> {
     .map((l) => l.trim())
     .filter(Boolean)
     .map((l) => {
+      // comm may contain spaces ("npm exec eslint"): pid is the first token,
+      // pcpu/rss/stat are the space-free last three — name is what's between.
       const m = l.split(/\s+/);
+      if (m.length < 5) return { pid: 0, name: "?", status: "", cpu: 0, mem: 0 };
       return {
         pid: Number(m[0]) || 0,
-        name: m[1] ?? "?",
-        status: m[4] ?? "",
-        cpu: Number(m[2]) || 0,
-        mem: Math.round((Number(m[3]) || 0) / 1024), // RSS KB → MB
+        name: m.slice(1, -3).join(" "),
+        status: m[m.length - 1] ?? "",
+        cpu: Number(m[m.length - 3]) || 0,
+        mem: Math.round((Number(m[m.length - 2]) || 0) / 1024), // RSS KB → MB
       };
     })
     .filter((p) => p.pid > 0);
