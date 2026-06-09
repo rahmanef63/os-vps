@@ -3,7 +3,8 @@
 > Repo/service slug stays `os-vps` (deploy paths, systemd unit, domain). "Topside"
 > is the product name shown in the UI.
 
-Terminal, file manager, system monitor, media preview and a real remote browser
+A real interactive terminal (full PTY — vim, top, ssh all work), file manager,
+system monitor, media preview and a real remote browser
 for your server — from any browser, especially a phone. It presents a
 desktop-style UI, but the value is **utility**: fast control of a headless box
 without the weight of XRDP / VNC.
@@ -87,6 +88,11 @@ solves one piece. This stitches the common ones into a single mobile-first pane.
   `rm -rf /`, `mkfs`, `dd` to a block device, fork bombs, recursive `chmod/chown`
   on `/`, etc. (override with `OS_EXEC_ALLOW_DESTRUCTIVE=1`; do real disk work
   over SSH).
+- **Terminal (PTY)** — in live mode the Terminal app opens a **real interactive
+  shell** (`node-pty` — vim/top/ssh work). The destructive-command guard cannot
+  apply to raw keystrokes, by design; the gate is the same session + approved
+  device as everything else, sessions are capped (8) and idle-reaped (30 min),
+  and every open/close is audited.
 - **Audit log** — every exec, file mutation, browser action and auth event is
   appended as JSONL to `OS_AUDIT_LOG` (default `~/.os-vps/audit.log`). Reads are
   not logged.
@@ -170,6 +176,7 @@ See [`.env.example`](./.env.example) for every variable. Key ones:
 | `OS_EXEC_ALLOW_DESTRUCTIVE` | unset | `1` to allow catastrophic commands |
 | `OS_AUDIT_LOG` | `~/.os-vps/audit.log` | Audit trail path |
 | `OS_BROWSER_URL` / `OS_BROWSER_SECRET` | unset | Enable the remote Browser app |
+| `OS_UNSPLASH_ACCESS_KEY` | unset | Unsplash key for the image picker's Stock tab (default: keyless Openverse) |
 
 ## Stack
 

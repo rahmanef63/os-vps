@@ -27,7 +27,7 @@ os-vps/
 │   ├── globals.css           Tailwind 4 + glass theme tokens
 │   ├── page.tsx / os-root.tsx mounts <OsDesktop/> behind the auth gate
 │   └── api/
-│       ├── v1/               host Cloud API — fs · exec · sys · browser
+│       ├── v1/               host Cloud API — fs · exec · sys · term · stock · browser
 │       ├── auth/             login · logout · me · devices
 │       ├── config/           BYOK AI key (read/write ~/.os-vps/config.json)
 │       └── assistant/        Claude SSE stream (BYOK)
@@ -37,7 +37,9 @@ os-vps/
 │   ├── host/                 THE host facade — every /api/v1 route goes through here
 │   │   ├── fs.ts             list/read/write/mkdir/move/copy/remove/usage/upload/search
 │   │   ├── exec.ts           one-shot shell + destructive-command guard
+│   │   ├── pty.ts            interactive PTY sessions (node-pty) behind /api/v1/term/*
 │   │   ├── sys.ts            cpu/mem/disk/uptime/processes
+│   │   ├── host-error.ts / api-error.ts  HostError + apiError + readJson/requireString kit
 │   │   ├── paths.ts          read/write root jail + realpath bounds check
 │   │   ├── audit.ts          append-only JSONL audit (~/.os-vps/audit.log)
 │   │   ├── rate-limit.ts     fixed-window in-memory limiter
@@ -78,7 +80,7 @@ browser
   │  React 19 + os-shell window manager (module store, drag/resize 100% client)
   ▼
 /api/v1/*   Next route handlers (server)         every route: verifyAuth() first
-  │  fs · exec · sys · browser
+  │  fs · exec · sys · term · stock · browser
   ▼
 lib/host    fs / child_process, root-jailed, realpath-checked, audited, rate-limited
   ▼
@@ -113,9 +115,39 @@ enforces:
   refuses writes. READ may be widened to `/` (read-only browse) without widening WRITE.
 - **Exec guard** — `destructiveReason()` refuses catastrophic commands
   (`rm -rf /`, `mkfs`, `dd of=/dev/…`, fork bomb, `chmod/chown -R /`) unless
-  `OS_EXEC_ALLOW_DESTRUCTIVE=1`. One-shot only — no interactive pty.
+  `OS_EXEC_ALLOW_DESTRUCTIVE=1`. Exec itself stays one-shot — the interactive
+  shell is the PTY (below).
 - **Rate limit** — exec is fixed-window limited per device.
-- **Audit** — exec/fs-mutation/browser/auth actions append to the JSONL log.
+- **Audit** — exec/fs-mutation/term/browser/auth actions append to the JSONL log.
+
+### Terminal PTY — `/api/v1/term/*`
+
+Live Terminal sessions are real PTYs (`node-pty`), managed by `lib/host/pty.ts`:
+spawn the owner's login shell, stream output as SSE (`/api/v1/term/stream`,
+ring-buffered so a `Last-Event-ID` reconnect resumes exactly where it dropped),
+plus `open`/`input`/`resize`/`close` routes. 8 concurrent sessions max, 30-min
+idle reap; `term.open`/`term.close` are audited (keystrokes are not — high
+volume, and the owner has a full shell by design). The exec destructive filter
+does **not** apply here, by design: a pty carries raw keystrokes with no command
+boundary to inspect, and an interactive shell composes commands from fragments
+anyway — the gate is the same signed session + approved device as every route.
+Mock mode never touches it; if the PTY fails the Terminal app falls back to
+one-shot exec.
+
+### Stock search — `/api/v1/stock/search`
+
+A thin server-side proxy for the image picker's Stock tab: keyless **Openverse**
+by default, **Unsplash** when `OS_UNSPLASH_ACCESS_KEY` is set. The key never
+reaches the client.
+
+### API error contract
+
+Every `/api/v1` route returns errors as `{ error: string }` via `apiError()`
+(`lib/host/api-error.ts`): curated `HostError` messages pass through as 400
+(they're client-safe UX); everything else is masked to "Operation failed" and
+logged server-side with the route name, so raw Node errors (ENOENT/EACCES with
+absolute paths) never leak. Inputs are validated by a dependency-free
+`readJson`/`requireString`/`requireInt` kit — no zod.
 
 ## Auth (`lib/auth`)
 

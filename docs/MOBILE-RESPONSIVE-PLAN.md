@@ -1,19 +1,23 @@
 # Mobile / responsive plan — DRY, dynamic, every feature
 
-> **STATUS: primitives BUILT + high-traffic apps adopted (2026-06-03).** The shell
-> switch (`useIsMobile`, desktop window-mgr vs `MobileShell`) is done ✅; the DRY
-> primitives — `useResponsive`, `AppFrame`, `MasterDetail`, `ResponsiveToolbar`,
-> `TouchList` — now SHIP in `appshell/primitives/` + `responsive/` and re-export via
-> `@/features/os-shell`. Phase 2 (high-traffic apps) is DONE: `files-manager` /
-> `system-monitor` / `os-settings` wrap their pane in `AppFrame` (pane `@container`
-> + safe-area, Radix `ScrollArea` kept inside for styled desktop scrollbars);
-> `os-terminal` + `code-editor` status bar honor the home-bar via `--sai-bottom`;
-> `files-manager` + `code-editor` already collapse their sidebar via `AppSidebar`
-> (the shell's MasterDetail wrapper). **Remaining:** Phase 3 (creative apps —
-> media-studio/reel-editor/media-viewer/browser) + Phase 4 sweep (app-store/
-> create-app/assistant), and optional `TouchList` retrofit into existing custom
-> lists (file rows, process table). `ResponsiveToolbar` is intentionally NOT forced
-> onto the rich toolbars (breadcrumbs/selects don't fit its flat item model).
+> **STATUS: Phases 1–4 DONE (2026-06-09).** The shell switch (`useIsMobile`,
+> desktop window-mgr vs `MobileShell`) is done ✅; the DRY primitives —
+> `useResponsive`, `AppFrame`, `MasterDetail`, `ResponsiveToolbar`, `TouchList` —
+> SHIP in `appshell/primitives/` + `responsive/` and re-export via
+> `@/features/os-shell`. Phase 2 (high-traffic apps, 2026-06-03) ✅: `files-manager`
+> / `system-monitor` / `os-settings` wrap their pane in `AppFrame` (pane
+> `@container` + safe-area, Radix `ScrollArea` kept inside for styled desktop
+> scrollbars); `os-terminal` + `code-editor` status bar honor the home-bar via
+> `--sai-bottom`; `files-manager` + `code-editor` collapse their sidebar via
+> `AppSidebar` (the shell's MasterDetail wrapper). Phase 3 (creative apps,
+> 2026-06-09) ✅: browser, media-viewer, image-editor/media-studio (compact prop
+> + pane-relative sheet), reel-editor compact tabs. Phase 4 sweep (2026-06-09) ✅:
+> app-store chips + `TouchList`, create-app `@xl` two-col, assistant composer
+> safe-area — including the `TouchList` retrofit into existing custom lists
+> (process table, app-store rail). Container-first throughout, no new `matchMedia`.
+> **Remaining:** only Phase 5 — the verify pass (Playwright at 360/768/1280) +
+> pixel polish. `ResponsiveToolbar` is intentionally NOT forced onto the rich
+> toolbars (breadcrumbs/selects don't fit its flat item model).
 
 Goal: every app works in **both** shells — the desktop window-manager AND the
 full-screen mobile shell — without per-app bespoke media queries. One source of
@@ -73,18 +77,18 @@ useIsMobile (device ratio/touch)         ← shell choice (done)
 
 | App | Make responsive (compact / mobile) |
 |---|---|
-| **os-shell** | windows already; ensure MobileShell pane is an `@container`; dock/menu-bar collapse; Spotlight full-width on mobile |
-| **files-manager** | `MasterDetail`: sidebar → drawer/back on compact; grid cols `@container` (2→3→4→6); toolbar → overflow menu; thumbnails already ✓ |
-| **code-editor** | tree as `MasterDetail` (hidden→toggle on compact); tabs scroll; editor full-width; status bar wraps |
-| **os-terminal** | full-bleed; larger font + input on touch; toolbar minimal |
-| **media-viewer** | already fluid (object-contain); ensure controls reachable; toolbar wraps |
-| **media-studio** | tools → bottom bar on compact; layers panel → sheet; canvas fits container |
-| **reel-editor** | timeline horizontal-scroll; panels → tabs (`PaneTabs`) on compact |
-| **system-monitor** | gauges grid `@container` (4→2→1); process table → cards on compact |
-| **app-store / create-app** | grid `@container`; create-app single column on compact |
-| **assistant** | chat fills; composer pinned bottom; agents/skills/automations → `PaneTabs` |
-| **os-settings** | nav → top tabs/drawer on compact; rows already stack |
-| **browser** | omnibar compact; controls overflow; remote view fits container |
+| **os-shell** | ✅ windows already; MobileShell pane is an `@container`; dock/menu-bar collapse; Spotlight full-width on mobile |
+| **files-manager** | ✅ `MasterDetail`: sidebar → drawer/back on compact; grid cols `@container` (2→3→4→6); toolbar → overflow menu; thumbnails ✓ |
+| **code-editor** | ✅ tree as `MasterDetail` (hidden→toggle on compact); tabs scroll; editor full-width; status bar wraps |
+| **os-terminal** | ✅ full-bleed; larger font + input on touch; toolbar minimal |
+| **media-viewer** | ✅ fluid (object-contain); controls reachable; toolbar wraps |
+| **media-studio** | ✅ compact prop + pane-relative sheet (image-editor); canvas fits container |
+| **reel-editor** | ✅ timeline horizontal-scroll; panels → compact tabs |
+| **system-monitor** | ✅ gauges grid `@container` (4→2→1); process table → `TouchList` card rows on compact |
+| **app-store / create-app** | ✅ grid `@container` + chips/`TouchList` rail; create-app `@xl` two-col (single column on compact) |
+| **assistant** | ✅ chat fills; composer pinned bottom + safe-area; compact save button fixed |
+| **os-settings** | ✅ nav → top tabs/drawer on compact; rows stack |
+| **browser** | ✅ omnibar compact; controls overflow; remote view fits container |
 
 ## DRY rules (enforced)
 
@@ -97,13 +101,14 @@ useIsMobile (device ratio/touch)         ← shell choice (done)
 
 ## Phasing
 
-1. **Primitives** — `useResponsive`, `AppFrame`, `MasterDetail`,
+1. **Primitives** ✅ — `useResponsive`, `AppFrame`, `MasterDetail`,
    `ResponsiveToolbar`, `TouchList`, tokens. (os-shell barrel.)
-2. **High-traffic apps** — files, code-editor, terminal, settings, system-monitor.
-3. **Creative apps** — media-studio, reel-editor, media-viewer, browser.
-4. **Sweep** — app-store, create-app, assistant; audit each at 360 / 768 / 1280.
+2. **High-traffic apps** ✅ (2026-06-03) — files, code-editor, terminal, settings,
+   system-monitor.
+3. **Creative apps** ✅ (2026-06-09) — media-studio, reel-editor, media-viewer, browser.
+4. **Sweep** ✅ (2026-06-09) — app-store, create-app, assistant; `TouchList` retrofit.
 5. **Verify** — drive the real Playwright browser at phone/tablet/desktop sizes
-   (and `/os-browser.sh shot`) per app; rotate to confirm reflow.
+   (and `/os-browser.sh shot`) per app; rotate to confirm reflow. ← remaining
 
 ## Demo media (separate, shipped alongside)
 

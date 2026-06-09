@@ -9,6 +9,42 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-09 — Hardening + Phase E responsive sweep + PTY terminal + stock search (DONE)
+
+- **API hardening** (`dec2c5f`): `HostError` + `apiError` across all 35 `/api/v1`
+  routes — curated messages pass through as 400 (they're UX), everything else is
+  masked to "Operation failed" + logged server-side with the route name, so raw
+  Node errors (ENOENT/EACCES with absolute paths) never reach the client.
+  Dependency-free input validation (`readJson`/`requireString` kit in
+  `lib/host/api-error.ts`, no zod) on exec + fs mutations; `verifySession` now
+  requires a numeric `expires_at`. Tests 41→124 (session sign/verify, path
+  bounds/symlink escapes, destructive-filter table, pty e2e).
+- **A11y/UX** (`3602d0e`): specific aria-labels (window controls, browser nav,
+  appearance swatches); settings config errors surface as a toast; loading spinners.
+- **200-line rule** (`c123786`): files-manager `app`/`use-files` + browser
+  `use-remote-browser` split into focused modules.
+- **Phase 3+4 responsive sweep DONE** — browser, media-viewer, image-editor/
+  media-studio (compact prop + pane-relative sheet), reel-editor compact tabs,
+  app-store chips + `TouchList`, create-app `@xl` two-col, assistant composer
+  safe-area + compact save-button fix. Container-first (`useContainer`/
+  `@container`) throughout — no new `matchMedia`. Tracker: MOBILE-RESPONSIVE-PLAN.md.
+- **system-monitor**: live process table — fixed a real `ps` parse bug
+  (multi-word comm names broke the positional split in `lib/host/sys.ts`);
+  compact card rows via `TouchList`.
+- **Stock search**: `/api/v1/stock/search` — keyless Openverse by default,
+  optional `OS_UNSPLASH_ACCESS_KEY` → Unsplash (key stays server-side).
+  image-picker "Stock" tab is live with debounce/attribution/error states.
+- **PTY terminal**: `node-pty` + `@xterm/xterm`. `lib/host/pty.ts` session
+  manager (ring buffer + `Last-Event-ID` resume, 8-session cap, 30-min idle
+  reap, `term.open`/`term.close` audited); `/api/v1/term/{open,stream,input,
+  resize,close}` SSE bridge. Live mode = a real interactive shell (vim/top/ssh
+  work); mock untouched; falls back to one-shot exec if the PTY fails.
+- **Skipped on purpose**: response-shape unification. The error shape
+  (`{ error: string }`) is already uniform via `apiError`; a full `{ok,data}`
+  wrapper would be client churn for no user value.
+
+---
+
 ## 2026-06-06 — Multi-shell OS: macOS · Windows 11 · Android · iOS · Dashboard (P1–P6 complete)
 
 Ported the multi-shell system matured in app-rahmanef's appshell fork back into the
