@@ -2,11 +2,11 @@
 
 /** ImagePickerButton — the headline API: ONE button that opens the
  *  ImagePickerDialog. Pick a colour / gradient / texture, upload a file, paste
- *  a URL, or grab an Unsplash photo — `onChange` fires with the chosen
- *  ImageValue. Use it anywhere you let a user set an image: page cover, profile
- *  header, card hero, wallpaper, banner. Pass `trigger` to swap the button for
- *  any node, or `label` / `variant` / `size` to restyle the default. Backend is
- *  injected (onUpload + searchUnsplash) so the slice stays portable. */
+ *  a URL, or grab a stock photo (live search via /api/v1/stock/search) —
+ *  `onChange` fires with the chosen ImageValue. Use it anywhere you let a user
+ *  set an image: page cover, profile header, card hero, wallpaper, banner.
+ *  Pass `trigger` to swap the button for any node, or `label` / `variant` /
+ *  `size` to restyle the default. Upload backend is injected (`onUpload`). */
 
 import * as React from "react";
 import { ImageIcon } from "lucide-react";
@@ -25,13 +25,13 @@ interface Props extends ImageSourceProps {
   className?: string;
   variant?: React.ComponentProps<typeof Button>["variant"];
   size?: React.ComponentProps<typeof Button>["size"];
-  /** Pre-fill + auto-run the Unsplash search (opens on that tab). */
+  /** Pre-fill + auto-run the stock search (opens on that tab). */
   defaultQuery?: string;
 }
 
 export function ImagePickerButton({
   onChange, label = "Choose image", title, trigger, className,
-  variant = "outline", size = "sm", onUpload, searchUnsplash, defaultQuery,
+  variant = "outline", size = "sm", onUpload, defaultQuery,
 }: Props) {
   const [open, setOpen] = React.useState(false);
   return (
@@ -48,7 +48,6 @@ export function ImagePickerButton({
         onOpenChange={setOpen}
         onSelect={onChange}
         onUpload={onUpload}
-        searchUnsplash={searchUnsplash}
         title={title}
         defaultQuery={defaultQuery}
       />

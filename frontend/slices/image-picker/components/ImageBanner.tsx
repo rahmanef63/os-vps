@@ -24,7 +24,7 @@ interface Props extends ImageSourceProps {
   className?: string;
 }
 
-export function ImageBanner({ image, onChange, resolvedUrl, onUpload, searchUnsplash, className }: Props) {
+export function ImageBanner({ image, onChange, resolvedUrl, onUpload, className }: Props) {
   const data = parseImage(image);
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [reposition, setReposition] = React.useState(false);
@@ -69,7 +69,7 @@ export function ImageBanner({ image, onChange, resolvedUrl, onUpload, searchUnsp
           </>
         )}
       </div>
-      <ImagePickerDialog open={pickerOpen} onOpenChange={setPickerOpen} onSelect={onChange} onUpload={onUpload} searchUnsplash={searchUnsplash} />
+      <ImagePickerDialog open={pickerOpen} onOpenChange={setPickerOpen} onSelect={onChange} onUpload={onUpload} />
     </div>
   );
 }

@@ -1,9 +1,10 @@
 /** image-picker — generic image / wallpaper chooser types. The headline API is
- *  ONE button that opens a dialog (Gallery · Upload · Link · Unsplash). Values
+ *  ONE button that opens a dialog (Gallery · Upload · Link · Stock). Values
  *  carry an optional vertical focal point so the same value can also drive a
- *  reposition-able banner. Portable: the upload backend + Unsplash search are
- *  INJECTED as props (the slice imports no other slice + no backend), so it
- *  drops into any app — page cover, profile header, card hero, wallpaper, … */
+ *  reposition-able banner. The upload backend is INJECTED as a prop; the Stock
+ *  tab talks to /api/v1/stock/search (keyless Openverse, or Unsplash when the
+ *  server holds OS_UNSPLASH_ACCESS_KEY). Drops into any app — page cover,
+ *  profile header, card hero, wallpaper, … */
 
 export type ImageSource = "color" | "gradient" | "texture" | "upload" | "link" | "unsplash";
 
@@ -34,22 +35,11 @@ export interface UnsplashPhoto {
   source: string;
 }
 
-export interface UnsplashSearchResult {
-  photos: UnsplashPhoto[];
-  total?: number;
-  error?: string;
-}
-
 /** Inject the upload backend (e.g. wire to the `files` slice). Returns the
  *  stored ref/URL to keep in the image value. */
 export type UploadFn = (file: File) => Promise<string>;
 
-/** Inject the Unsplash searcher (e.g. a server route / Convex action). When
- *  omitted, the Unsplash tab browses the bundled curated set only. */
-export type UnsplashSearchFn = (query: string, perPage?: number) => Promise<UnsplashSearchResult>;
-
 /** Shared props threaded from the picker down to the tabs. */
 export interface ImageSourceProps {
   onUpload?: UploadFn;
-  searchUnsplash?: UnsplashSearchFn;
 }
