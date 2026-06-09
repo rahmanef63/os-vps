@@ -1,4 +1,5 @@
 import { FONT_SCALES, type Device, type Theme, type Wallpaper } from "./types";
+import { WALLPAPERS, wallpaperClass } from "./wallpapers";
 
 export type Option<T extends string = string> = {
   value: T;
@@ -12,17 +13,14 @@ export const THEME_MODE_OPTIONS: Option<Theme>[] = [
   { value: "dark", label: "Dark", hint: "Dim system chrome" },
 ];
 
-export const WALLPAPER_OPTIONS: Option<Wallpaper>[] = [
-  { value: "auto", label: "Auto", hint: "Follow active shell", className: "wp-auto" },
-  { value: "aurora", label: "Aurora", className: "wp-aurora" },
-  { value: "dusk", label: "Dusk", className: "wp-dusk" },
-  { value: "mist", label: "Mist", className: "wp-mist" },
-  { value: "graphite", label: "Graphite", className: "wp-graphite" },
-  { value: "noir", label: "Noir", className: "wp-noir" },
-  { value: "win11", label: "Bloom", className: "wp-win11" },
-  { value: "material", label: "Material", className: "wp-material" },
-  { value: "ios", label: "iOS", className: "wp-ios" },
-];
+// Derived from the wallpapers.ts registry (SSOT) so labels/keys/classes never
+// drift from the appearance type or globals.css.
+export const WALLPAPER_OPTIONS: Option<Wallpaper>[] = WALLPAPERS.map((w) => ({
+  value: w.key,
+  label: w.label,
+  hint: w.hint,
+  className: wallpaperClass(w.key),
+}));
 
 export const DEVICE_OPTIONS: Option<Device>[] = [
   { value: "auto", label: "Auto", hint: "Match viewport" },
@@ -36,6 +34,4 @@ export const FONT_SCALE_OPTIONS = FONT_SCALES.map((value) => ({
   hint: value < 1 ? "Compact" : value > 1 ? "Larger" : "System",
 }));
 
-export function wallpaperLabel(value: Wallpaper): string {
-  return WALLPAPER_OPTIONS.find((o) => o.value === value)?.label ?? value;
-}
+export { wallpaperLabel } from "./wallpapers";

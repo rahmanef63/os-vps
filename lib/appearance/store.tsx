@@ -11,6 +11,7 @@ import {
 import { parseImage, imageStyle, isCssImage, type ImageValue } from "@/features/image-picker";
 import { TWEAK_DEFAULTS, type Tweaks, type ServerConfig } from "./types";
 import { ensureServerTargets } from "./server-targets";
+import { fontStack } from "./fonts";
 import { applyPreset, clearPreset } from "./presets/apply";
 
 const KEY = "os-vps:tweaks";
@@ -90,7 +91,14 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     el.dataset.theme = tweaks.theme;
     el.classList.toggle("reduce-glass", tweaks.reduceGlass);
     el.classList.toggle("high-contrast", tweaks.highContrast);
-    el.style.fontSize = tweaks.fontScale === 1 ? "" : `${tweaks.fontScale * 100}%`;
+    // Scale drives a CSS var (globals.css: html font-size = 100% * --font-scale),
+    // so the whole rem cascade reacts live — no fragile cached root font-size.
+    el.style.setProperty("--font-scale", String(tweaks.fontScale));
+    // Typeface: an explicit pick sets --font-ui INLINE so it wins over a color
+    // preset's injected :root rule; "system" clears it → preset / Geist default.
+    const stack = fontStack(tweaks.fontFamily);
+    if (stack) el.style.setProperty("--font-ui", stack);
+    else el.style.removeProperty("--font-ui");
     // Color is 100% theme-driven now: a preset owns every chrome token + --accent;
     // stock (no preset) falls back to the globals.css defaults. No inline accent /
     // style (dir) overrides — the preset picker is the single source of truth.

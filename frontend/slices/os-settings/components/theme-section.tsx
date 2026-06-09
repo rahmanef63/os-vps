@@ -7,12 +7,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import {
+  FONT_OPTIONS,
   FONT_SCALE_OPTIONS,
   THEME_MODE_OPTIONS,
+  fontStack,
   groupPresets,
   loadPresetRegistry,
   presetSwatches,
   useAppearance,
+  type FontKey,
   type PresetGroup,
   type PresetItem,
   type Theme,
@@ -37,6 +40,26 @@ function PresetChip({ preset, active, onSelect }: { preset: PresetItem; active: 
       </span>
       <span className="min-w-0 flex-1 truncate text-xs font-medium">{preset.title}</span>
       {active && <Check className="size-3.5 shrink-0 text-primary" />}
+    </button>
+  );
+}
+
+// Each chip renders its own stack so the picker is WYSIWYG (you read the face you
+// pick). "system" has no stack → it inherits the live --font-ui (preset/default).
+function FontChip({ font, active, onSelect }: { font: (typeof FONT_OPTIONS)[number]; active: boolean; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      style={{ fontFamily: fontStack(font.key) ?? undefined }}
+      className={cn(
+        "flex min-h-12 flex-col justify-center rounded-xl border border-border bg-card/60 px-3 py-1.5 text-left transition-colors hover:bg-accent",
+        active && "border-ring ring-2 ring-ring/40",
+      )}
+    >
+      <span className="text-base leading-none">Ag</span>
+      <span className="mt-1 truncate text-[11px] text-muted-foreground">{font.label}</span>
     </button>
   );
 }
@@ -92,6 +115,18 @@ export function ThemeSection() {
             onChange={(v) => setTweaks({ fontScale: Number(v) })}
             className="w-full flex-wrap sm:w-auto"
           />
+        </Row>
+        <Row label="Font family">
+          <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {FONT_OPTIONS.map((font) => (
+              <FontChip
+                key={font.key}
+                font={font}
+                active={tweaks.fontFamily === font.key}
+                onSelect={() => setTweaks({ fontFamily: font.key as FontKey })}
+              />
+            ))}
+          </div>
         </Row>
         <Row label="High contrast">
           <Switch checked={tweaks.highContrast} onCheckedChange={(highContrast) => setTweaks({ highContrast })} />

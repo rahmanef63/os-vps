@@ -28,3 +28,6 @@ export {
   WALLPAPER_OPTIONS,
   wallpaperLabel,
 } from "./options";
+export { FONT_OPTIONS, fontStack, asFontKey, type FontKey, type FontOption } from "./fonts";
+export { WALLPAPERS, wallpaperClass, type WallpaperPreset } from "./wallpapers";
+export { uploadWallpaper, WALLPAPER_DIR } from "./wallpaper-upload";

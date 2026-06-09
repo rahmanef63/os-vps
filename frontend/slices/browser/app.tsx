@@ -33,6 +33,8 @@ export default function Browser() {
   );
   const [showHistory, setShowHistory] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [savingShot, setSavingShot] = useState(false);
+  const [savedShotPath, setSavedShotPath] = useState<string | null>(null);
 
   const url = rb.state.url;
   const blank = !url;
@@ -62,6 +64,24 @@ export default function Browser() {
   };
   const copyLink = () => {
     if (!blank) void navigator.clipboard?.writeText(url).catch(() => {});
+  };
+  const saveScreenshot = async () => {
+    setSavingShot(true);
+    setSavedShotPath(null);
+    try {
+      const res = await fetch(`/api/v1/browser/save-shot?tab=${encodeURIComponent(rb.activeId)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = (await res.json().catch(() => ({}))) as { path?: string; error?: string };
+      if (!res.ok || !data.path) throw new Error(data.error || `save failed (${res.status})`);
+      setSavedShotPath(data.path);
+    } catch (e) {
+      setSavedShotPath(String(e));
+    } finally {
+      setSavingShot(false);
+    }
   };
 
   useBrowserInspector({
@@ -117,6 +137,9 @@ export default function Browser() {
           onType={(t) => void rb.type(t)}
           onKey={(k) => void rb.key(k)}
           onScroll={(dy) => void rb.scroll(dy)}
+          onSaveScreenshot={() => void saveScreenshot()}
+          savingScreenshot={savingShot}
+          savedScreenshotPath={savedShotPath}
         />
         {showHistory && (
           <HistoryView

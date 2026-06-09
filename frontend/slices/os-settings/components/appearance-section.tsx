@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   DEVICE_OPTIONS,
   WALLPAPER_OPTIONS,
+  uploadWallpaper,
   useAppearance,
   wallpaperLabel,
   type Device,
@@ -15,18 +16,6 @@ import {
 import { ImagePickerButton, imageStyle, type ImageValue } from "@/features/image-picker";
 import { setShell, shellsForSurface, useShellPrefs, type ShellId } from "@/features/os-shell";
 import { SettingsRow as Row, SettingsSection as Section } from "@/features/shell-settings";
-
-const UPLOAD_MAX = 3 * 1024 * 1024;
-
-async function uploadAsDataUrl(file: File): Promise<string> {
-  if (file.size > UPLOAD_MAX) throw new Error("Image too large (max 3 MB)");
-  return await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
 
 function ChoiceCard({
   active,
@@ -88,7 +77,7 @@ export function AppearanceSection() {
               label={customWallpaper ? "Change image" : "Choose image"}
               title="Set wallpaper"
               onChange={(img) => setWallpaperImage(img)}
-              onUpload={uploadAsDataUrl}
+              onUpload={uploadWallpaper}
               defaultQuery="macos wallpaper"
               className="w-full sm:w-auto"
             />

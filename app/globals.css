@@ -9,6 +9,9 @@
 :root {
   --font-ui: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  /* a11y text scale — driven live by the appearance store (Settings → Theme);
+     the rem cascade follows because this is the root font-size. */
+  --font-scale: 1;
 
   /* Notch / home-bar safe areas — read by the AppShell ResponsiveProvider and
      by primitives (AppFrame body padding). Resolve to 0 off-device. */
@@ -148,6 +151,8 @@
 
 * { box-sizing: border-box; border-color: var(--color-border); }
 html, body { height: 100%; margin: 0; }
+/* Root font-size = browser default × the a11y scale, so every rem reacts live. */
+html { font-size: calc(100% * var(--font-scale, 1)); }
 body {
   font-family: var(--font-ui);
   color: var(--text);

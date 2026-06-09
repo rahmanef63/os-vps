@@ -1,12 +1,11 @@
 import type { CSSProperties } from "react";
 import type { ImageValue } from "@/features/image-picker";
+import type { Wallpaper } from "./wallpapers";
+import type { FontKey } from "./fonts";
 
 export type Theme = "light" | "dark";
-// "auto" follows the active shell's own backdrop (per-OS fidelity); the rest
-// are fixed presets (.wp-* classes in app/globals.css).
-export type Wallpaper =
-  | "auto" | "aurora" | "dusk" | "mist" | "graphite" | "noir"
-  | "win11" | "material" | "ios";
+// Wallpaper keys + the .wp-* classes are the wallpapers.ts registry (SSOT).
+export type { Wallpaper } from "./wallpapers";
 export type Device = "auto" | "desktop" | "phone";
 export type ServerMode = "mock" | "live";
 export type ServerTargetKind = "mock" | "local" | "ssh";
@@ -50,6 +49,9 @@ export type Appearance = {
   wallpaperStyle?: CSSProperties;
   reduceGlass: boolean;
   device: Device;
+  /** UI typeface (lib/appearance/fonts) — "system" follows the preset/default.
+   *  Separate from fontScale: this is the family, that is the size. */
+  fontFamily: FontKey;
   /** Root font-size multiplier (a11y) — one of FONT_SCALES. */
   fontScale: number;
   /** Stronger borders + secondary text (a11y). */
@@ -78,6 +80,7 @@ export const TWEAK_DEFAULTS: Tweaks = {
   wallpaperImage: null,
   reduceGlass: false,
   device: "auto",
+  fontFamily: "system",
   fontScale: 1,
   highContrast: false,
   server: {
