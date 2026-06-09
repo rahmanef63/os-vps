@@ -17,13 +17,31 @@ export default function TerminalApp() {
   const [lines, setLines] = useState<Line[]>([
     { t: "sys", v: 'topside shell · type "help" for commands' },
   ]);
-  const [cwd, setCwd] = useState("/");
+  // Live starts at home (~); mock keeps its "/" sandbox root. A live shell at
+  // "/" lists outside the host read roots and every `ls` fails — that read as
+  // "terminal not working" when the mode was actually fine.
+  const [cwd, setCwd] = useState(api.mode === "live" ? "~" : "/");
   const cwdRef = useRef(cwd);
+  const modeRef = useRef(api.mode);
   // Latest-ref mirrors for event handlers (post-render, per react-hooks/refs).
   useEffect(() => {
     apiRef.current = api;
     cwdRef.current = cwd;
   });
+  // Mode can flip at runtime (Settings → Server) while the terminal is open —
+  // reset cwd to the right root and announce it so live actually engages.
+  useEffect(() => {
+    if (modeRef.current === api.mode) return;
+    modeRef.current = api.mode;
+    setCwd(api.mode === "live" ? "~" : "/");
+    setLines((l) => [
+      ...l,
+      {
+        t: "sys",
+        v: api.mode === "live" ? "● switched to LIVE — real shell on this host" : "○ switched to MOCK — demo data",
+      },
+    ]);
+  }, [api.mode]);
   const [input, setInput] = useState("");
   const [hist, setHist] = useState<string[]>([]);
   const [hp, setHp] = useState(-1);
@@ -98,6 +116,20 @@ export default function TerminalApp() {
       onClick={() => inRef.current?.focus()}
       className="h-full w-full overflow-y-auto bg-[#0d0e12] p-3.5 [padding-bottom:calc(0.875rem+var(--sai-bottom))] font-mono text-[12.5px] leading-relaxed text-[#dfe3ea] [font-family:var(--font-mono)] select-text"
     >
+      {/* Always-accurate mode banner. The greeting line looks identical in mock
+          and live, so without this the user can't tell live actually engaged. */}
+      <div
+        className="mb-2 select-none rounded px-2 py-1 text-[11px] font-semibold"
+        style={
+          api.mode === "live"
+            ? { color: "#0d0e12", background: "#5be0c8" }
+            : { color: "#0d0e12", background: "#f5c451" }
+        }
+      >
+        {api.mode === "live"
+          ? "● LIVE — commands run on this host"
+          : "○ MOCK — Settings → Server → This VPS to run real commands"}
+      </div>
       {lines.map((l, i) => {
         if (l.t === "fetch") return <Neofetch key={i} rows={l.rows} />;
         if (l.t === "cmd")
