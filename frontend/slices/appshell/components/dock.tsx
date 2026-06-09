@@ -5,7 +5,9 @@ import { LayoutGrid, Grid3x3 } from "lucide-react";
 import { useApps } from "../lib/registry";
 import { useWindowOrder, useFocused } from "../hooks/use-shell";
 import { shellStore, setLauncherOpen } from "../lib/store";
+import { useQuickLinks } from "../registry/capabilities";
 import { BASE, DockIcon, PlainIcon } from "./dock-parts";
+import { QuicklinkIcon } from "./quicklink-icon";
 import type { AppDescriptor, WindowState } from "../lib/types";
 
 // ── macOS dock magnification ─────────────────────────────────────────────────
@@ -31,11 +33,27 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
   const apps = useApps().filter((a) => !a.noDock);
   const order = useWindowOrder();
   const focused = useFocused();
+  const { items: links, open: openLink } = useQuickLinks();
   const wins = order.map((id) => shellStore.getWindow(id)).filter(Boolean) as WindowState[];
   const rowRef = useRef<HTMLDivElement>(null);
 
   const slots: Slot[] = [
     ...apps.map((app): Slot => ({ kind: "app", app, windows: wins.filter((w) => w.app === app.id) })),
+    // Quicklinks ride in their own dock cluster after the app separator.
+    ...(links.length
+      ? [
+          { kind: "sep" } as Slot,
+          ...links.map(
+            (link): Slot => ({
+              kind: "plain",
+              id: `ql-${link.id}`,
+              label: link.title,
+              onClick: () => openLink(link),
+              node: <QuicklinkIcon link={link} />,
+            }),
+          ),
+        ]
+      : []),
     { kind: "sep" },
     {
       kind: "plain", id: "launchpad", label: "Launchpad", onClick: () => setLauncherOpen(true),

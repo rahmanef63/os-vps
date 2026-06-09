@@ -1,0 +1,26 @@
+{
+  "$schema": "https://resource.rahmanef.com/slice-schema.json",
+  "slug": "quicklinks",
+  "version": "0.1.0",
+  "category": "ui",
+  "kind": "full",
+  "title": "Quicklinks — website shortcuts with favicons",
+  "description": "OS app + shell integration for user-curated website shortcuts. Each quicklink is a URL + label; the favicon is derived from the URL. Managed in Settings → Quicklink and surfaced (with favicon) in the dock, Launchpad, mobile app grid, the Today widget and a dedicated Quicklinks window. Opening one pops a new native browser tab. Data persists to localStorage (public config only). The shell consumes the list via the injected useQuickLinks capability so appshell stays brand/host-free.",
+  "namespace": "@/features/quicklinks",
+  "registers": ["registry"],
+  "audit": [],
+  "frontend": {
+    "slicePath": "frontend/slices/quicklinks",
+    "configExport": "quicklinksApp"
+  },
+  "deps": {
+    "npm": ["lucide-react"],
+    "shadcn": [],
+    "env": [],
+    "peers": [
+      { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app + injects useQuickLinks" }
+    ]
+  },
+  "license": "MIT",
+  "tags": ["os", "shortcuts", "links", "ui"]
+}

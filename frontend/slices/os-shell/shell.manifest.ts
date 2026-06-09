@@ -25,6 +25,7 @@ import { createAppApp } from "@/features/create-app";
 import { systemMonitorApp } from "@/features/system-monitor";
 import { assistantApp } from "@/features/assistant";
 import { osSettingsApp } from "@/features/os-settings";
+import { quicklinksApp } from "@/features/quicklinks";
 
 export const TOPSIDE_BRAND: Brand = {
   name: "Topside",
@@ -53,6 +54,7 @@ export const BUILTIN_APPS: AppDescriptor[] = [
   withSlug(createAppApp, "create"),
   withSlug(systemMonitorApp, "monitor"),
   withSlug(assistantApp, "assistant"),
+  withSlug(quicklinksApp, "links"),
   withSlug(osSettingsApp, "settings"),
 ];
 

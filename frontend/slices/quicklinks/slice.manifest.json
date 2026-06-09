@@ -1,0 +1,10 @@
+{
+  "name": "quicklinks",
+  "description": "User-curated website shortcuts (URL + favicon). Managed in Settings → Quicklink; surfaced in the dock, Launchpad, mobile grid, Today widget and a dedicated window. Opening one pops a new native browser tab. The shell reads the list via the injected useQuickLinks capability.",
+  "deps": {
+    "shared": ["lib/utils", "lib/quicklinks"],
+    "slices": ["os-shell"],
+    "convex": []
+  },
+  "notes": "Pure client-side. The quicklinks store (lib/quicklinks) persists to localStorage; os-shell adapts it to the appshell useQuickLinks capability so appshell + its feature slices carry no host dependency."
+}

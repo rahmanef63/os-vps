@@ -9,6 +9,7 @@ import { SettingsTabs, SECTIONS, type SectionId } from "./components/nav";
 import { AppearanceSection } from "./components/appearance-section";
 import { ThemeSection } from "./components/theme-section";
 import { AiSection } from "./components/ai-section";
+import { QuicklinksSection } from "./components/quicklinks-section";
 import { ServerSection } from "./components/server-section";
 import { BrowserSection } from "./components/browser-section";
 import { AboutSection } from "./components/about-section";
@@ -24,6 +25,8 @@ function SectionBody({ id }: { id: SectionId }) {
       return <ThemeSection />;
     case "ai":
       return <AiSection />;
+    case "quicklinks":
+      return <QuicklinksSection />;
     case "devices":
       return (
         <div className="space-y-3">

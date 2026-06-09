@@ -1,6 +1,7 @@
 // Public barrel — other slices/app layer import ONLY from here.
 export { OsDesktop } from "./components/desktop";
 export { AppIcon } from "./components/app-icon";
+export { QuicklinkIcon } from "./components/quicklink-icon";
 // Generic app mounter (lazy-loads an app by id + payload). Used by windows AND
 // single-pane shells (e.g. the Dashboard shell) so apps mount identically.
 export { WindowContent as AppHost } from "./components/window-content";
@@ -152,6 +153,7 @@ export {
   useSystemStats,
   useShellChat,
   useServerToggle,
+  useQuickLinks,
 } from "./registry/capabilities";
 export type {
   ShellCapabilities,
@@ -161,4 +163,6 @@ export type {
   SystemStats,
   ChatMessage,
   ServerToggle,
+  QuickLink,
+  QuickLinks,
 } from "./registry/capabilities";

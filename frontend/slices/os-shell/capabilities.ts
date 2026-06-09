@@ -5,6 +5,7 @@ import { effectiveServerTarget, selectServerTarget, useAppearance } from "@/lib/
 import { useOsApi } from "@/lib/os-api";
 import { IS_DEMO } from "@/lib/demo";
 import { streamReply } from "@/lib/ai/stream";
+import { faviconUrl, openQuicklink, useQuicklinks } from "@/lib/quicklinks";
 import { openWindow, type ShellCapabilities, type SystemStats } from "@/features/appshell";
 
 // Adapts os-vps's appearance store + host API + AI stream to the generic AppShell
@@ -93,5 +94,11 @@ export const topsideCapabilities: ShellCapabilities = {
           server: selectServerTarget(tweaks.server, live ? "mock" : "vps"),
         }),
     };
+  },
+  // Website shortcuts (Settings → Quicklink) for the dock / Launchpad / mobile
+  // grid / Today widget. Open pops a new native tab (the user's chosen mode).
+  useQuickLinks: () => {
+    const { items } = useQuicklinks();
+    return { items, open: openQuicklink, faviconUrl };
   },
 };

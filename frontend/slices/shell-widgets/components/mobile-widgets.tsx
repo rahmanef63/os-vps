@@ -2,7 +2,15 @@
 
 import { Cpu, HardDrive, MemoryStick } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useApps, useShellUI, useSystemStats, AppIcon, type AppDescriptor } from "@/features/appshell";
+import {
+  useApps,
+  useShellUI,
+  useSystemStats,
+  useQuickLinks,
+  AppIcon,
+  QuicklinkIcon,
+  type AppDescriptor,
+} from "@/features/appshell";
 
 import { Bar, Card, Row, gb } from "./widget-cards";
 
@@ -13,6 +21,7 @@ export function MobileWidgets() {
   const apps = useApps();
   const { quickAppIds: quickIds, openApp: onOpen } = useShellUI();
   const s = useSystemStats();
+  const { items: links, open: openLink } = useQuickLinks();
 
   const quick = quickIds.map((id) => apps.find((a) => a.id === id)).filter(Boolean) as AppDescriptor[];
 
@@ -56,6 +65,22 @@ export function MobileWidgets() {
                   <AppIcon app={app} />
                 </span>
                 <span className="max-w-[56px] truncate text-[10.5px] font-medium">{app.title}</span>
+              </Button>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {links.length > 0 && (
+        <Card>
+          <span className="mb-2 block text-[12px] font-semibold text-muted-foreground">Quicklinks</span>
+          <div className="grid grid-cols-4 gap-3">
+            {links.map((link) => (
+              <Button key={link.id} type="button" variant="ghost" onClick={() => openLink(link)} className="h-auto p-0 hover:bg-transparent flex flex-col items-center gap-1.5">
+                <span className="size-11">
+                  <QuicklinkIcon link={link} />
+                </span>
+                <span className="max-w-[56px] truncate text-[10.5px] font-medium">{link.title}</span>
               </Button>
             ))}
           </div>

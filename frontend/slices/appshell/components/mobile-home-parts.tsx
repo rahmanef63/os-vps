@@ -5,7 +5,9 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import type { AppDescriptor } from "../lib/types";
+import { useQuickLinks } from "../registry/capabilities";
 import { AppIcon } from "./app-icon";
+import { QuicklinkIcon } from "./quicklink-icon";
 
 // Long-press quick-actions sheet (iPhone's haptic-touch menu): Open + whatever
 // menu items the app declares for the macOS menu bar — one declaration, both OSes.
@@ -63,6 +65,7 @@ export function AppsGrid({
   onSearch: () => void;
   onContext: (app: AppDescriptor) => void;
 }) {
+  const { items: links, open: openLink } = useQuickLinks();
   // Long-press bookkeeping: a fired hold must swallow the click that follows.
   const holdTimer = useRef<number | null>(null);
   const held = useRef(false);
@@ -129,6 +132,22 @@ export function AppsGrid({
           </span>
           <span className="max-w-full truncate text-[11px] font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
             {app.title}
+          </span>
+        </Button>
+      ))}
+      {links.map((link) => (
+        <Button
+          key={link.id}
+          type="button"
+          variant="ghost"
+          onClick={() => openLink(link)}
+          className="h-auto p-0 hover:bg-transparent flex flex-col items-center gap-1.5"
+        >
+          <span className="aspect-square w-full max-w-[62px]">
+            <QuicklinkIcon link={link} />
+          </span>
+          <span className="max-w-full truncate text-[11px] font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+            {link.title}
           </span>
         </Button>
       ))}
