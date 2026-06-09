@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
 import { getSessionActor } from "@/lib/auth/require-session";
-import { audit, rateLimited, runCommand } from "@/lib/host";
+import {
+  apiError,
+  audit,
+  invalidRequest,
+  optionalString,
+  rateLimited,
+  readJson,
+  requireString,
+  runCommand,
+} from "@/lib/host";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +29,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Too many commands, slow down" }, { status: 429 });
   }
 
-  const { cmd, cwd } = (await req.json()) as { cmd: string; cwd?: string };
+  const body = await readJson(req);
+  const cmd = requireString(body, "cmd");
+  if (cmd === null) return invalidRequest("cmd");
+  const cwd = optionalString(body, "cwd");
+  if (cwd === null) return invalidRequest("cwd");
   try {
     const result = await runCommand(cmd, cwd);
     const blocked = result.code === 126 && result.stderr.startsWith("refused:");
@@ -34,6 +47,6 @@ export async function POST(req: Request) {
     return NextResponse.json(result);
   } catch (e) {
     audit({ action: "exec.run", actor, target: cmd, ok: false, detail: String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return apiError("exec/run", e);
   }
 }

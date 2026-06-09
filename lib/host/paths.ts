@@ -8,6 +8,7 @@ import { promises as fs, realpathSync } from "fs";
 import os from "os";
 import path from "path";
 import type { FsRoot } from "@/lib/os-api/types";
+import { HostError } from "./host-error";
 
 export function homeDir(): string {
   return os.homedir();
@@ -78,7 +79,7 @@ function isCredentialPath(real: string): boolean {
 }
 
 function assertNotCredential(real: string): void {
-  if (isCredentialPath(real)) throw new Error("Access to credential/sensitive files is blocked");
+  if (isCredentialPath(real)) throw new HostError("Access to credential/sensitive files is blocked");
 }
 
 async function realRoots(list: string[]): Promise<string[]> {
@@ -103,7 +104,7 @@ export async function resolveReadable(requested: string): Promise<string> {
   else absolute = path.resolve(requested);
   const real = await fs.realpath(path.resolve(absolute));
   const rr = await realRoots(readRootList());
-  if (!rr.some((r) => isUnderRoot(real, r))) throw new Error("Path outside readable roots");
+  if (!rr.some((r) => isUnderRoot(real, r))) throw new HostError("Path outside readable roots");
   assertNotCredential(real);
   return real;
 }
@@ -119,12 +120,12 @@ export async function safeWritePath(requested: string, mustExist: boolean): Prom
   const rr = await realRoots(writeRootList());
   if (mustExist) {
     const real = await fs.realpath(absolute);
-    if (!rr.some((r) => isUnderRoot(real, r))) throw new Error("Path outside writable roots");
+    if (!rr.some((r) => isUnderRoot(real, r))) throw new HostError("Path outside writable roots");
     assertNotCredential(real);
     return real;
   }
   const parent = await fs.realpath(path.dirname(absolute));
-  if (!rr.some((r) => isUnderRoot(parent, r))) throw new Error("Path outside writable roots");
+  if (!rr.some((r) => isUnderRoot(parent, r))) throw new HostError("Path outside writable roots");
   const joined = path.join(parent, path.basename(absolute));
   assertNotCredential(joined);
   return joined;
@@ -132,7 +133,7 @@ export async function safeWritePath(requested: string, mustExist: boolean): Prom
 
 export async function assertNotRoot(p: string): Promise<void> {
   const rr = await realRoots(writeRootList());
-  if (rr.some((r) => r === p)) throw new Error("Refusing to modify a root directory");
+  if (rr.some((r) => r === p)) throw new HostError("Refusing to modify a root directory");
 }
 
 function labelFor(p: string): string {

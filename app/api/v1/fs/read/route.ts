@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
-import { readFile } from "@/lib/host";
+import { apiError, readFile } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +13,6 @@ export async function GET(req: Request) {
   try {
     return NextResponse.json(await readFile(path));
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return apiError("fs/read", e);
   }
 }

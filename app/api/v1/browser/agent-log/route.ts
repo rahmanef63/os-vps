@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
 import { verifyAuth, browserConfigured } from "@/lib/agent/server";
+import { apiError } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,6 @@ export async function GET(req: Request) {
       .reverse();
     return NextResponse.json({ entries });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return apiError("browser/agent-log", e);
   }
 }

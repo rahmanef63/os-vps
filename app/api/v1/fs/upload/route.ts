@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
 import { getSessionActor } from "@/lib/auth/require-session";
-import { audit, uploadInto } from "@/lib/host";
+import { apiError, audit, invalidRequest, uploadInto } from "@/lib/host";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "expected multipart/form-data" }, { status: 400 });
   }
 
-  const dest = String(form.get("dest") ?? "~");
+  const dest = form.get("dest");
+  if (typeof dest !== "string" || !dest.trim()) return invalidRequest("dest");
   const parts = form.getAll("file").filter((v): v is File => v instanceof File);
   const files = await Promise.all(
     parts.map(async (f) => ({ relPath: f.name, data: new Uint8Array(await f.arrayBuffer()) })),
@@ -39,6 +40,6 @@ export async function POST(req: Request) {
     return NextResponse.json(res);
   } catch (e) {
     audit({ action: "fs.upload", actor, target: dest, ok: false, detail: String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return apiError("fs/upload", e);
   }
 }

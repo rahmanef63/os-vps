@@ -7,6 +7,7 @@ import { exec } from "child_process";
 import path from "path";
 import { promises as fs } from "fs";
 import type { ExecResult } from "@/lib/os-api/types";
+import { HostError } from "./host-error";
 import { homeDir, isUnderRoot, writeRootList } from "./paths";
 
 const TIMEOUT_MS = 30_000;
@@ -71,7 +72,7 @@ async function resolveCwd(requested?: string): Promise<string> {
 }
 
 export async function runCommand(cmd: string, cwd?: string): Promise<ExecResult> {
-  if (typeof cmd !== "string" || !cmd.trim()) throw new Error("Empty command");
+  if (typeof cmd !== "string" || !cmd.trim()) throw new HostError("Empty command");
   const blocked = destructiveReason(cmd);
   if (blocked) {
     return {

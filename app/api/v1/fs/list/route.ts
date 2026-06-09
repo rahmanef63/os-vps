@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
-import { listDir } from "@/lib/host";
+import { apiError, listDir } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +13,6 @@ export async function GET(req: Request) {
   try {
     return NextResponse.json(await listDir(path, true));
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return apiError("fs/list", e);
   }
 }

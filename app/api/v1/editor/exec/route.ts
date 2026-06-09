@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
-import { fileStream, statReadable, readFile, writeFile } from "@/lib/host";
+import { apiError, fileStream, statReadable, readFile, writeFile } from "@/lib/host";
 import {
   blankDoc,
   buildDocFromImage,
@@ -108,6 +108,6 @@ export async function POST(req: Request) {
       ...(fallback ? { dimsFallback: true } : {}),
     });
   } catch (e) {
-    return bad(e instanceof Error ? e.message : String(e), 500);
+    return apiError("editor/exec", e);
   }
 }

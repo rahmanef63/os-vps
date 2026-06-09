@@ -52,7 +52,7 @@ export function verifySession(cookie: string, secret: string): SessionPayload | 
     if (!crypto.timingSafeEqual(expectedBuf, providedBuf)) return null;
 
     const payload: SessionPayload = JSON.parse(base64urlDecode(encodedPayload).toString("utf8"));
-    if (payload.expires_at <= Date.now()) return null;
+    if (typeof payload.expires_at !== "number" || payload.expires_at <= Date.now()) return null;
     return payload;
   } catch {
     return null;

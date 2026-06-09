@@ -8,3 +8,5 @@ export { stats, processes } from "./sys";
 export { audit } from "./audit";
 export type { AuditAction, AuditEntry } from "./audit";
 export { rateLimited } from "./rate-limit";
+export { HostError } from "./host-error";
+export { apiError, readJson, requireString, optionalString, invalidRequest } from "./api-error";

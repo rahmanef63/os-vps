@@ -4,6 +4,7 @@
 import { promises as fs, createReadStream, type ReadStream } from "fs";
 import path from "path";
 import type { FsList, FsUsage } from "@/lib/os-api/types";
+import { HostError } from "./host-error";
 import {
   assertNotRoot,
   isSensitivePath,
@@ -18,7 +19,7 @@ const MAX_UPLOAD = 100 * 1024 * 1024; // 100 MiB per file
 export async function listDir(requested: string, includeHidden = true): Promise<FsList> {
   const real = await resolveReadable(requested || "~");
   const stat = await fs.stat(real);
-  if (!stat.isDirectory()) throw new Error("Not a directory");
+  if (!stat.isDirectory()) throw new HostError("Not a directory");
 
   const raw = await fs.readdir(real, { withFileTypes: true });
   const entries = raw
@@ -53,8 +54,8 @@ export async function listDir(requested: string, includeHidden = true): Promise<
 export async function readFile(requested: string): Promise<string> {
   const p = await resolveReadable(requested);
   const stat = await fs.stat(p);
-  if (stat.isDirectory()) throw new Error("Is a directory");
-  if (stat.size > 5_000_000) throw new Error("File too large to read (max 5 MiB)");
+  if (stat.isDirectory()) throw new HostError("Is a directory");
+  if (stat.size > 5_000_000) throw new HostError("File too large to read (max 5 MiB)");
   return fs.readFile(p, "utf8");
 }
 
@@ -107,7 +108,7 @@ export async function uploadInto(
   files: { relPath: string; data: Uint8Array }[],
 ): Promise<{ written: number; failed: string[] }> {
   const destReal = await safeWritePath(dest, true);
-  if (!(await fs.stat(destReal)).isDirectory()) throw new Error("Destination is not a directory");
+  if (!(await fs.stat(destReal)).isDirectory()) throw new HostError("Destination is not a directory");
 
   const failed: string[] = [];
   let written = 0;
@@ -195,7 +196,7 @@ export async function statReadable(
 ): Promise<{ path: string; size: number; mime: string }> {
   const p = await resolveReadable(requested);
   const st = await fs.stat(p);
-  if (st.isDirectory()) throw new Error("Is a directory");
+  if (st.isDirectory()) throw new HostError("Is a directory");
   return { path: p, size: st.size, mime: mimeFor(p) };
 }
 

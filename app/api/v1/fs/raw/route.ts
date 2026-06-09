@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
 import { verifyAuth } from "@/lib/agent/server";
-import { fileStream, statReadable } from "@/lib/host";
+import { apiError, fileStream, statReadable } from "@/lib/host";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   try {
     info = await statReadable(path);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 404 });
+    return apiError("fs/raw", e, { status: 404, error: "Not found" });
   }
 
   const base: Record<string, string> = {

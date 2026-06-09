@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { browserFetch, verifyAuth, browserConfigured } from "@/lib/agent/server";
 import { getSessionActor } from "@/lib/auth/require-session";
-import { audit, makeDir, uploadInto } from "@/lib/host";
+import { HostError, apiError, audit, makeDir, uploadInto } from "@/lib/host";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,12 +34,12 @@ export async function POST(req: Request) {
     const data = new Uint8Array(await r.arrayBuffer());
     await makeDir(dir);
     const res = await uploadInto(dir, [{ relPath: name, data }]);
-    if (!res.written) throw new Error("write rejected — folder outside the allowed roots?");
+    if (!res.written) throw new HostError("write rejected — folder outside the allowed roots?");
     const path = `${dir.replace(/\/$/, "")}/${name}`;
     audit({ action: "fs.upload", actor, target: path, ok: true, detail: "browser screenshot" });
     return NextResponse.json({ path });
   } catch (e) {
     audit({ action: "fs.upload", actor, target: dir, ok: false, detail: String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 502 });
+    return apiError("browser/save-shot", e, { status: 502, error: "Browser request failed" });
   }
 }

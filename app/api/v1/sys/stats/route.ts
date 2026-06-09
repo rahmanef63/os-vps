@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
-import { stats } from "@/lib/host";
+import { apiError, stats } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,6 @@ export async function GET(req: Request) {
   try {
     return NextResponse.json(await stats());
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return apiError("sys/stats", e);
   }
 }
