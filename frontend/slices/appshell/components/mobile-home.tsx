@@ -68,8 +68,13 @@ export function MobileHome({
 
   return (
     <div className="absolute inset-0 flex flex-col">
-      {/* top safe area: Dynamic Island lives here; swipe down → NC (left) / CC (right) */}
-      <div className="h-9 shrink-0 [touch-action:none]" onPointerDown={onTopPointerDown} />
+      {/* top safe area: Dynamic Island lives here; swipe down → NC (left) / CC (right).
+          Height = base bar + the device notch inset so content never hides under it. */}
+      <div
+        className="shrink-0 [touch-action:none]"
+        style={{ height: "calc(2.25rem + var(--sai-top))" }}
+        onPointerDown={onTopPointerDown}
+      />
 
       <div
         ref={pagerRef}

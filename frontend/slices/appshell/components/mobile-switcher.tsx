@@ -29,7 +29,7 @@ export function MobileSwitcher({
       onClick={onHome}
       className="glass absolute inset-0 z-[40] flex flex-col bg-black/55"
     >
-      <div className="h-11 shrink-0" />
+      <div className="shrink-0" style={{ height: "calc(2.75rem + var(--sai-top))" }} />
       <div className="flex min-h-0 flex-1 items-center gap-3.5 overflow-x-auto px-8 [scroll-snap-type:x_proximity]">
         {cards.length === 0 && (
           <div className="w-full text-center text-sm text-white/60">
@@ -46,7 +46,8 @@ export function MobileSwitcher({
         ))}
       </div>
       <div
-        className="flex shrink-0 items-center justify-center gap-3 py-2.5 pb-[18px]"
+        className="flex shrink-0 items-center justify-center gap-3 pt-2.5"
+        style={{ paddingBottom: "calc(18px + var(--sai-bottom))" }}
         onClick={(e) => e.stopPropagation()}
       >
         {cards.length > 0 ? (

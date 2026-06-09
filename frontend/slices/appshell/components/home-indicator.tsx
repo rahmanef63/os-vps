@@ -45,7 +45,11 @@ export function HomeIndicator({
   };
 
   return (
-    <div className="flex justify-center pb-[7px] pt-[5px] [touch-action:none]" onPointerDown={onPointerDown}>
+    <div
+      className="flex justify-center pt-[5px] [touch-action:none]"
+      style={{ paddingBottom: "calc(7px + var(--sai-bottom))" }}
+      onPointerDown={onPointerDown}
+    >
       <button
         type="button"
         aria-label="Home — swipe up for home, hold for app switcher"

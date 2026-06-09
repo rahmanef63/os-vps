@@ -99,8 +99,8 @@ export function MobileShell() {
           style={{ background: "var(--surface)" }}
         >
           <header
-            className="flex h-12 shrink-0 items-center gap-2.5 border-b border-border px-3.5"
-            style={{ background: "var(--glass-bar)" }}
+            className="flex shrink-0 items-center gap-2.5 border-b border-border px-3.5"
+            style={{ background: "var(--glass-bar)", height: "calc(3rem + var(--sai-top))", paddingTop: "var(--sai-top)" }}
           >
             <span className="size-[30px] shrink-0">
               <AppIcon app={activeApp} />

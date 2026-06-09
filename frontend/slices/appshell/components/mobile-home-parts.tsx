@@ -94,6 +94,10 @@ export function AppsGrid({
   const onPointerDown = (e: React.PointerEvent) => {
     const sy = e.clientY;
     const sx = e.clientX;
+    // Only let an upward swipe mean "search" when the grid is already scrolled
+    // to the top — otherwise it fights the vertical scroll that reveals
+    // overflow apps + quicklinks.
+    const atTop = (e.currentTarget as HTMLElement).scrollTop <= 0;
     let fired = false;
     const cleanup = () => {
       window.removeEventListener("pointermove", move);
@@ -102,7 +106,7 @@ export function AppsGrid({
     const move = (ev: PointerEvent) => {
       const dy = ev.clientY - sy;
       const dx = ev.clientX - sx;
-      if (!fired && dy < -70 && Math.abs(dx) < 50) {
+      if (!fired && atTop && dy < -70 && Math.abs(dx) < 50) {
         fired = true;
         cleanup();
         onSearch();
@@ -113,9 +117,12 @@ export function AppsGrid({
   };
 
   return (
+    // Scrolls vertically so every app + quicklink is reachable (the grid used to
+    // be clipped by the page's overflow-hidden, hiding the trailing quicklinks).
+    // touch-action:pan-y keeps horizontal swipes free for the home pager.
     <div
       onPointerDown={onPointerDown}
-      className="grid h-full grid-cols-4 content-start gap-x-2.5 gap-y-5 px-[18px] py-3.5 [touch-action:pan-x]"
+      className="grid h-full grid-cols-4 content-start gap-x-2.5 gap-y-5 overflow-y-auto px-[18px] pt-3.5 pb-5 [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {apps.map((app) => (
         <Button
