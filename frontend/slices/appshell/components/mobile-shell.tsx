@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useApps } from "../lib/registry";
 import { useWindowOrder, useFocused, useWindow } from "../hooks/use-shell";
@@ -12,6 +13,7 @@ import { MobileSwitcher } from "./mobile-switcher";
 import { MobileHome } from "./mobile-home";
 import { MobileNotifications } from "./mobile-notifications";
 import { Slot } from "../registry/feature-registry";
+import { useShellConfig } from "../registry/shell-config";
 import { ShellUIProvider, type ShellUI } from "../registry/shell-ui";
 
 const DOCK_IDS = ["files-manager", "os-terminal", "system-monitor", "os-settings"];
@@ -22,12 +24,28 @@ export function MobileShell() {
   const apps = useApps();
   const order = useWindowOrder();
   const focused = useFocused();
-  const [home, setHome] = useState(true);
   const [switcher, setSwitcher] = useState(false);
   const [cc, setCc] = useState(false);
   const [nc, setNc] = useState(false); // notification center (pull down, left half)
 
   const dockApps = apps.filter((a) => DOCK_IDS.includes(a.id));
+
+  // URL → surface: a pathname naming an app slug shows the app pane (UrlSync
+  // opens/focuses its window in the shared store; we only flip off the grid),
+  // anything else shows the grid — covers initial deep links AND back/forward.
+  // User gestures (launch/Done) override, keyed to the pathname they were made
+  // at, so the derivation wins again when the URL actually changes — no
+  // effect-driven setState (react-hooks/set-state-in-effect). Gated like
+  // UrlSync (manifest.routing): opted out, the URL never names an app, so the
+  // grid-first default + gesture overrides behave exactly as before.
+  const { routing } = useShellConfig();
+  const pathname = usePathname();
+  const urlSlug = pathname.split("/").filter(Boolean)[0];
+  const urlIsApp =
+    routing !== false && !!urlSlug && apps.some((a) => (a.slug ?? a.id) === urlSlug);
+  const [homeChoice, setHomeChoice] = useState<{ key: string; home: boolean } | null>(null);
+  const home = homeChoice?.key === pathname ? homeChoice.home : !urlIsApp;
+  const setHome = (h: boolean) => setHomeChoice({ key: pathname, home: h });
 
   // The visible app is the FOCUSED window (front-most) — fall back to the newest
   // non-minimized one. `order` is append-only and doesn't track focus.

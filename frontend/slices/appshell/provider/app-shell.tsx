@@ -39,7 +39,12 @@ export function AppShell({ manifest }: { manifest: ShellManifest }) {
   return (
     <CapabilitiesProvider value={manifest.capabilities}>
       <BrandProvider brand={manifest.brand}>
-        <ShellConfigProvider value={{ persistKey: manifest.persistKey ?? "appshell:layout" }}>
+        <ShellConfigProvider
+          value={{
+            persistKey: manifest.persistKey ?? "appshell:layout",
+            routing: manifest.routing !== false,
+          }}
+        >
           <FeatureRegistryProvider features={features}>
             {manifest.routing !== false && <UrlSync apps={manifest.apps} />}
             {withProviders(providers, <OsDesktop apps={manifest.apps} />)}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
+import { IS_DEMO } from "@/lib/demo";
 import { AppFrame, usePublishInspector, toast } from "@/features/os-shell";
 import { DevicesPanel } from "@/features/auth";
 import { SettingsTabs, SECTIONS, type SectionId } from "./components/nav";
@@ -71,6 +72,9 @@ export default function OsSettings() {
   const serverTarget = effectiveServerTarget(tweaks.server);
 
   useEffect(() => {
+    // Demo never calls /api (no auth) — the fetch would 401 and greet every
+    // visitor with an error toast. The default model label stands in.
+    if (IS_DEMO) return;
     fetch("/api/config", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((c) => c?.model && setModel(c.model as string))

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { AppFrame } from "@/features/os-shell";
+import { useBrowserMode } from "./lib/host";
 import { useBrowserInspector } from "./lib/use-inspector";
+import { MockPane } from "./components/mock-pane";
 import { Omnibar } from "./components/omnibar";
 import { TabBar } from "./components/tab-bar";
 import { AiPanel } from "./components/ai-panel";
@@ -20,9 +22,24 @@ const DEFAULT_BOOKMARKS: Bookmark[] = [
   { url: "https://news.ycombinator.com", title: "Hacker News" },
 ];
 
+// Mock/demo gate: the live view (and ALL its polling/screencast hooks) only
+// mounts when the server target is live — mock mode shows a static notice
+// instead of hammering endpoints that have no mock backend. Toggling
+// Settings → Server remounts cleanly.
+export default function Browser() {
+  const { live, demo } = useBrowserMode();
+  if (!live)
+    return (
+      <AppFrame className="bg-card" bodyClassName="overflow-hidden bg-background">
+        <MockPane demo={demo} />
+      </AppFrame>
+    );
+  return <LiveBrowser />;
+}
+
 // Single shared remote-browser view. The backend (headless Chromium) owns ONE
 // page, so there are no tabs — we render its screenshot and forward input.
-export default function Browser() {
+function LiveBrowser() {
   const rb = useRemoteBrowser();
   const [bookmarks, setBookmarks] = usePersistent<Bookmark[]>(
     "os-vps:browser.bookmarks",

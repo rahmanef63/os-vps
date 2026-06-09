@@ -4,8 +4,20 @@
 // for /api/v1/browser/*. Every call carries a `tab` consumer id so each UI tab
 // drives its own runtime page (multitab). Session-cookie auth, same-origin.
 
+import { useAppearance } from "@/lib/appearance";
+import { IS_DEMO } from "@/lib/demo";
+
 export type { AppDescriptor } from "@/features/os-shell";
 export { usePublishInspector } from "@/features/os-shell";
+
+// Mock vs live mirrors lib/os-api's selection: demo forces mock regardless of
+// the saved setting; otherwise Settings → Server decides. There is no mock
+// browser backend (it's a REAL headless Chromium on the host), so in mock mode
+// the app must not poll the live endpoints at all.
+export function useBrowserMode(): { live: boolean; demo: boolean } {
+  const { tweaks } = useAppearance();
+  return { live: !IS_DEMO && tweaks.server.mode === "live", demo: IS_DEMO };
+}
 
 export type RemoteState = { url: string; title: string };
 export type AgentLogEntry = { ts?: string; action: string; actor?: string; target?: string };
