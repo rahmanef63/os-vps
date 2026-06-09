@@ -115,6 +115,7 @@ export function Omnibar(props: OmnibarProps) {
             size="icon"
             disabled={isNewTab}
             title={bookmarked ? "Remove bookmark" : "Bookmark this page"}
+            aria-label={bookmarked ? "Remove bookmark" : "Bookmark this page"}
             onClick={props.onToggleBookmark}
             className="absolute right-1 size-6"
           >
@@ -165,6 +166,7 @@ function NavButton({
           variant="ghost"
           size="icon"
           className="size-7"
+          aria-label={label}
           disabled={disabled}
           onClick={onClick}
         >

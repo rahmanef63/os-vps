@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity } from "lucide-react";
+import { Activity, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePublishInspector, useOsApi } from "./lib/host";
 import { AppFrame } from "./components/host-frame";
@@ -39,8 +39,8 @@ export default function SystemMonitor() {
 
   if (!stats) {
     return (
-      <div className="flex h-full items-center justify-center text-xs text-[color:var(--text-faint)]">
-        Reading host telemetry…
+      <div className="flex h-full items-center justify-center gap-2 text-xs text-[color:var(--text-faint)]">
+        <Loader2 className="size-4 animate-spin" /> Reading host telemetry…
       </div>
     );
   }

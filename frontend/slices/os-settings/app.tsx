@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
-import { AppFrame, usePublishInspector } from "@/features/os-shell";
+import { AppFrame, usePublishInspector, toast } from "@/features/os-shell";
 import { DevicesPanel } from "@/features/auth";
 import { SettingsTabs, SECTIONS, type SectionId } from "./components/nav";
 import { AppearanceSection } from "./components/appearance-section";
@@ -72,9 +72,9 @@ export default function OsSettings() {
 
   useEffect(() => {
     fetch("/api/config", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((c) => c?.model && setModel(c.model as string))
-      .catch(() => {});
+      .catch(() => toast("Failed to load AI config", { tone: "error" }));
   }, []);
 
   // Surface system preferences to the shell AI Inspector.

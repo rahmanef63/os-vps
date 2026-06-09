@@ -14,13 +14,13 @@ export function TrafficLights({
 }) {
   return (
     <div className="group/lights flex gap-2">
-      <Light color="#ff5f57" stroke="#7a0a00" onClick={onClose}>
+      <Light color="#ff5f57" stroke="#7a0a00" label="Close window" onClick={onClose}>
         <path d="M1.6 1.6l4.8 4.8M6.4 1.6l-4.8 4.8" strokeWidth="1.2" strokeLinecap="round" />
       </Light>
-      <Light color="#febc2e" stroke="#7a4b00" onClick={onMinimize}>
+      <Light color="#febc2e" stroke="#7a4b00" label="Minimize window" onClick={onMinimize}>
         <path d="M1.4 4h5.2" strokeWidth="1.4" strokeLinecap="round" />
       </Light>
-      <Light color="#28c840" stroke="#0a5200" onClick={onMaximize}>
+      <Light color="#28c840" stroke="#0a5200" label="Maximize window" onClick={onMaximize}>
         <path d="M2 6V2h4M6 2L2 6" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </Light>
     </div>
@@ -30,11 +30,13 @@ export function TrafficLights({
 function Light({
   color,
   stroke,
+  label,
   onClick,
   children,
 }: {
   color: string;
   stroke: string;
+  label: string;
   onClick: () => void;
   children: React.ReactNode;
 }) {
@@ -43,7 +45,7 @@ function Light({
       type="button"
       variant="ghost"
       size="icon"
-      aria-label="window control"
+      aria-label={label}
       onClick={(e) => {
         e.stopPropagation();
         onClick();

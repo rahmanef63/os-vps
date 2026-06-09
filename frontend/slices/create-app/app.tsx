@@ -137,13 +137,13 @@ export default function CreateApp() {
 
         <Field label="Accent">
           <div className="flex gap-2">
-            {GRADIENTS.map((g) => (
+            {GRADIENTS.map((g, i) => (
               <Button
                 key={g}
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="accent"
+                aria-label={`Accent ${i + 1}`}
                 onClick={() => setGradient(g)}
                 style={{ background: g }}
                 className={cn(

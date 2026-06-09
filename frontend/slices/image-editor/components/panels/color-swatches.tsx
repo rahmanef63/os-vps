@@ -54,6 +54,7 @@ function Picker({
                 variant="ghost"
                 onClick={() => onPick(c)}
                 title={c}
+                aria-label={`Use color ${c}`}
                 style={{ backgroundColor: c }}
                 className={cn("size-4 rounded-sm border border-border p-0 font-normal hover:bg-transparent")}
               />
@@ -75,6 +76,7 @@ export function ColorSwatches() {
           type="button"
           variant="ghost"
           title="Background color"
+          aria-label="Background color"
           style={{ backgroundColor: bg }}
           className={cn(
             "absolute bottom-0 right-0 size-[22px] rounded-sm border border-border p-0 font-normal shadow-sm hover:bg-transparent",
@@ -86,6 +88,7 @@ export function ColorSwatches() {
           type="button"
           variant="ghost"
           title="Foreground color"
+          aria-label="Foreground color"
           style={{ backgroundColor: fg }}
           className={cn(
             "absolute left-0 top-0 z-10 size-[22px] rounded-sm border border-border p-0 font-normal shadow-sm hover:bg-transparent",
@@ -97,6 +100,7 @@ export function ColorSwatches() {
         variant="ghost"
         size="icon"
         title="Swap (X)"
+        aria-label="Swap foreground and background colors"
         onClick={swapColors}
         className="absolute right-0 -top-1 size-4 rounded-sm p-0"
       >
@@ -107,6 +111,7 @@ export function ColorSwatches() {
         variant="ghost"
         size="icon"
         title="Default (D)"
+        aria-label="Reset to default colors"
         onClick={resetColors}
         className="absolute -bottom-1 left-0 size-4 rounded-sm p-0"
       >

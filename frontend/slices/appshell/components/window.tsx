@@ -134,10 +134,10 @@ function WinCaption({
 }) {
   return (
     <div className="flex h-full items-stretch">
-      <CapBtn onClick={onMinimize} label="Minimize">
+      <CapBtn onClick={onMinimize} label="Minimize window">
         <rect x="1" y="5" width="8" height="1" />
       </CapBtn>
-      <CapBtn onClick={onMaximize} label={maximized ? "Restore" : "Maximize"}>
+      <CapBtn onClick={onMaximize} label={maximized ? "Restore window" : "Maximize window"}>
         {maximized ? (
           <>
             <rect x="1" y="2.5" width="6" height="6" fill="none" stroke="currentColor" strokeWidth="1" />
@@ -147,7 +147,7 @@ function WinCaption({
           <rect x="1" y="1" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="1" />
         )}
       </CapBtn>
-      <CapBtn onClick={onClose} label="Close" danger>
+      <CapBtn onClick={onClose} label="Close window" danger>
         <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
       </CapBtn>
     </div>
