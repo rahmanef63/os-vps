@@ -1,18 +1,15 @@
 "use client";
 
-import { Monitor, Palette, Smartphone, Wallpaper as WallpaperIcon } from "lucide-react";
+import { Monitor, Smartphone, Wallpaper as WallpaperIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
-  ACCENT_OPTIONS,
   DEVICE_OPTIONS,
-  STYLE_OPTIONS,
   WALLPAPER_OPTIONS,
   useAppearance,
   wallpaperLabel,
   type Device,
-  type Dir,
   type Wallpaper,
 } from "@/lib/appearance";
 import { ImagePickerButton, imageStyle, type ImageValue } from "@/features/image-picker";
@@ -75,36 +72,6 @@ export function AppearanceSection() {
 
   return (
     <div className="space-y-5">
-      <Section icon={<Palette />} title="Style & accent">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {STYLE_OPTIONS.map((style) => (
-            <ChoiceCard
-              key={style.value}
-              active={tweaks.dir === style.value}
-              label={style.label}
-              hint={style.hint}
-              onClick={() => setTweaks({ dir: style.value as Dir })}
-            >
-              <span className={cn("glass block h-12 border border-border bg-card/70 shadow-[var(--shadow-pop)]", style.value === "graphite" ? "rounded-lg" : style.value === "vivid" ? "rounded-3xl" : "rounded-2xl")} />
-            </ChoiceCard>
-          ))}
-        </div>
-        <Row label="Accent">
-          <div className="flex flex-wrap gap-2.5">
-            {ACCENT_OPTIONS.map((color) => (
-              <button
-                key={color}
-                type="button"
-                aria-label={`Accent ${color}`}
-                onClick={() => setTweaks({ accent: color })}
-                className={cn("size-9 rounded-full ring-offset-2 ring-offset-background transition hover:scale-105", tweaks.accent === color && "ring-2 ring-ring")}
-                style={{ background: color }}
-              />
-            ))}
-          </div>
-        </Row>
-      </Section>
-
       <Section icon={<WallpaperIcon />} title="Wallpaper">
         <div className="rounded-2xl border border-border bg-card/45 p-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

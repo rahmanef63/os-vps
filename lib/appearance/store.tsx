@@ -88,19 +88,15 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const el = document.documentElement;
     el.dataset.theme = tweaks.theme;
-    el.classList.remove("dir-aqua", "dir-graphite", "dir-vivid");
-    el.classList.add(`dir-${tweaks.dir}`);
     el.classList.toggle("reduce-glass", tweaks.reduceGlass);
     el.classList.toggle("high-contrast", tweaks.highContrast);
     el.style.fontSize = tweaks.fontScale === 1 ? "" : `${tweaks.fontScale * 100}%`;
-    // A color preset owns --accent (stylesheet); inline accent would beat it.
-    if (tweaks.preset) {
-      el.style.removeProperty("--accent");
-      void applyPreset(tweaks.preset);
-    } else {
-      clearPreset();
-      el.style.setProperty("--accent", tweaks.accent);
-    }
+    // Color is 100% theme-driven now: a preset owns every chrome token + --accent;
+    // stock (no preset) falls back to the globals.css defaults. No inline accent /
+    // style (dir) overrides — the preset picker is the single source of truth.
+    el.style.removeProperty("--accent");
+    if (tweaks.preset) void applyPreset(tweaks.preset);
+    else clearPreset();
     try {
       localStorage.setItem(KEY, JSON.stringify(tweaks));
     } catch {

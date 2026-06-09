@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
-import { AppFrame, MasterDetail, usePublishInspector, useResponsive } from "@/features/os-shell";
+import { AppFrame, usePublishInspector } from "@/features/os-shell";
 import { DevicesPanel } from "@/features/auth";
-import { SettingsNav, SECTIONS, type SectionId } from "./components/nav";
+import { SettingsTabs, SECTIONS, type SectionId } from "./components/nav";
 import { AppearanceSection } from "./components/appearance-section";
 import { ThemeSection } from "./components/theme-section";
 import { AiSection } from "./components/ai-section";
@@ -13,9 +13,9 @@ import { ServerSection } from "./components/server-section";
 import { BrowserSection } from "./components/browser-section";
 import { AboutSection } from "./components/about-section";
 
-// macOS System Settings layout: nav rail (master) + one section per detail
-// pane. On compact the list shows first and sections slide in with a back
-// affordance (MasterDetail primitive). All sections preserved.
+// System Settings layout: a top tab strip (every section visible at a glance,
+// scrolls horizontally on narrow windows) over one scrolling section pane.
+// Same on desktop + mobile — no master/detail drill-down.
 function SectionBody({ id }: { id: SectionId }) {
   switch (id) {
     case "appearance":
@@ -47,7 +47,7 @@ function SectionDetail({ id }: { id: SectionId }) {
   const meta = SECTIONS.find((s) => s.id === id);
   return (
     <ScrollArea className="h-full">
-      <div className="min-w-0 space-y-4 overflow-x-hidden p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:space-y-5 sm:p-5">
+      <div className="mx-auto min-w-0 max-w-3xl space-y-4 overflow-x-hidden p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:space-y-5 sm:p-5">
         {meta && (
           <header className="space-y-0.5">
             <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>
@@ -63,10 +63,8 @@ function SectionDetail({ id }: { id: SectionId }) {
 // Default export so os-shell can lazy-load it as a window app.
 export default function OsSettings() {
   const { tweaks } = useAppearance();
-  const { isMobile } = useResponsive();
   const [model, setModel] = useState("default");
-  const [sel, setSel] = useState<SectionId | null>(null);
-  const active = sel ?? "appearance";
+  const [active, setActive] = useState<SectionId>("appearance");
   const serverTarget = effectiveServerTarget(tweaks.server);
 
   useEffect(() => {
@@ -84,7 +82,6 @@ export default function OsSettings() {
       props: [
         { label: "Theme", value: tweaks.preset ?? "stock" },
         { label: "Mode", value: tweaks.theme },
-        { label: "Accent", value: tweaks.accent },
         { label: "Device", value: tweaks.device },
         { label: "Font", value: `${Math.round(tweaks.fontScale * 100)}%` },
         { label: "Wallpaper", value: tweaks.wallpaperImage ? "custom image" : tweaks.wallpaper },
@@ -98,21 +95,18 @@ export default function OsSettings() {
         "Explain device approval",
       ],
     },
-    [tweaks.theme, tweaks.preset, tweaks.accent, tweaks.device, tweaks.fontScale, tweaks.wallpaper, tweaks.wallpaperImage, tweaks.server.mode, serverTarget?.label, model],
+    [tweaks.theme, tweaks.preset, tweaks.device, tweaks.fontScale, tweaks.wallpaper, tweaks.wallpaperImage, tweaks.server.mode, serverTarget?.label, model],
   );
 
   return (
-    <AppFrame>
-      <MasterDetail
-        hasSelection={sel !== null}
-        onBack={() => setSel(null)}
-        backLabel="Settings"
-        masterClassName="w-full bg-sidebar/40 lg:w-56"
-        master={
-          <SettingsNav active={active} showActive={!isMobile} onSelect={setSel} />
-        }
-        detail={<SectionDetail id={active} />}
-      />
+    <AppFrame
+      toolbar={
+        <div className="bg-sidebar/40">
+          <SettingsTabs active={active} onSelect={setActive} />
+        </div>
+      }
+    >
+      <SectionDetail id={active} />
     </AppFrame>
   );
 }

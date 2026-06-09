@@ -30,56 +30,39 @@ export const SECTIONS: ReadonlyArray<{
   { id: "about", label: "About", blurb: "System info and reset", icon: Info },
 ];
 
-// macOS System Settings-style nav: icon tile + label rows; active row fills
-// with the accent. Tiles tint from the theme so presets restyle them too.
-export function SettingsNav({
+// System Settings top tab strip: every section visible at a glance, scrolls
+// horizontally when the window is too narrow to fit all tabs. Active tab fills
+// with the accent; icons tint from the theme so presets restyle them too.
+export function SettingsTabs({
   active,
-  showActive,
   onSelect,
 }: {
   active: SectionId;
-  /** Desktop highlights the open section; the mobile list view doesn't. */
-  showActive: boolean;
   onSelect: (id: SectionId) => void;
 }) {
   return (
-    <nav className={cn("flex flex-col", showActive ? "gap-0.5 p-2" : "gap-2 p-3")}>
-      {SECTIONS.map(({ id, label, blurb, icon: Icon }) => {
-        const on = showActive && id === active;
+    <nav
+      role="tablist"
+      aria-label="Settings"
+      className="flex gap-1 overflow-x-auto p-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {SECTIONS.map(({ id, label, icon: Icon }) => {
+        const on = id === active;
         return (
           <button
             key={id}
             type="button"
+            role="tab"
+            aria-selected={on}
+            title={SECTIONS.find((s) => s.id === id)?.blurb}
             onClick={() => onSelect(id)}
-            aria-current={on ? "true" : undefined}
             className={cn(
-              showActive
-                ? "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors"
-                : "flex w-full items-center gap-3 rounded-2xl border border-border bg-card/65 px-3 py-3 text-left shadow-sm transition-colors active:scale-[0.99]",
-              on ? "bg-primary text-primary-foreground" : "hover:bg-accent",
+              "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium leading-none transition-colors min-h-9",
+              on ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
           >
-            <span
-              className={cn(
-                showActive ? "grid size-6 shrink-0 place-items-center rounded-md" : "grid size-9 shrink-0 place-items-center rounded-xl",
-                on ? "bg-primary-foreground/20" : "bg-primary/12 text-primary",
-              )}
-            >
-              <Icon className={cn(showActive ? "size-3.5" : "size-4")} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className={cn("block truncate font-medium leading-tight", showActive ? "text-[13px]" : "text-sm")}>
-                {label}
-              </span>
-              <span
-                className={cn(
-                  "block truncate text-[10px] leading-tight",
-                  on ? "text-primary-foreground/75" : "text-muted-foreground",
-                )}
-              >
-                {blurb}
-              </span>
-            </span>
+            <Icon className="size-4 shrink-0" />
+            <span>{label}</span>
           </button>
         );
       })}
