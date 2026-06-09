@@ -9,6 +9,43 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-09 (round 2) — Mobile maximized: prefs sync · terminal key bar · deep-link fixes (DONE)
+
+Phone testing surfaced the real gaps — everything below e2e-verified on prod
+(Playwright login + device approval at 390×844, then revoked).
+
+- **Cross-device prefs sync** (`4b7cf04`): phone no longer boots to fresh
+  defaults (wrong wallpaper/theme, empty quicklinks, mock mode). Appearance
+  tweaks + quicklinks persist to `~/.os-vps/prefs.json` (atomic 0600) via
+  session-gated `/api/prefs` (mirrors `/api/config`). localStorage hydrates
+  first, server wins on initial GET, changes debounce 1.5 s POST per section,
+  last-write-wins. POSTs disabled until a GET succeeds (pre-auth defaults can
+  never clobber server prefs); login fires `os-vps:authed` to re-pull without a
+  reload. `wallpaperStyle` is computed → stripped both sides. Demo: zero calls.
+  Device-specific state (window layout, clipboard, profiles, recents) stays
+  local on purpose.
+- **Terminal touch key bar** (`ce97b6a`): control-room-style accessory row for
+  the PTY terminal — Esc, Tab, sticky Ctrl/Alt (arms next key-bar press OR next
+  soft-keyboard char via xterm `onData` intercept; Alt = ESC-prefix), arrows,
+  Home/End/PgUp/PgDn, ^C ^D ^L ^Z, `| ~ / -`, clipboard paste. Shows on
+  `pointer:coarse` or compact panes; `pointerdown.preventDefault` keeps xterm
+  focus + soft keyboard up. Mock/exec terminal unchanged (line-based, no bar).
+- **Mobile Done resets URL** (`9bf592f`): `minimizeWindow` left `focused`
+  intact so UrlSync never re-fired — URL stuck on `/files` after dismiss.
+  UrlSync now derives from the *visible* (focused AND not-minimized) app;
+  dismiss → `replaceState("/")`, deep-link onto a minimized app restores it.
+  Also covers the Android shell home button.
+- **Persisted layout vs deep links** (`29bc59b`, found by e2e): boot
+  `hydrate()` rebuilt the store from `os-vps:layout` AFTER UrlSync opened the
+  deep-linked window — returning devices got the grid or a stale URL rewrite.
+  New `hydrateBoot()` merges (live windows keep id/payload/focus on top,
+  persisted single-instance dupes drop, multi apps coexist via id remap);
+  profile/layout apply keeps replace semantics. +7 store-persist tests.
+- Tests 124 → **136**. Verified: PTY echo/history/^C through the key bar on
+  prod, prefs file write + server-hydrate after localStorage wipe, deep-link
+  with saved layout (Files focused over restored windows, URL intact), demo
+  regression-free.
+
 ## 2026-06-09 — Hardening + Phase E responsive sweep + PTY terminal + stock search (DONE)
 
 - **API hardening** (`dec2c5f`): `HostError` + `apiError` across all 35 `/api/v1`
