@@ -5,6 +5,7 @@ import "@xterm/xterm/css/xterm.css";
 import { useEffect, useRef, useState } from "react";
 import type { Terminal } from "@xterm/xterm";
 import { startPty, type PtyHandle, type PtyStatus } from "../lib/use-pty";
+import KeyBar, { type KeyInterceptor } from "./key-bar";
 
 // Real interactive shell (live mode): xterm.js wired to /api/v1/term/*.
 // xterm is dynamic-imported inside the effect — it touches the DOM at
@@ -14,6 +15,11 @@ export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) 
   const hostRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<PtyStatus>({ kind: "connecting" });
   const [gen, setGen] = useState(0);
+  // Live PTY handle + key-bar hooks. The handle ref lets the touch key bar
+  // write outside the effect; the interceptor lets its sticky Ctrl/Alt modify
+  // the next soft-keyboard char (KeyBar sets it while a modifier is armed).
+  const handleRef = useRef<PtyHandle | null>(null);
+  const interceptRef = useRef<KeyInterceptor | null>(null);
   const onFallbackRef = useRef(onFallback);
   useEffect(() => {
     onFallbackRef.current = onFallback;
@@ -75,7 +81,8 @@ export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) 
         handle.dispose();
         return;
       }
-      term.onData((d) => handle?.write(d));
+      handleRef.current = handle;
+      term.onData((d) => handle?.write(interceptRef.current ? interceptRef.current(d) : d));
       term.onBinary((d) => handle?.write(d));
       ro = new ResizeObserver(() => {
         clearTimeout(resizeT);
@@ -93,13 +100,17 @@ export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) 
       disposed = true;
       clearTimeout(resizeT);
       ro?.disconnect();
+      handleRef.current = null;
       handle?.dispose(); // kills the server-side shell too
       term?.dispose();
     };
   }, [gen]);
 
+  // `@container` so the key bar's @max-md variant tracks the WINDOW width
+  // (compact pane), not the viewport. Root padding already absorbs
+  // --sai-bottom, so the key bar sits above the home bar without re-padding.
   return (
-    <div className="flex h-full w-full flex-col bg-[#0d0e12] [padding-bottom:var(--sai-bottom)]">
+    <div className="@container flex h-full w-full flex-col bg-[#0d0e12] [padding-bottom:var(--sai-bottom)]">
       <StatusBar
         status={status}
         onRestart={() => setGen((g) => g + 1)}
@@ -108,6 +119,7 @@ export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) 
       <div className="min-h-0 flex-1 p-1.5">
         <div ref={hostRef} className="h-full w-full" />
       </div>
+      <KeyBar sendInput={(d) => handleRef.current?.write(d)} interceptRef={interceptRef} />
     </div>
   );
 }
