@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { RegisterSW } from "./register-sw";
+import { InstallPrompt } from "./install-prompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,6 +19,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // Draw under the notch / home-bar so the shell's safe-area-inset padding
+  // (--sai-*) actually has insets to work with in standalone mode.
+  viewportFit: "cover",
   themeColor: "#0a0a0a",
 };
 
@@ -33,6 +37,7 @@ export default function RootLayout({
       >
         {children}
         <RegisterSW />
+        <InstallPrompt />
       </body>
     </html>
   );

@@ -6,6 +6,7 @@ import { useApps } from "../lib/registry";
 import { useWindowOrder, useFocused, useWindow } from "../hooks/use-shell";
 import { shellStore, openWindow, minimizeWindow, restoreWindow, toggleSpotlight } from "../lib/store";
 import { AppIcon } from "./app-icon";
+import { HomeIndicator } from "./home-indicator";
 import { WindowContent } from "./window-content";
 import { MobileSwitcher } from "./mobile-switcher";
 import { MobileHome } from "./mobile-home";
@@ -14,29 +15,6 @@ import { Slot } from "../registry/feature-registry";
 import { ShellUIProvider, type ShellUI } from "../registry/shell-ui";
 
 const DOCK_IDS = ["files-manager", "os-terminal", "system-monitor", "os-settings"];
-
-// Home-indicator is a plain TAP button (not a drag) so it never fights the
-// real iPhone bottom-edge gesture. Tap → app switcher; "Done" covers home.
-// Hoisted to module scope (react-hooks/static-components); the switcher
-// opener arrives via onTap.
-function Indicator({ light = true, onTap }: { light?: boolean; onTap: () => void }) {
-  return (
-    <div className="flex justify-center pb-[7px] pt-[5px]">
-      <Button
-        type="button"
-        variant="ghost"
-        aria-label="App switcher"
-        onClick={onTap}
-        className="h-auto hover:bg-transparent flex items-center justify-center px-12 py-1.5 [touch-action:manipulation]"
-      >
-        <span
-          className="h-[5px] w-[134px] rounded-full"
-          style={{ background: light ? "rgba(255,255,255,.75)" : "rgba(0,0,0,.3)" }}
-        />
-      </Button>
-    </div>
-  );
-}
 
 // Phones: no floating windows — a paged home + one fullscreen app at a time.
 // Reuses the same store (open/minimize/focus) so state matches the desktop.
@@ -84,6 +62,15 @@ export function MobileShell() {
 
   const openSwitcher = () => setSwitcher(true);
 
+  // Horizontal home-bar swipe → cycle the open (non-minimized) apps, iOS-style.
+  const switchApp = (dir: -1 | 1) => {
+    const live = order.filter((id) => !shellStore.getWindow(id)?.minimized);
+    if (live.length < 2 || !topId) return;
+    const next = live[(live.indexOf(topId) + dir + live.length) % live.length];
+    restoreWindow(next);
+    setHome(false);
+  };
+
   const shellUI: ShellUI = {
     controlCenterOpen: cc,
     setControlCenterOpen: setCc,
@@ -102,7 +89,7 @@ export function MobileShell() {
         onSearch={toggleSpotlight}
         onControlCenter={() => setCc(true)}
         onNotifications={() => setNc(true)}
-        indicator={<Indicator onTap={openSwitcher} />}
+        indicator={<HomeIndicator onHome={goHome} onSwitcher={openSwitcher} onSwitchApp={switchApp} />}
       />
 
       {/* APP fullscreen */}
@@ -126,7 +113,7 @@ export function MobileShell() {
           <main className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]">
             <WindowContent app={top.app} payload={top.payload} />
           </main>
-          <Indicator light={false} onTap={openSwitcher} />
+          <HomeIndicator light={false} onHome={goHome} onSwitcher={openSwitcher} onSwitchApp={switchApp} />
         </div>
       )}
 
