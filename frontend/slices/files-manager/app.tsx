@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState, type DragEvent } from "react";
-import { Upload } from "lucide-react";
-import { AppFrame, AppSidebar, usePublishInspector, type AppProps } from "@/features/os-shell";
+import { useMemo, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { AppFrame, AppSidebar, type AppProps } from "@/features/os-shell";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DropOverlay } from "./components/drop-overlay";
 import { FilesSidebar } from "./components/files-sidebar";
 import { FilesToolbar } from "./components/files-toolbar";
 import { FileView } from "./components/file-view";
@@ -11,10 +12,11 @@ import { FileContextMenu } from "./components/file-context-menu";
 import { FileDetails } from "./components/file-details";
 import { UploadInput } from "./components/upload-input";
 import { useFiles } from "./hooks/use-files";
+import { useFilesInspector } from "./hooks/use-files-inspector";
 import { useFileSelection } from "./hooks/use-file-selection";
 import { useFileCommands } from "./hooks/use-file-commands";
 import { useDnd } from "./hooks/use-dnd";
-import { fmtGiB } from "./lib/format";
+import { useWindowDrop } from "./hooks/use-window-drop";
 import { sortEntries, type SortKey, type ViewMode } from "./lib/types";
 
 // Optional `{ path }` payload (e.g. from Spotlight) opens the manager there.
@@ -52,70 +54,21 @@ export default function FilesManager({ payload }: AppProps) {
   const openPicker = () => uploadRef.current?.click();
   const openFolderPicker = () => folderRef.current?.click();
 
-  // Window-wide drop zone so a dragged file/folder lands anywhere in the app
-  // (not just on the grid) — without this, a drop on the toolbar/sidebar/empty
-  // padding falls through to the browser, which just opens the folder.
-  const [dragActive, setDragActive] = useState(false);
-  const isFileDrag = (e: DragEvent) => Array.from(e.dataTransfer.types).includes("Files");
-  const onWinDragOver = (e: DragEvent) => {
-    if (!isFileDrag(e)) return; // ignore internal item moves at the window level
-    dnd.onDragOver(e, fs.path);
-    setDragActive(true);
-  };
-  const onWinDragLeave = (e: DragEvent) => {
-    if (e.relatedTarget === null) setDragActive(false); // left the window entirely
-  };
-  const onWinDrop = (e: DragEvent) => {
-    setDragActive(false);
-    if (isFileDrag(e)) dnd.onDrop(e, fs.path);
-  };
-
-  const entryCount = fs.entries?.length ?? 0;
-  const selectedCount = sel.selected.size;
-  const usageStr = fs.usage
-    ? `${fmtGiB(fs.usage.used)} of ${fmtGiB(fs.usage.total)}`
-    : "—";
-
-  // Publish this app's live state to the shell AI Inspector. Re-runs when the
-  // current dir, item count, or selection changes; cleared on unmount.
-  usePublishInspector(
-    "files-manager",
-    {
-      subject: fs.path,
-      props: [
-        { label: "Path", value: fs.path },
-        { label: "Items", value: String(entryCount) },
-        { label: "Selected", value: String(selectedCount) },
-        { label: "Storage", value: usageStr },
-      ],
-      actions: [
-        { id: "newfolder", label: "New folder", run: () => fs.mkdir() },
-        { id: "refresh", label: "Refresh", run: () => fs.refresh() },
-        { id: "trash", label: "Empty Trash", run: () => cmd.emptyTrash() },
-      ],
-      context: `File manager browsing ${fs.path} with ${entryCount} items.`,
-      suggestions: ["What's taking space?", "Organize this folder", "Find large files"],
-    },
-    [fs.path, entryCount, selectedCount],
-  );
+  // Window-wide drop zone (toolbar/sidebar/padding drops included) + the
+  // shell AI Inspector publication — both extracted to sibling hooks.
+  const winDrop = useWindowDrop(dnd, fs.path);
+  useFilesInspector(fs, sel.selected.size, cmd.emptyTrash);
 
   return (
     <div
       className="relative flex h-full outline-none"
       tabIndex={0}
       onKeyDown={cmd.onKey}
-      onDragOver={onWinDragOver}
-      onDragLeave={onWinDragLeave}
-      onDrop={onWinDrop}
+      onDragOver={winDrop.onDragOver}
+      onDragLeave={winDrop.onDragLeave}
+      onDrop={winDrop.onDrop}
     >
-      {dragActive && (
-        <div className="pointer-events-none absolute inset-0 z-[60] m-2 grid place-items-center rounded-xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-[2px]">
-          <div className="flex flex-col items-center gap-2 text-primary">
-            <Upload className="size-7" />
-            <span className="text-sm font-semibold">Drop files &amp; folders to upload</span>
-          </div>
-        </div>
-      )}
+      {winDrop.dragActive && <DropOverlay />}
       {/* Left nav: inline rail on wide windows, left Sheet on narrow/mobile. */}
       <AppSidebar
         open={sidebarOpen}
@@ -191,8 +144,8 @@ export default function FilesManager({ payload }: AppProps) {
           onContextMenu={(e) => cmd.onContext(e, null)}
         >
           {ordered === null ? (
-            <div className="flex h-full items-center justify-center p-8 text-xs text-muted-foreground">
-              Loading…
+            <div className="flex h-full items-center justify-center gap-2 p-8 text-xs text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" /> Loading…
             </div>
           ) : (
             <FileView

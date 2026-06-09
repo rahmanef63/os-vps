@@ -5,19 +5,14 @@
 // frames come from the CDP screencast (parsed in JS); if the stream can't open,
 // it falls back to fast adaptive JPEG polling so the view is never frozen.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useBrowserApi, streamUrl, type RemoteState } from "./host";
+import { useBrowserApi, type RemoteState } from "./host";
+import { useScreencast } from "./use-screencast";
 
 export const VIEW_W = 1280;
 export const VIEW_H = 800;
 
 export type Tab = { id: number; url: string; title: string };
 export type { RemoteState } from "./host";
-
-function headerEnd(b: Uint8Array, from: number): number {
-  for (let i = from; i + 3 < b.length; i++)
-    if (b[i] === 13 && b[i + 1] === 10 && b[i + 2] === 13 && b[i + 3] === 10) return i;
-  return -1;
-}
 
 export function useRemoteBrowser() {
   const api = useBrowserApi();
@@ -35,6 +30,7 @@ export function useRemoteBrowser() {
 
   const consumer = `ui-${activeId}`;
   const consumerRef = useRef(consumer);
+  // eslint-disable-next-line react-hooks/refs -- latest-value ref: async stream/poll callbacks compare against the CURRENT consumer synchronously; an effect-based sync would lag a commit
   consumerRef.current = consumer;
 
   const setFrame = useCallback((blob: Blob) => {
@@ -117,61 +113,7 @@ export function useRemoteBrowser() {
   );
 
   // Live screencast for the ACTIVE tab; reconnects when the tab changes.
-  useEffect(() => {
-    let stopped = false;
-    let ctrl: AbortController | null = null;
-    const consume = async () => {
-      ctrl = new AbortController();
-      const res = await fetch(streamUrl(consumer), { signal: ctrl.signal });
-      if (!res.ok || !res.body) throw new Error(`stream ${res.status}`);
-      liveRef.current = true;
-      setLive(true);
-      const reader = res.body.getReader();
-      let buf = new Uint8Array(0);
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done || stopped) break;
-        const m = new Uint8Array(buf.length + value.length);
-        m.set(buf);
-        m.set(value, buf.length);
-        buf = m;
-        for (;;) {
-          const he = headerEnd(buf, 0);
-          if (he < 0) break;
-          const head = new TextDecoder().decode(buf.subarray(0, he));
-          const cl = head.match(/content-length:\s*(\d+)/i);
-          if (!cl) {
-            buf = buf.subarray(he + 4);
-            continue;
-          }
-          const len = Number(cl[1]);
-          const start = he + 4;
-          if (buf.length < start + len) break;
-          if (consumerRef.current === consumer)
-            setFrame(new Blob([buf.subarray(start, start + len)], { type: "image/jpeg" }));
-          buf = buf.subarray(start + len + 2);
-        }
-      }
-    };
-    const loop = async () => {
-      while (!stopped) {
-        try {
-          await consume();
-        } catch {
-          /* fall to poll + retry */
-        }
-        liveRef.current = false;
-        setLive(false);
-        if (stopped) break;
-        await new Promise((r) => setTimeout(r, 1500));
-      }
-    };
-    void loop();
-    return () => {
-      stopped = true;
-      ctrl?.abort();
-    };
-  }, [consumer, setFrame]);
+  useScreencast({ consumer, consumerRef, liveRef, setLive, setFrame });
 
   // Active tab state on switch + fast adaptive poll fallback (when not live).
   useEffect(() => {
