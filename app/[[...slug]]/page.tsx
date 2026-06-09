@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { OsRoot } from "../os-root";
 
 // Optional catch-all: the OS is one client shell, but every app is deep-linkable
-// (`/files/home/rahman`, `/code`, `/terminal`). The shell reads the path on the
+// (`/files/home/user`, `/code`, `/terminal`). The shell reads the path on the
 // client to open the right window (see appshell UrlSync); here we only set a
 // per-route <title> from the first segment so shared links read well.
 //

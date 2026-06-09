@@ -28,6 +28,12 @@ export async function GET(req: Request) {
     "accept-ranges": "bytes",
     "cache-control": "private, max-age=60",
   };
+  // SVG served same-origin is active content: a hand-crafted <svg><script> runs
+  // in our origin on DIRECT navigation (the global CSP has no script-src) and
+  // could fire authed same-origin fetches (→ exec/RCE). `sandbox` neutralises
+  // scripts when the SVG is loaded as a document; <img>/<image> previews are
+  // unaffected (browsers never script SVG loaded as an image).
+  if (info.mime === "image/svg+xml") base["content-security-policy"] = "sandbox";
   const toWeb = (s: ReturnType<typeof fileStream>) =>
     Readable.toWeb(s) as unknown as ReadableStream;
 

@@ -22,7 +22,7 @@ export type FsEntry = {
 };
 export type FsRoot = { label: string; path: string };
 export type FsList = {
-  /** Canonical absolute path the host resolved (e.g. "/" → "/home/rahman"). */
+  /** Canonical absolute path the host resolved (e.g. "/" → "/home/user"). */
   path: string;
   entries: FsEntry[];
   /** Jump-point roots (Home, Projects, Filesystem…) for the sidebar. */

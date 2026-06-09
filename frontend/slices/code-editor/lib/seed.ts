@@ -17,7 +17,7 @@ export const SEED_FILES: Record<string, string> = {
     "export function welcome(user: User): string {\n" +
     "  const msg = greet(user.name); // friendly hello\n" +
     "  return `${msg} (#${user.id})`;\n}\n\n" +
-    'welcome({ id: 1, name: "rahman" });\n',
+    'welcome({ id: 1, name: "ada" });\n',
   "/Projects/styles.css":
     "/* card surface */\n.card {\n  background: #1e1e22;\n" +
     "  border-radius: 12px;\n  padding: 16px;\n}\n",

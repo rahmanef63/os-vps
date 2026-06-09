@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
-// Signed-cookie session, ported from the VPS Control Room (vps-rahmanef). No
-// Convex/JWT — an HMAC over a base64url payload, keyed by OS_SESSION_SECRET.
+// Signed-cookie session. No Convex/JWT — an HMAC over a base64url payload,
+// keyed by OS_SESSION_SECRET.
 
 /** Minimum length for the signing secret. A short/empty key is forgeable. */
 export const MIN_SECRET_LEN = 32;
