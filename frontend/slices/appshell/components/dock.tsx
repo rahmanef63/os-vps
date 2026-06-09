@@ -150,7 +150,7 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
       >
         {slots.map((s, i) => {
           if (s.kind === "sep") {
-            return <div key="sep" className="flex shrink-0 self-stretch items-center justify-center" style={{ width: SEP_W }}><span className="my-1 h-full w-px bg-border" /></div>;
+            return <div key={`sep-${i}`} className="flex shrink-0 self-stretch items-center justify-center" style={{ width: SEP_W }}><span className="my-1 h-full w-px bg-border" /></div>;
           }
           const slotRef = (el: HTMLDivElement | null) => { slotEls.current[i] = el; };
           const zoneRef = (el: HTMLDivElement | null) => { zoneEls.current[i] = el; };
