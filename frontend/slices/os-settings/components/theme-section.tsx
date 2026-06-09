@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, Paintbrush, RotateCcw, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -112,16 +113,20 @@ export function ThemeSection() {
         {groups === null ? (
           <p className="text-xs text-muted-foreground">Loading presets…</p>
         ) : (
-          groups.map((group) => (
-            <div key={group.id} className="space-y-2">
-              <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{group.label}</div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {group.items.map((p) => (
-                  <PresetChip key={p.name} preset={p} active={tweaks.preset === p.name} onSelect={() => setTweaks({ preset: p.name })} />
-                ))}
-              </div>
+          <ScrollArea className="max-h-[clamp(16rem,42vh,28rem)] rounded-xl border border-border bg-card/30">
+            <div className="space-y-3 p-2.5">
+              {groups.map((group) => (
+                <div key={group.id} className="space-y-2">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{group.label}</div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {group.items.map((p) => (
+                      <PresetChip key={p.name} preset={p} active={tweaks.preset === p.name} onSelect={() => setTweaks({ preset: p.name })} />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))
+          </ScrollArea>
         )}
       </Section>
     </div>
