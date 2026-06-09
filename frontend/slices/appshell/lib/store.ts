@@ -1,11 +1,13 @@
-import type { WindowState, WinId, PersistedWindow } from "./types";
+import type { WindowState, WinId } from "./types";
 import { M, emit, patch, topZ } from "./store-state";
 import { GAP, workArea, spawnRect } from "./store-geometry";
-// Store barrel: state in store-state; geometry in store-geometry; snap in store-snap.
+// Store barrel: state in store-state; geometry in store-geometry; snap in
+// store-snap; hydrate/serialize in store-persist.
 
 export { shellStore } from "./store-state";
 export { snapRect, snapZoneAt, GAP } from "./store-geometry";
 export { applyChromeInsets, retileSnapped, snapWindow, onSnap } from "./store-snap";
+export { hydrate, hydrateBoot, serialize } from "./store-persist";
 
 export function openWindow(
   app: string,
@@ -163,35 +165,4 @@ export function minimizeAll() {
 }
 export function closeAll() {
   [...M.state.order].forEach((id) => closeWindow(id));
-}
-
-/** Hydrate persisted layout (localStorage). Apps re-open lazily. */
-export function hydrate(persisted: PersistedWindow[]) {
-  const windows: Record<WinId, WindowState> = {};
-  const order: WinId[] = [];
-  persisted.forEach((p, i) => {
-    windows[p.id] = { ...p, z: i + 1 };
-    order.push(p.id);
-    const n = Number(p.id.replace(/\D/g, ""));
-    if (n > M.seq) M.seq = n;
-  });
-  M.state = {
-    windows,
-    order,
-    focused: order[order.length - 1] ?? null,
-    activeSpace: 1,
-    launcherOpen: false,
-    spotlightOpen: false,
-    inspectorOpen: M.state.inspectorOpen,
-    notificationCenterOpen: false,
-  };
-  emit();
-}
-
-/** Snapshot for persistence — strips volatile z/focus. */
-export function serialize(): PersistedWindow[] {
-  return M.state.order.map((id) => {
-    const { z: _z, ...rest } = M.state.windows[id];
-    return rest;
-  });
 }
