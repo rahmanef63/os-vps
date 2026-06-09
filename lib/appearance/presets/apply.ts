@@ -69,8 +69,18 @@ function buildCss(preset: PresetItem): string {
     block('[data-theme="dark"]', chromeVars(dark, "dark")),
     block('.high-contrast[data-theme="dark"]', contrastVars(dark, "dark")),
   ];
-  const radius = preset.cssVars?.theme?.radius ?? light.radius;
-  if (radius) blocks.push(block(":root", [`--radius: ${radius};`]));
+  // Theme-level tokens (font + radius) so type, corners, and color all retheme
+  // from ONE preset (DRY). Geist stays the loaded fallback if the preset font
+  // isn't installed; clearPreset() removes this whole tag → back to stock.
+  const theme = preset.cssVars?.theme ?? {};
+  const rootTheme: string[] = [];
+  const radius = theme.radius ?? light.radius;
+  if (radius) rootTheme.push(`--radius: ${radius};`);
+  if (theme["font-sans"])
+    rootTheme.push(`--font-ui: ${theme["font-sans"]}, var(--font-geist-sans), system-ui, sans-serif;`);
+  if (theme["font-mono"])
+    rootTheme.push(`--font-mono: ${theme["font-mono"]}, var(--font-geist-mono), ui-monospace, monospace;`);
+  if (rootTheme.length) blocks.push(block(":root", rootTheme));
   return blocks.join("\n\n");
 }
 

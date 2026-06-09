@@ -2,7 +2,6 @@ import type { CSSProperties } from "react";
 import type { ImageValue } from "@/features/image-picker";
 
 export type Theme = "light" | "dark";
-export type Dir = "aqua" | "graphite" | "vivid";
 // "auto" follows the active shell's own backdrop (per-OS fidelity); the rest
 // are fixed presets (.wp-* classes in app/globals.css).
 export type Wallpaper =
@@ -43,10 +42,9 @@ export const FONT_SCALES = [0.875, 1, 1.125, 1.25] as const;
 
 export type Appearance = {
   theme: Theme;
-  accent: string;
-  /** tweakcn color preset name (lib/appearance/presets) — null = stock os-rr palette. */
+  /** tweakcn color preset name (lib/appearance/presets) — null = stock os-rr palette.
+   *  The preset is the single source of color, accent, radius, and font (DRY). */
   preset: string | null;
-  dir: Dir;
   wallpaper: Wallpaper;
   wallpaperImage: ImageValue | null;
   wallpaperStyle?: CSSProperties;
@@ -73,20 +71,9 @@ export type ServerConfig = {
 
 export type Tweaks = Appearance & { server: ServerConfig };
 
-export const ACCENTS = [
-  "#2f7bf6",
-  "#7a5cff",
-  "#ff5f8f",
-  "#ff7a3d",
-  "#16b8a6",
-  "#34c759",
-] as const;
-
 export const TWEAK_DEFAULTS: Tweaks = {
   theme: "light",
-  accent: "#2f7bf6",
   preset: null,
-  dir: "aqua",
   wallpaper: "auto",
   wallpaperImage: null,
   reduceGlass: false,

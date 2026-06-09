@@ -39,8 +39,11 @@
   --inset: rgba(0, 0, 0, 0.04);
 
   --blur: 30px;
+  /* Single radius source: a color preset sets --radius and window/control
+     corners derive from it (DRY). --radius-icon is a squircle proportion (%),
+     not a corner radius, so it stays constant. */
   --radius: 0.625rem;
-  --radius-win: 12px;
+  --radius-win: calc(var(--radius) + 0.125rem);
   --radius-icon: 22%;
   --shadow-win: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 24px 60px -12px rgba(0, 0, 0, 0.42), 0 8px 22px -10px rgba(0, 0, 0, 0.3);
   --shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 14px 38px -8px rgba(0, 0, 0, 0.32);
@@ -110,9 +113,6 @@
   --info: #409cff;
 }
 
-/* shell style presets (dir) */
-.dir-graphite { --radius-win: 9px; --radius-icon: 26%; --blur: 22px; }
-.dir-vivid { --radius-win: 18px; --radius-icon: 30%; --blur: 34px; }
 .reduce-glass { --blur: 0px; }
 
 @theme inline {

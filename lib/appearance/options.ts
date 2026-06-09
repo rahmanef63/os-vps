@@ -1,4 +1,4 @@
-import { ACCENTS, FONT_SCALES, type Device, type Dir, type Theme, type Wallpaper } from "./types";
+import { FONT_SCALES, type Device, type Theme, type Wallpaper } from "./types";
 
 export type Option<T extends string = string> = {
   value: T;
@@ -10,12 +10,6 @@ export type Option<T extends string = string> = {
 export const THEME_MODE_OPTIONS: Option<Theme>[] = [
   { value: "light", label: "Light", hint: "Bright glass surfaces" },
   { value: "dark", label: "Dark", hint: "Dim system chrome" },
-];
-
-export const STYLE_OPTIONS: Option<Dir>[] = [
-  { value: "aqua", label: "Aqua", hint: "Balanced macOS glass" },
-  { value: "graphite", label: "Graphite", hint: "Tighter, flatter chrome" },
-  { value: "vivid", label: "Vivid", hint: "Rounder, softer chrome" },
 ];
 
 export const WALLPAPER_OPTIONS: Option<Wallpaper>[] = [
@@ -41,8 +35,6 @@ export const FONT_SCALE_OPTIONS = FONT_SCALES.map((value) => ({
   label: value === 1 ? "Default" : `${Math.round(value * 100)}%`,
   hint: value < 1 ? "Compact" : value > 1 ? "Larger" : "System",
 }));
-
-export const ACCENT_OPTIONS = [...ACCENTS];
 
 export function wallpaperLabel(value: Wallpaper): string {
   return WALLPAPER_OPTIONS.find((o) => o.value === value)?.label ?? value;
