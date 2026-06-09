@@ -2,14 +2,14 @@
 // audit-allow-hex: terminal glass chrome palette is the slice's design, not themable tokens.
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { useOsApi, usePublishInspector } from "./lib/host";
-import { run, seedFs, NEOFETCH, type Line } from "./lib/commands";
+import { useOsApi, usePublishInspector } from "../lib/host";
+import { run, seedFs, NEOFETCH, type Line } from "../lib/commands";
 
 // React-DOM shell emulator (re-authored toward mock-os parity). Maintains a cwd
 // + in-memory FS; `ls`/`cat` read live OsApi data and fall back to the model.
 // Glass aesthetic: monospace, colored `root@topside:/path$` prompt, red errors,
 // arrow-key history. Command logic lives in ./lib/commands to keep this < 200 LOC.
-export default function TerminalApp() {
+export default function ExecTerminal() {
   const api = useOsApi();
   const apiRef = useRef(api);
   const fs = useMemo(() => seedFs(), []);

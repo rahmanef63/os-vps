@@ -12,6 +12,8 @@ import path from "path";
 export type AuditAction =
   | "exec.run"
   | "exec.blocked"
+  | "term.open"
+  | "term.close"
   | "fs.write"
   | "fs.delete"
   | "fs.move"

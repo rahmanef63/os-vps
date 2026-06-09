@@ -19,6 +19,9 @@ const nextConfig = {
       { protocol: "https", hostname: "www.google.com", pathname: "/s2/favicons/**" },
     ],
   },
+  // node-pty is a native addon (.node binary) — it must be require()'d from
+  // node_modules at runtime, never bundled, or the binding fails to load.
+  serverExternalPackages: ["node-pty"],
   deploymentId: process.env.NEXT_DEPLOYMENT_ID || BUILD_ID,
   env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
   experimental: {

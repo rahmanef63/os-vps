@@ -52,6 +52,21 @@ export function optionalString(body: unknown, key: string): string | undefined |
   return typeof v === "string" ? v : null;
 }
 
+// Required integer field within [min, max] (rounds floats); null when the
+// body/field is missing, the wrong type, or out of range.
+export function requireInt(
+  body: unknown,
+  key: string,
+  min: number,
+  max: number,
+): number | null {
+  if (typeof body !== "object" || body === null) return null;
+  const v = (body as Record<string, unknown>)[key];
+  if (typeof v !== "number" || !Number.isFinite(v)) return null;
+  const n = Math.round(v);
+  return n >= min && n <= max ? n : null;
+}
+
 export function invalidRequest(field: string): NextResponse {
   return NextResponse.json({ error: `Invalid request: ${field}` }, { status: 400 });
 }

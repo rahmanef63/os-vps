@@ -47,7 +47,8 @@ export function destructiveReason(cmd: string): string | null {
   return null;
 }
 
-async function resolveCwd(requested?: string): Promise<string> {
+// Shared with the PTY manager (pty.ts): same write-root bound, same fall-home.
+export async function resolveCwd(requested?: string): Promise<string> {
   const home = homeDir();
   if (!requested || requested === "~") return home;
   const absolute = requested.startsWith("~/")
