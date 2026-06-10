@@ -67,16 +67,16 @@ export function FilesToolbar(props: {
         onDrop={props.onCrumbDrop}
       />
       <div className="flex items-center rounded-md bg-secondary p-0.5">
-        <Button variant="ghost" size="icon" aria-label="Grid view" onClick={() => props.onView("grid")} className={cn("size-6", props.view === "grid" && "bg-background shadow-sm")}>
+        <Button variant="ghost" size="icon" aria-label="Grid view" onClick={() => props.onView("grid")} className={cn("size-6 [@media(pointer:coarse)]:size-9", props.view === "grid" && "bg-background shadow-sm")}>
           <LayoutGrid className="size-3.5" />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="List view" onClick={() => props.onView("list")} className={cn("size-6", props.view === "list" && "bg-background shadow-sm")}>
+        <Button variant="ghost" size="icon" aria-label="List view" onClick={() => props.onView("list")} className={cn("size-6 [@media(pointer:coarse)]:size-9", props.view === "list" && "bg-background shadow-sm")}>
           <List className="size-3.5" />
         </Button>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Sort" className="size-7">
+          <Button variant="ghost" size="icon" aria-label="Sort" className="size-7 [@media(pointer:coarse)]:size-9">
             <ArrowUpDown className="size-3.5" />
           </Button>
         </DropdownMenuTrigger>
@@ -89,18 +89,18 @@ export function FilesToolbar(props: {
         </DropdownMenuContent>
       </DropdownMenu>
       {props.hasClipboard && (
-        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs" onClick={props.onPaste}>
+        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs [@media(pointer:coarse)]:h-9 [@media(pointer:coarse)]:min-w-9" onClick={props.onPaste}>
           <ClipboardPaste className="size-3.5" />
           <span className="@max-[430px]:hidden">Paste</span>
         </Button>
       )}
-      <Button variant="outline" size="sm" className="h-7 gap-1.5 px-2 text-xs" onClick={props.onNewFolder}>
+      <Button variant="outline" size="sm" className="h-7 gap-1.5 px-2 text-xs [@media(pointer:coarse)]:h-9 [@media(pointer:coarse)]:min-w-9" onClick={props.onNewFolder}>
         <Plus className="size-3.5" />
         <span className="@max-[430px]:hidden">New</span>
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="sm" className="h-7 gap-1.5 px-2 text-xs">
+          <Button variant="secondary" size="sm" className="h-7 gap-1.5 px-2 text-xs [@media(pointer:coarse)]:h-9 [@media(pointer:coarse)]:min-w-9">
             <Upload className="size-3.5" />
             <span className="@max-[430px]:hidden">Upload</span>
           </Button>

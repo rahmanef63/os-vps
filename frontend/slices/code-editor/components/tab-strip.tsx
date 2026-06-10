@@ -50,8 +50,9 @@ export function TabStrip({
               variant="ghost"
               size="icon"
               onClick={(e) => closeTab(p, e)}
-              // Coarse pointers: 28px hit area (glyph stays 12px) inside the 36px tab row.
-              className="grid size-4 shrink-0 place-items-center rounded p-0 text-[#9aa0aa] hover:bg-[#2a2a30] hover:text-[#e6e6e6] [@media(pointer:coarse)]:size-7"
+              // Coarse pointers: 36px hit area (glyph stays 12px); the min-h-9 tab
+              // row grows ~3px to wrap it — taller touch tabs, no clipping.
+              className="grid size-4 shrink-0 place-items-center rounded p-0 text-[#9aa0aa] hover:bg-[#2a2a30] hover:text-[#e6e6e6] [@media(pointer:coarse)]:size-9"
             >
               {dirty ? (
                 <span className="text-[13px] leading-none text-primary">●</span>

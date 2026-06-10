@@ -45,7 +45,10 @@ export function LayersFooter() {
     )
 
   return (
-    <div className="flex items-center gap-1 border-t border-border bg-card px-2 py-1.5">
+    // pb includes --sai-bottom: in the compact shell this bar pins to the pane
+    // bottom inside the iOS home-pill zone (the app pane raises the var by 34px);
+    // on desktop the var is 0 so pb stays 0.375rem.
+    <div className="flex items-center gap-1 border-t border-border bg-card px-2 pt-1.5 [padding-bottom:calc(0.375rem+var(--sai-bottom,0px))]">
       <DropdownMenu>
         <Tooltip>
           <TooltipTrigger asChild>

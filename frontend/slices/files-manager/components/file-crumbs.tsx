@@ -57,7 +57,8 @@ export function FileCrumbs({
         {crumbs.map((c, i) => (
           <span key={c.path} className="flex items-center gap-0.5">
             {i > 0 && <ChevronRight className="size-3 opacity-50" />}
-            <span className="px-1.5 py-0.5">{c.name}</span>
+            {/* Mirrors the live crumb's coarse min-w so the fold check stays true. */}
+            <span className="px-1.5 py-0.5 [@media(pointer:coarse)]:min-w-9">{c.name}</span>
           </span>
         ))}
       </div>
@@ -97,8 +98,8 @@ export function FileCrumbs({
                 onDragLeave={() => onDragLeave(c.path)}
                 onDrop={(e) => onDrop(e, c.path)}
                 className={cn(
-                  // Coarse pointers: taller hit area (≈36px) inside the h-11 toolbar row.
-                  "truncate rounded px-1.5 py-0.5 hover:bg-accent [@media(pointer:coarse)]:py-2.5",
+                  // Coarse pointers: ≈36px hit area (taller + min-w, mirrored in the probe).
+                  "truncate rounded px-1.5 py-0.5 hover:bg-accent [@media(pointer:coarse)]:min-w-9 [@media(pointer:coarse)]:py-2.5",
                   i === crumbs.length - 1 ? "font-medium text-foreground" : "",
                   dropTarget === c.path && "ring-2 ring-primary ring-inset",
                 )}

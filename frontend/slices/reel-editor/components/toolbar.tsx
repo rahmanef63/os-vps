@@ -44,7 +44,7 @@ export function Toolbar({
               title={r.dims}
               onClick={() => onRatio(r.w, r.h)}
               className={cn(
-                "h-6 gap-0 rounded-md px-2 text-[11px] font-bold transition-colors hover:bg-secondary",
+                "h-6 gap-0 rounded-md px-2 text-[11px] font-bold transition-colors hover:bg-secondary [@media(pointer:coarse)]:min-h-9 [@media(pointer:coarse)]:min-w-9",
                 on ? "bg-primary text-primary-foreground hover:bg-primary" : "bg-secondary text-muted-foreground hover:text-foreground",
               )}
             >
