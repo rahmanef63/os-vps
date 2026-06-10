@@ -114,7 +114,7 @@ export default function ExecTerminal() {
     <div
       ref={bodyRef}
       onClick={() => inRef.current?.focus()}
-      className="h-full w-full overflow-y-auto bg-[#0d0e12] p-3.5 [padding-bottom:calc(0.875rem+var(--sai-bottom))] font-mono text-[12.5px] leading-relaxed text-[#dfe3ea] [font-family:var(--font-mono)] select-text"
+      className="h-full w-full overflow-y-auto bg-[#0d0e12] p-3.5 [padding-bottom:calc(0.875rem+var(--sai-bottom))] font-mono text-[12.5px] leading-relaxed text-[#dfe3ea] [font-family:var(--font-mono-ui)] select-text"
     >
       {/* Always-accurate mode banner. The greeting line looks identical in mock
           and live, so without this the user can't tell live actually engaged. */}

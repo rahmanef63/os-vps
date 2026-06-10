@@ -7,8 +7,12 @@
 
 /* ── os-rr design tokens (light / aqua default) ─────────────────────── */
 :root {
+  /* Chrome typeface tokens. NOTE the mono token is --font-mono-ui, NOT
+     --font-mono: the @theme inline block maps Tailwind's --font-mono to it —
+     naming both the same created a self-referential var() cycle that nuked
+     monospace everywhere. Theme presets override BOTH (presets/apply.ts). */
   --font-ui: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono-ui: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
   /* a11y text scale — driven live by the appearance store (Settings → Theme);
      the rem cascade follows because this is the root font-size. */
   --font-scale: 1;
@@ -120,7 +124,7 @@
 
 @theme inline {
   --font-sans: var(--font-ui);
-  --font-mono: var(--font-mono);
+  --font-mono: var(--font-mono-ui);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

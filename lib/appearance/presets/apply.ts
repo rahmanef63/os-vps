@@ -81,7 +81,7 @@ function buildCss(preset: PresetItem): string {
   if (theme["font-sans"])
     rootTheme.push(`--font-ui: ${theme["font-sans"]}, var(--font-geist-sans), system-ui, sans-serif;`);
   if (theme["font-mono"])
-    rootTheme.push(`--font-mono: ${theme["font-mono"]}, var(--font-geist-mono), ui-monospace, monospace;`);
+    rootTheme.push(`--font-mono-ui: ${theme["font-mono"]}, var(--font-geist-mono), ui-monospace, monospace;`);
   if (rootTheme.length) blocks.push(block(":root", rootTheme));
   return blocks.join("\n\n");
 }

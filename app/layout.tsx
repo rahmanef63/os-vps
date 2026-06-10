@@ -30,11 +30,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Geist variable classes MUST live on <html>: --font-ui/--font-mono-ui are
+  // defined on :root and reference var(--font-geist-*) — defined only on
+  // <body>, the :root custom property is invalid at computed-value time and
+  // silently collapses to the Tailwind preflight stack (fonts never apply).
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
-      <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased overflow-hidden select-none`}
-      >
+    <html lang="en" data-theme="light" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="antialiased overflow-hidden select-none">
         {/* Pre-hydration theme: AppearanceProvider applies tweaks in a
             post-hydration effect, which gave dark-theme users a light flash on
             every cold load. This parser-blocking script sets data-theme before

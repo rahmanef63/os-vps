@@ -43,7 +43,7 @@ export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) 
       if (disposed) return;
       const coarse = window.matchMedia("(pointer: coarse)").matches;
       const mono = getComputedStyle(document.documentElement)
-        .getPropertyValue("--font-mono")
+        .getPropertyValue("--font-mono-ui")
         .trim();
       term = new XTerm({
         cursorBlink: true,
