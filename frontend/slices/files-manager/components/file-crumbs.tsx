@@ -65,7 +65,7 @@ export function FileCrumbs({
       {collapsed ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" aria-label="Path breadcrumb" className="h-7 min-w-0 max-w-full gap-1 px-1.5 text-xs">
+            <Button variant="ghost" size="sm" aria-label="Path breadcrumb" className="h-7 min-w-0 max-w-full gap-1 px-1.5 text-xs [@media(pointer:coarse)]:h-9">
               <FolderOpen className="size-3.5 shrink-0" />
               <span className="truncate font-medium text-foreground">{last?.name}</span>
               <ChevronDown className="size-3 shrink-0 opacity-50" />
@@ -97,7 +97,8 @@ export function FileCrumbs({
                 onDragLeave={() => onDragLeave(c.path)}
                 onDrop={(e) => onDrop(e, c.path)}
                 className={cn(
-                  "truncate rounded px-1.5 py-0.5 hover:bg-accent",
+                  // Coarse pointers: taller hit area (≈36px) inside the h-11 toolbar row.
+                  "truncate rounded px-1.5 py-0.5 hover:bg-accent [@media(pointer:coarse)]:py-2.5",
                   i === crumbs.length - 1 ? "font-medium text-foreground" : "",
                   dropTarget === c.path && "ring-2 ring-primary ring-inset",
                 )}

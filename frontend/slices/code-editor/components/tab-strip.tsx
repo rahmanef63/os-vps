@@ -50,7 +50,8 @@ export function TabStrip({
               variant="ghost"
               size="icon"
               onClick={(e) => closeTab(p, e)}
-              className="grid size-4 shrink-0 place-items-center rounded p-0 text-[#9aa0aa] hover:bg-[#2a2a30] hover:text-[#e6e6e6]"
+              // Coarse pointers: 28px hit area (glyph stays 12px) inside the 36px tab row.
+              className="grid size-4 shrink-0 place-items-center rounded p-0 text-[#9aa0aa] hover:bg-[#2a2a30] hover:text-[#e6e6e6] [@media(pointer:coarse)]:size-7"
             >
               {dirty ? (
                 <span className="text-[13px] leading-none text-primary">●</span>

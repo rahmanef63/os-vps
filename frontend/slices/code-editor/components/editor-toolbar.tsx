@@ -31,7 +31,7 @@ export function EditorToolbar({
         onClick={onOpenExplorer}
         className={cn(
           "size-7 place-items-center rounded-md p-0 text-[#9aa0aa] hover:bg-[#2a2a30]",
-          "hidden @max-[600px]:grid",
+          "hidden @max-[600px]:grid [@media(pointer:coarse)]:size-9",
         )}
       >
         <PanelLeft className="size-4" />

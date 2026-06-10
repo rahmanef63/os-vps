@@ -27,7 +27,7 @@ export function Recents({ order, apps, onResume, onHome }: { order: string[]; ap
       {wins.length > 0 && (
         <div
           className="flex shrink-0 items-center justify-center pt-1"
-          style={{ paddingBottom: "calc(72px + var(--sai-bottom))" }}
+          style={{ paddingBottom: "calc(var(--android-nav) + var(--sai-bottom))" }}
           onClick={(e) => e.stopPropagation()}
         >
           <Button

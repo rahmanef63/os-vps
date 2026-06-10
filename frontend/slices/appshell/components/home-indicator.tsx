@@ -20,21 +20,43 @@ export function HomeIndicator({
   onSwitchApp?: (dir: -1 | 1) => void;
 }) {
   const onPointerDown = (e: React.PointerEvent) => {
+    // Capture the pointer: without it Safari/Chrome can reclaim the touch for
+    // scrolling mid-gesture and fire pointercancel — the horizontal swipe then
+    // silently no-ops (this is exactly how left/right app switching died on
+    // real iPhones; touch-action:none alone wasn't enough).
+    e.currentTarget.setPointerCapture?.(e.pointerId);
     const sx = e.clientX;
     const sy = e.clientY;
     const t0 = performance.now();
     let moved = false;
+    let lastX = sx;
+    let lastY = sy;
     const cleanup = () => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
     };
     const move = (ev: PointerEvent) => {
-      if (Math.abs(ev.clientX - sx) > 8 || Math.abs(ev.clientY - sy) > 8) moved = true;
+      lastX = ev.clientX;
+      lastY = ev.clientY;
+      const dx = lastX - sx;
+      const dy = lastY - sy;
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) moved = true;
+      // Horizontal switch fires AT the threshold, not on release — robust even
+      // if the browser cancels the pointer stream right after (and it matches
+      // the real-iPhone feel of switching as you swipe).
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        cleanup();
+        onSwitchApp?.(dx > 0 ? 1 : -1);
+      }
     };
     const up = (ev: PointerEvent) => {
       cleanup();
-      const dx = ev.clientX - sx;
-      const dy = ev.clientY - sy;
+      // pointercancel can report (0,0) — trust the last move coords instead.
+      const ex = ev.type === "pointercancel" ? lastX : ev.clientX;
+      const ey = ev.type === "pointercancel" ? lastY : ev.clientY;
+      const dx = ex - sx;
+      const dy = ey - sy;
       const dt = performance.now() - t0;
       if (!moved) return onSwitcher(); // tap
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) return onSwitchApp?.(dx > 0 ? 1 : -1);
@@ -42,6 +64,7 @@ export function HomeIndicator({
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
   };
 
   return (

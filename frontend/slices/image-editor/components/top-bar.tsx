@@ -70,13 +70,15 @@ export function TopBar({ onSave, onSaveAs }: { onSave?: (dataUrl: string) => voi
   const z = (d: number) => setZoom(Math.min(5, Math.max(0.1, Math.round((zoom + d) * 100) / 100)));
 
   return (
-    <div className="flex h-12 shrink-0 items-center gap-1 border-b border-border bg-card px-2">
+    // overflow-x-auto + shrink-0 buttons: at very narrow widths (360px) the row
+    // scrolls instead of squeezing the 36px icon buttons below tap-target size.
+    <div className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b border-border bg-card px-2 [scrollbar-width:none]">
       <FilePicker ref={fileRef} accept="image/*" onFiles={(files) => { const f = files[0]; if (f) void openFile(f); }} />
       <FilePicker ref={projRef} accept=".json,application/json" onFiles={(files) => { const f = files[0]; if (f) void openProject(f); }} />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="File menu">
+          <Button variant="ghost" size="icon" aria-label="File menu" className="shrink-0">
             {busy ? <Loader2 className="size-4 animate-spin" /> : <MoreHorizontal className="size-5" />}
           </Button>
         </DropdownMenuTrigger>
@@ -90,21 +92,21 @@ export function TopBar({ onSave, onSaveAs }: { onSave?: (dataUrl: string) => voi
       </DropdownMenu>
 
       <Separator orientation="vertical" className="mx-0.5 h-6" />
-      <Button variant="ghost" size="icon" disabled={!canUndo} onClick={undo} aria-label="Undo"><Undo2 className="size-4" /></Button>
-      <Button variant="ghost" size="icon" disabled={!canRedo} onClick={redo} aria-label="Redo"><Redo2 className="size-4" /></Button>
+      <Button variant="ghost" size="icon" className="shrink-0" disabled={!canUndo} onClick={undo} aria-label="Undo"><Undo2 className="size-4" /></Button>
+      <Button variant="ghost" size="icon" className="shrink-0" disabled={!canRedo} onClick={redo} aria-label="Redo"><Redo2 className="size-4" /></Button>
       <Separator orientation="vertical" className="mx-0.5 h-6" />
-      <Button variant="ghost" size="icon" onClick={() => z(-0.1)} aria-label="Zoom out"><ZoomOut className="size-4" /></Button>
-      <span className="w-11 text-center text-xs tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
-      <Button variant="ghost" size="icon" onClick={() => z(0.1)} aria-label="Zoom in"><ZoomIn className="size-4" /></Button>
+      <Button variant="ghost" size="icon" className="shrink-0" onClick={() => z(-0.1)} aria-label="Zoom out"><ZoomOut className="size-4" /></Button>
+      <span className="w-11 shrink-0 text-center text-xs tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
+      <Button variant="ghost" size="icon" className="shrink-0" onClick={() => z(0.1)} aria-label="Zoom in"><ZoomIn className="size-4" /></Button>
 
       <div className="flex-1" />
       {onSaveAs && (
-        <Button variant="ghost" size="icon" onClick={() => { const s = stageRef.current; if (s) onSaveAs(stageToDataURL(s, { format: "png" })); }} aria-label="Save As">
+        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { const s = stageRef.current; if (s) onSaveAs(stageToDataURL(s, { format: "png" })); }} aria-label="Save As">
           <HardDriveDownload className="size-4" />
         </Button>
       )}
       {onSave && (
-        <Button size="sm" onClick={() => { const s = stageRef.current; if (s) onSave(stageToDataURL(s, { format: "png" })); }}>
+        <Button size="sm" className="shrink-0" onClick={() => { const s = stageRef.current; if (s) onSave(stageToDataURL(s, { format: "png" })); }}>
           <Save className="size-4" /> Save
         </Button>
       )}

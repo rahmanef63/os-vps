@@ -37,7 +37,8 @@ function TabsTrigger({
       variant="ghost"
       onClick={onClick}
       className={cn(
-        "h-auto rounded-md px-3 py-1 text-xs font-medium transition-colors",
+        // Coarse pointers: grow the tap target to ≥36px tall (visuals unchanged on desktop).
+        "h-auto rounded-md px-3 py-1 text-xs font-medium transition-colors [@media(pointer:coarse)]:min-h-9",
         active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
         className,
       )}

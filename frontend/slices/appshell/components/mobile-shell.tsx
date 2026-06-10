@@ -100,9 +100,13 @@ export function MobileShell() {
   return (
     <ShellUIProvider value={shellUI}>
       <div className="absolute inset-0 z-[10] flex flex-col">
+      {/* Home is inert while an app covers it (a11y: its grid, pager pages and
+          home-indicator otherwise stay in tab/AT order under the opaque app
+          layer). It stays visually mounted for the appOpen zoom. */}
       <MobileHome
         apps={apps}
         dockApps={dockApps}
+        inactive={!!(showApp && activeApp)}
         onLaunch={launch}
         onSearch={toggleSpotlight}
         onControlCenter={() => setCc(true)}
@@ -124,14 +128,24 @@ export function MobileShell() {
               <AppIcon app={activeApp} />
             </span>
             <strong className="flex-1 truncate text-base">{activeApp.title}</strong>
-            <Button type="button" variant="ghost" onClick={goHome} className="h-auto rounded-md px-3 py-1 text-sm font-medium text-primary">
+            {/* primary exit control — keep the pill visually compact but give it a ≥36px hit area */}
+            <Button type="button" variant="ghost" onClick={goHome} className="h-9 min-w-9 rounded-md px-3 text-sm font-medium text-primary">
               Done
             </Button>
           </header>
-          <main className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]">
+          {/* The home-indicator overlays the content edge-to-edge (real-iOS), so
+              raise --sai-bottom INSIDE the app pane to include its 34px zone —
+              every app already pads with var(--sai-bottom), so bumping the var
+              clears the pill centrally without double-padding anyone. */}
+          <main
+            className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]"
+            style={{ "--sai-bottom": "calc(env(safe-area-inset-bottom, 0px) + 34px)" } as React.CSSProperties}
+          >
             <WindowContent app={top.app} payload={top.payload} />
           </main>
-          <HomeIndicator light={false} onHome={goHome} onSwitcher={openSwitcher} onSwitchApp={switchApp} />
+          <div className="absolute inset-x-0 bottom-0 z-[5]">
+            <HomeIndicator light={false} onHome={goHome} onSwitcher={openSwitcher} onSwitchApp={switchApp} />
+          </div>
         </div>
       )}
 

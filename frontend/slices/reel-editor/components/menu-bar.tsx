@@ -46,7 +46,8 @@ type MenuBarProps = {
 function Menu({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="rounded px-2 py-0.5 text-[13px] text-foreground/80 outline-none hover:bg-secondary data-[state=open]:bg-secondary data-[state=open]:text-foreground">
+      {/* Coarse pointers: ≥36px tall tap target; desktop pointer keeps the slim 24px row. */}
+      <DropdownMenuTrigger className="inline-flex items-center rounded px-2 py-0.5 text-[13px] text-foreground/80 outline-none hover:bg-secondary data-[state=open]:bg-secondary data-[state=open]:text-foreground [@media(pointer:coarse)]:min-h-9">
         {label}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-52">

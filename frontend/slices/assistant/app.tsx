@@ -74,7 +74,11 @@ export default function Assistant() {
   return (
     <div className="flex h-full flex-col bg-background">
       {tab !== "chat" ? (
-        <div className="flex items-center justify-end overflow-x-auto border-b border-border bg-card/40 px-3 py-2 [scrollbar-width:none]">
+        <div className="flex items-center overflow-x-auto border-b border-border bg-card/40 px-3 py-2 [scrollbar-width:none]">
+          {/* flex-1 spacer, not justify-end: end-aligned overflow in a scroll row
+              is unreachable on the start side. The spacer collapses to 0 when the
+              tabs overflow, so they left-align and every tab stays scrollable. */}
+          <div className="flex-1" />
           <TabBar tab={tab} setTab={setTab} />
         </div>
       ) : null}
@@ -87,7 +91,10 @@ export default function Assistant() {
           switcher={
             <>
               <AgentSwitcher store={store} onNew={() => setForm({ kind: "agent" })} />
-              <div className="ml-auto shrink-0">
+              {/* Spacer instead of ml-auto: collapses when the row overflows so the
+                  tab group left-aligns and all tabs stay reachable by scrolling. */}
+              <div className="flex-1" />
+              <div className="shrink-0">
                 <TabBar tab={tab} setTab={setTab} />
               </div>
             </>

@@ -1,11 +1,13 @@
 "use client";
 /* Android (Material-You) mobile shell — same store + apps as every other shell,
    one fullscreen app at a time (mirrors MobileShell). Chrome: status bar →
-   pull-down notification shade with quick-settings tiles, at-a-glance home +
-   Google-style search + app grid, swipe-up App Drawer, gesture nav (back / home
-   / recents), and a Recents card deck. Drives the shared store only. */
+   pull-down notification shade with quick-settings tiles, search + app-grid
+   home, swipe-up App Drawer, gesture nav (back / home / recents), and a Recents
+   card deck. Drives the shared store only. Bottom inset system: the root sets
+   `--android-nav` (NavBar row height); every surface that must clear the bottom
+   chrome pads with `calc(var(--android-nav) + var(--sai-bottom))`. */
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Search, ChevronLeft, Wifi, Battery, Signal, Bot } from "lucide-react";
 import { useApps } from "../../../lib/registry";
 import { useWindowOrder, useFocused, useWindow } from "../../../hooks/use-shell";
@@ -53,27 +55,36 @@ function AndroidShell() {
   };
 
   return (
-    <div className="absolute inset-0 z-[10] flex flex-col overflow-hidden bg-gradient-to-b from-[var(--brand-soft,#dbeafe)] via-background to-background text-foreground">
-      {/* status bar (tap → shade) */}
-      <Button type="button" variant="ghost" onClick={() => setShade(true)} className="h-auto p-0 font-normal hover:bg-transparent flex h-7 shrink-0 items-center justify-between px-4 text-[11px] font-semibold">
+    <div
+      className="absolute inset-0 z-[10] flex flex-col overflow-hidden bg-gradient-to-b from-[var(--brand-soft,#dbeafe)] via-background to-background text-foreground"
+      style={{ "--android-nav": "48px" } as CSSProperties}
+    >
+      {/* Status bar: full-width tap opens the Shade — that IS real-Android
+          behaviour (tap/swipe the status bar → quick settings), so it stays one
+          deliberate control: labeled for AT and ≥32px hit height (h-8). */}
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => setShade(true)}
+        aria-label="Open quick settings"
+        inert={showApp}
+        className="h-8 w-full shrink-0 justify-between rounded-none p-0 px-4 text-[11px] font-semibold hover:bg-transparent"
+      >
         <Clock mode="time" />
         <span className="flex items-center gap-1">
           <Signal className="size-3" /> <Wifi className="size-3" /> <Battery className="size-3.5" />
         </span>
       </Button>
 
-      {/* HOME (always mounted; app overlays it) */}
-      <div className="flex min-h-0 flex-1 flex-col px-5 pb-1">
-        <div className="pt-5">
-          <Clock mode="big" />
-          <Clock mode="date" />
-        </div>
-        <div className="mt-4 flex h-11 items-center gap-3 rounded-full border border-border bg-card/80 px-4 shadow-sm backdrop-blur">
+      {/* HOME (always mounted; app overlays it — inert while covered so its
+          grid + NavBar drop out of tab/AT order under the z-20 app layer) */}
+      <div className="flex min-h-0 flex-1 flex-col px-5 pb-1" inert={showApp} aria-hidden={showApp}>
+        <div className="mt-4 flex h-11 shrink-0 items-center gap-3 rounded-full border border-border bg-card/80 px-4 shadow-sm backdrop-blur">
           <Search className="size-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Search apps</span>
         </div>
-        <div className="mt-6 grid grid-cols-4 gap-x-3 gap-y-5">
-          {dockable.slice(0, 8).map((a) => (
+        <div className="mt-6 grid min-h-0 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-y-auto">
+          {dockable.slice(0, 12).map((a) => (
             <AppCell key={a.id} app={a} onClick={() => launch(a)} />
           ))}
         </div>
@@ -86,7 +97,7 @@ function AndroidShell() {
         </Button>
       </div>
 
-      <NavBar onBack={goHome} onHome={goHome} onRecents={() => setRecents(true)} />
+      <NavBar inactive={showApp} onBack={goHome} onHome={goHome} onRecents={() => setRecents(true)} />
 
       {/* fullscreen app */}
       {showApp && activeApp && top && (
@@ -118,9 +129,17 @@ function AppCell({ app, onClick }: { app: AppDescriptor; onClick: () => void }) 
   );
 }
 
-function NavBar({ onBack, onHome, onRecents }: { onBack: () => void; onHome: () => void; onRecents: () => void }) {
+function NavBar({ inactive = false, onBack, onHome, onRecents }: { inactive?: boolean; onBack: () => void; onHome: () => void; onRecents: () => void }) {
+  // 48px button row (--android-nav) + the device safe-area below it — the same
+  // calc(var(--android-nav) + var(--sai-bottom)) total every overlay pads for.
+  // `inactive` = this bar is covered by the app layer's own NavBar copy.
   return (
-    <div className="flex h-12 shrink-0 items-center justify-around">
+    <div
+      className="flex shrink-0 items-center justify-around"
+      style={{ height: "calc(var(--android-nav) + var(--sai-bottom))", paddingBottom: "var(--sai-bottom)" }}
+      inert={inactive}
+      aria-hidden={inactive}
+    >
       <Button type="button" variant="ghost" onClick={onBack} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
         <ChevronLeft className="size-5" />
       </Button>
@@ -144,7 +163,10 @@ function AppDrawer({ apps, onLaunch, onClose }: { apps: AppDescriptor[]; onLaunc
         <Search className="size-4 text-muted-foreground" />
         <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search apps" className="w-full bg-transparent text-sm outline-none" />
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-auto p-5">
+      <div
+        className="grid min-h-0 flex-1 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-auto p-5"
+        style={{ paddingBottom: "calc(var(--android-nav) + var(--sai-bottom))" }}
+      >
         {list.map((a) => (
           <AppCell key={a.id} app={a} onClick={() => onLaunch(a)} />
         ))}

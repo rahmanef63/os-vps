@@ -14,6 +14,7 @@ import { AppActionSheet, AppsGrid } from "./mobile-home-parts";
 export function MobileHome({
   apps,
   dockApps,
+  inactive = false,
   onLaunch,
   onSearch,
   onControlCenter,
@@ -22,6 +23,7 @@ export function MobileHome({
 }: {
   apps: AppDescriptor[];
   dockApps: AppDescriptor[];
+  inactive?: boolean; // an app layer covers the home — pull it from tab/AT order
   onLaunch: (app: AppDescriptor) => void;
   onSearch: () => void;
   onControlCenter: () => void;
@@ -67,7 +69,7 @@ export function MobileHome({
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col">
+    <div className="absolute inset-0 flex flex-col" inert={inactive} aria-hidden={inactive}>
       {/* top safe area: Dynamic Island lives here; swipe down → NC (left) / CC (right).
           Height = base bar + the device notch inset so content never hides under it. */}
       <div
@@ -81,13 +83,13 @@ export function MobileHome({
         onScroll={onScroll}
         className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        <Page>
+        <Page active={page === 0}>
           <Slot region="today" />
         </Page>
-        <Page>
+        <Page active={page === 1}>
           <AppsGrid apps={apps} onLaunch={onLaunch} onSearch={onSearch} onContext={setCtxApp} />
         </Page>
-        <Page>
+        <Page active={page === 2}>
           <MobileAppLibrary apps={apps} onOpen={onLaunch} />
         </Page>
       </div>
@@ -124,6 +126,13 @@ export function MobileHome({
   );
 }
 
-function Page({ children }: { children: React.ReactNode }) {
-  return <section className="h-full w-full shrink-0 snap-center overflow-hidden">{children}</section>;
+// Off-canvas pages sit at ±100vw but would otherwise stay in tab/AT order —
+// inert pulls them out; the swipe still works because the scroll gesture
+// belongs to the pager container, not the (inert) page content.
+function Page({ active, children }: { active: boolean; children: React.ReactNode }) {
+  return (
+    <section inert={!active} aria-hidden={!active} className="h-full w-full shrink-0 snap-center overflow-hidden">
+      {children}
+    </section>
+  );
 }

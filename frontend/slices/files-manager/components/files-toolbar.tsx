@@ -45,15 +45,15 @@ export function FilesToolbar(props: {
         size="icon"
         onClick={props.onOpenSidebar}
         aria-label="Open sidebar"
-        className="hidden size-7 shrink-0 @max-[600px]:inline-flex"
+        className="hidden size-7 shrink-0 @max-[600px]:inline-flex [@media(pointer:coarse)]:size-9"
       >
         <PanelLeft className="size-4" />
       </Button>
       <div className="flex items-center gap-0.5">
-        <Button variant="ghost" size="icon" disabled={!props.canBack} onClick={props.onBack} aria-label="Back" className="size-7">
+        <Button variant="ghost" size="icon" disabled={!props.canBack} onClick={props.onBack} aria-label="Back" className="size-7 [@media(pointer:coarse)]:size-9">
           <ChevronRight className="size-4 rotate-180" />
         </Button>
-        <Button variant="ghost" size="icon" disabled={!props.canForward} onClick={props.onForward} aria-label="Forward" className="size-7">
+        <Button variant="ghost" size="icon" disabled={!props.canForward} onClick={props.onForward} aria-label="Forward" className="size-7 [@media(pointer:coarse)]:size-9">
           <ChevronRight className="size-4" />
         </Button>
       </div>
