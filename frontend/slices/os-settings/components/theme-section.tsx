@@ -7,15 +7,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import {
-  FONT_OPTIONS,
   FONT_SCALE_OPTIONS,
   THEME_MODE_OPTIONS,
-  fontStack,
   groupPresets,
   loadPresetRegistry,
   presetSwatches,
   useAppearance,
-  type FontKey,
   type PresetGroup,
   type PresetItem,
   type Theme,
@@ -25,6 +22,8 @@ import { cn } from "@/lib/utils";
 
 function PresetChip({ preset, active, onSelect }: { preset: PresetItem; active: boolean; onSelect: () => void }) {
   const swatches = presetSwatches(preset);
+  // The preset owns the typeface too — surface which face it ships.
+  const fontName = preset.cssVars?.theme?.["font-sans"]?.split(",")[0]?.replace(/['"]/g, "").trim();
   return (
     <button
       type="button"
@@ -38,28 +37,11 @@ function PresetChip({ preset, active, onSelect }: { preset: PresetItem; active: 
       <span className="flex shrink-0 overflow-hidden rounded-lg border border-border">
         {swatches.map((c, i) => <span key={i} className="size-5" style={{ background: c }} />)}
       </span>
-      <span className="min-w-0 flex-1 truncate text-xs font-medium">{preset.title}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-xs font-medium">{preset.title}</span>
+        {fontName && <span className="block truncate text-[10px] text-muted-foreground">{fontName}</span>}
+      </span>
       {active && <Check className="size-3.5 shrink-0 text-primary" />}
-    </button>
-  );
-}
-
-// Each chip renders its own stack so the picker is WYSIWYG (you read the face you
-// pick). "system" has no stack → it inherits the live --font-ui (preset/default).
-function FontChip({ font, active, onSelect }: { font: (typeof FONT_OPTIONS)[number]; active: boolean; onSelect: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={active}
-      style={{ fontFamily: fontStack(font.key) ?? undefined }}
-      className={cn(
-        "flex min-h-12 flex-col justify-center rounded-xl border border-border bg-card/60 px-3 py-1.5 text-left transition-colors hover:bg-accent",
-        active && "border-ring ring-2 ring-ring/40",
-      )}
-    >
-      <span className="text-base leading-none">Ag</span>
-      <span className="mt-1 truncate text-[11px] text-muted-foreground">{font.label}</span>
     </button>
   );
 }
@@ -116,30 +98,19 @@ export function ThemeSection() {
             className="w-full flex-wrap sm:w-auto"
           />
         </Row>
-        <Row label="Font family">
-          <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {FONT_OPTIONS.map((font) => (
-              <FontChip
-                key={font.key}
-                font={font}
-                active={tweaks.fontFamily === font.key}
-                onSelect={() => setTweaks({ fontFamily: font.key as FontKey })}
-              />
-            ))}
-          </div>
-        </Row>
         <Row label="High contrast">
           <Switch checked={tweaks.highContrast} onCheckedChange={(highContrast) => setTweaks({ highContrast })} />
         </Row>
         <p className="text-[11px] leading-relaxed text-muted-foreground">
           Theme, preset, font scale, and contrast all write to the same appearance store and update the shell live.
+          The font family comes from the theme preset below — pick a preset, get its typeface.
         </p>
       </Section>
 
-      <Section icon={<Type />} title="Color presets">
+      <Section icon={<Type />} title="Theme presets">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            Presets retheme bars, windows, cards, typography contrast, and app content from one token injection.
+            One preset rethemes colors, radius AND typography — bars, windows, cards, and app content from a single token injection (fonts auto-load).
           </p>
           <Button type="button" variant="secondary" size="sm" className="shrink-0" disabled={!tweaks.preset} onClick={() => setTweaks({ preset: null })}>
             <RotateCcw /> Stock

@@ -1,4 +1,5 @@
 import { loadPresetRegistry, findPreset } from "./registry";
+import { ensurePresetFonts, clearPresetFonts } from "./fonts";
 import { PRESET_STYLE_ID, type PresetItem } from "./types";
 
 // Applies a tweakcn preset by deriving the os-rr CHROME tokens (--surface,
@@ -70,8 +71,9 @@ function buildCss(preset: PresetItem): string {
     block('.high-contrast[data-theme="dark"]', contrastVars(dark, "dark")),
   ];
   // Theme-level tokens (font + radius) so type, corners, and color all retheme
-  // from ONE preset (DRY). Geist stays the loaded fallback if the preset font
-  // isn't installed; clearPreset() removes this whole tag → back to stock.
+  // from ONE preset (DRY) — the preset IS the typeface config, there is no
+  // separate font picker. applyPreset() also loads the named webfonts (see
+  // ./fonts.ts); Geist stays the fallback while they stream / offline.
   const theme = preset.cssVars?.theme ?? {};
   const rootTheme: string[] = [];
   const radius = theme.radius ?? light.radius;
@@ -97,9 +99,13 @@ export async function applyPreset(name: string): Promise<void> {
     document.head.appendChild(el);
   }
   el.textContent = buildCss(preset);
+  // The vars only render if the named faces exist — fetch them (no-op for
+  // local/system stacks; offline degrades to the Geist fallback in the stack).
+  ensurePresetFonts(preset.cssVars?.theme ?? {});
 }
 
-/** Removes the injected preset vars — back to the stock os-rr palette. */
+/** Removes the injected preset vars + webfonts — back to the stock os-rr palette. */
 export function clearPreset(): void {
   document.getElementById(PRESET_STYLE_ID)?.remove();
+  clearPresetFonts();
 }

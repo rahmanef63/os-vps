@@ -14,7 +14,6 @@ import { usePrefsSync } from "@/lib/prefs/use-prefs-sync";
 import { TWEAK_DEFAULTS, type Tweaks, type ServerConfig } from "./types";
 import { normalizeWallpaper } from "./wallpapers";
 import { ensureServerTargets } from "./server-targets";
-import { fontStack } from "./fonts";
 import { applyPreset, clearPreset } from "./presets/apply";
 
 const KEY = "os-vps:tweaks";
@@ -71,9 +70,11 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Tweaks & { server?: { token?: string } };
-        // Scrub the legacy plaintext token from old caches (next persist
-        // rewrites the key without it). Auth is the session cookie.
+        // Scrub legacy keys from old caches (next persist rewrites without
+        // them): the plaintext server token (auth is the session cookie) and
+        // the pre-merge fontFamily override (presets own the typeface now).
         if (parsed.server) delete parsed.server.token;
+        delete (parsed as Record<string, unknown>).fontFamily;
         const server = { ...TWEAK_DEFAULTS.server, ...parsed.server };
         const wallpaperImage = parseImage(parsed.wallpaperImage ?? null);
         // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration restore: this provider wraps SSR'd markup (login screen reads the wallpaper tweak), so a lazy initializer reading localStorage would hydration-mismatch
@@ -99,11 +100,10 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     // Scale drives a CSS var (globals.css: html font-size = 100% * --font-scale),
     // so the whole rem cascade reacts live — no fragile cached root font-size.
     el.style.setProperty("--font-scale", String(tweaks.fontScale));
-    // Typeface: an explicit pick sets --font-ui INLINE so it wins over a color
-    // preset's injected :root rule; "system" clears it → preset / Geist default.
-    const stack = fontStack(tweaks.fontFamily);
-    if (stack) el.style.setProperty("--font-ui", stack);
-    else el.style.removeProperty("--font-ui");
+    // Typeface is preset-owned (cssVars.theme font-sans/mono, webfonts loaded
+    // by applyPreset) — no separate picker, no inline --font-ui override. Clear
+    // any pre-merge leftover so the preset's :root rule actually wins.
+    el.style.removeProperty("--font-ui");
     // Color is 100% theme-driven now: a preset owns every chrome token + --accent;
     // stock (no preset) falls back to the globals.css defaults. No inline accent /
     // style (dir) overrides — the preset picker is the single source of truth.
@@ -122,6 +122,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   // wallpaperImage (withWallpaperStyle), so it's stripped from the synced payload
   // and recomputed on apply — same shape as the localStorage hydrate above.
   const applyServerTweaks = useCallback((t: Omit<Tweaks, "wallpaperStyle">) => {
+    // Synced payloads from pre-merge devices may still carry fontFamily.
+    delete (t as Record<string, unknown>).fontFamily;
     setState(withWallpaperStyle({
       ...TWEAK_DEFAULTS,
       ...t,

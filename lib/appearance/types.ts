@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import type { ImageValue } from "@/features/image-picker";
 import type { Wallpaper } from "./wallpapers";
-import type { FontKey } from "./fonts";
 
 export type Theme = "light" | "dark";
 // Wallpaper keys + the .wp-* classes are the wallpapers.ts registry (SSOT).
@@ -41,18 +40,18 @@ export const FONT_SCALES = [0.875, 1, 1.125, 1.25] as const;
 
 export type Appearance = {
   theme: Theme;
-  /** tweakcn color preset name (lib/appearance/presets) — null = stock os-rr palette.
-   *  The preset is the single source of color, accent, radius, and font (DRY). */
+  /** tweakcn preset name (lib/appearance/presets) — null = stock os-rr palette.
+   *  The preset is the SINGLE source of color, accent, radius AND typeface
+   *  (its cssVars.theme fonts are injected + webfont-loaded; there is no
+   *  separate font-family setting). */
   preset: string | null;
   wallpaper: Wallpaper;
   wallpaperImage: ImageValue | null;
   wallpaperStyle?: CSSProperties;
   reduceGlass: boolean;
   device: Device;
-  /** UI typeface (lib/appearance/fonts) — "system" follows the preset/default.
-   *  Separate from fontScale: this is the family, that is the size. */
-  fontFamily: FontKey;
-  /** Root font-size multiplier (a11y) — one of FONT_SCALES. */
+  /** Root font-size multiplier (a11y) — one of FONT_SCALES. (Size only — the
+   *  font FAMILY comes from the theme preset.) */
   fontScale: number;
   /** Stronger borders + secondary text (a11y). */
   highContrast: boolean;
@@ -80,7 +79,6 @@ export const TWEAK_DEFAULTS: Tweaks = {
   wallpaperImage: null,
   reduceGlass: false,
   device: "auto",
-  fontFamily: "system",
   fontScale: 1,
   highContrast: false,
   server: {
