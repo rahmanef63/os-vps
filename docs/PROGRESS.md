@@ -9,6 +9,31 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-10 (round 2) — Theme preset owns the typeface; font pipeline actually works now (DONE)
+
+- **Font picker merged into theme presets**: the tweakcn preset's
+  `cssVars.theme` font-sans/font-mono IS the typeface config — the separate
+  "Font family" picker + `fontFamily` tweak are gone (legacy stored/synced
+  values scrubbed on hydrate; `fontScale` a11y sizing stays). Preset chips show
+  which face they ship.
+- **Preset webfonts load for real** (`lib/appearance/presets/fonts.ts`):
+  `applyPreset()` now injects ONE Google Fonts css2 link for the named families
+  (local/system/Geist names skipped; offline degrades to the Geist fallback in
+  the stack; `clearPreset()` removes it).
+- **Two silent root-cause bugs fixed — no custom font EVER rendered before**:
+  (1) Geist `variable` classes were on `<body>` while `:root --font-ui`
+  referenced `var(--font-geist-sans)` → guaranteed-invalid custom property →
+  body fell back to the Tailwind preflight stack; Geist classes moved to
+  `<html>`. (2) `@theme inline { --font-mono: var(--font-mono) }` was a
+  self-referential var() cycle that killed monospace tokens; chrome token
+  renamed `--font-mono-ui` (terminal consumers updated).
+- E2e-verified on demo: picking "Elegant Luxury" → computed body font Poppins,
+  `document.fonts.check` true, link href carries Poppins+IBM Plex Mono; Stock
+  reset removes the link and restores Geist (which itself renders for the first
+  time). Zero console errors.
+
+---
+
 ## 2026-06-10 — Shell parity sweep: Android rebuilt · Dashboard store-driven · wallpaper presets retired (DONE)
 
 Two audits (provider/wrapper consistency + a 12-feature × 5-shell parity
