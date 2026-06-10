@@ -9,6 +9,7 @@ export { AppRegistryProvider, useApp, useApps } from "./lib/registry";
 // Window lifecycle + the shell-UI actions feature slices drive (search,
 // inspector, control-center read these instead of reaching into the store).
 export {
+  shellStore,
   openWindow,
   closeWindow,
   setCloseGuard,

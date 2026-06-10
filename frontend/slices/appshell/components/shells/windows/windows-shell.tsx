@@ -7,10 +7,13 @@
 import { useEffect, useState } from "react";
 import { AppWindow, LayoutGrid, Minimize2, Maximize2 } from "lucide-react";
 import { useWindowOrder } from "../../../hooks/use-shell";
+import { useOverviewKey } from "../../../hooks/use-overview-key";
 import { Slot } from "../../../registry/feature-registry";
 import { registerShell } from "../../../registry/shells";
 import { shellStore, minimizeAll, restoreWindow, applyChromeInsets } from "../../../lib/store";
 import { Window } from "../../window";
+import { AppSwitcher } from "../../app-switcher";
+import { NotificationCenter } from "../../notification-center";
 import { WindowOverview } from "../window-overview";
 import { ContextMenu, useContextMenu } from "../context-menu";
 import { Taskbar, TASKBAR_H } from "./taskbar";
@@ -20,6 +23,7 @@ function WindowsShell() {
   const order = useWindowOrder();
   const [taskView, setTaskView] = useState(false);
   const menu = useContextMenu();
+  useOverviewKey(() => setTaskView((v) => !v)); // F3 toggles Task View, parity with macOS Mission Control
   useEffect(() => {
     applyChromeInsets({ top: 0, bottom: TASKBAR_H });
     return () => applyChromeInsets({}); // restore macOS insets + re-tile snapped windows
@@ -38,6 +42,8 @@ function WindowsShell() {
         ))}
       </section>
       <Slot region="rightPanel" />
+      <NotificationCenter />
+      <AppSwitcher />
       <SnapAssist />
       <Taskbar onTaskView={() => setTaskView((v) => !v)} />
       {taskView && <WindowOverview onClose={() => setTaskView(false)} label="Task View" />}

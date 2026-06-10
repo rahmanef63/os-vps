@@ -16,7 +16,7 @@ import { useSyncExternalStore, type ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import { registerCommands } from "../lib/commands";
 
-export type ShellId = "macos" | "windows" | "dashboard" | "mobile" | "ios" | "android";
+export type ShellId = "macos" | "windows" | "dashboard" | "ios" | "android";
 export type ShellSurface = "desktop" | "mobile";
 
 export type ShellDescriptor = {
@@ -38,7 +38,7 @@ export type ShellDescriptor = {
 };
 
 const REGISTRY = new Map<ShellId, ShellDescriptor>();
-const order: ShellId[] = ["dashboard", "macos", "windows", "mobile", "ios", "android"];
+const order: ShellId[] = ["dashboard", "macos", "windows", "ios", "android"];
 
 export function registerShell(d: ShellDescriptor): void {
   REGISTRY.set(d.id, d);
@@ -76,7 +76,7 @@ const KEY = "sv:shell";
 export type ShellPrefs = { desktop: ShellId; mobile: ShellId };
 const DEFAULTS: ShellPrefs = { desktop: "macos", mobile: "ios" };
 const DESKTOP_IDS: ShellId[] = ["macos", "windows", "dashboard"];
-const MOBILE_IDS: ShellId[] = ["ios", "android", "mobile"];
+const MOBILE_IDS: ShellId[] = ["ios", "android"];
 
 export function surfaceOf(id: ShellId): ShellSurface {
   return MOBILE_IDS.includes(id) ? "mobile" : "desktop";
@@ -111,6 +111,12 @@ export function setShell(surface: ShellSurface, id: ShellId): void {
     /* ignore */
   }
   subs.forEach((f) => f());
+}
+
+/** Current (validated) shell prefs — the SSOT read for non-React callers
+ *  (profiles snapshots); never re-read/re-default `sv:shell` elsewhere. */
+export function getShellPrefs(): ShellPrefs {
+  return prefs;
 }
 
 export function useShellPrefs(): ShellPrefs {

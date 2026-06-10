@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type CSSProperties, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type CSSProperties, type ReactNode } from "react";
 import type { DeviceMode } from "../responsive/use-responsive";
 
 export type ThemeMode = "light" | "dark";
@@ -111,9 +111,16 @@ export function CapabilitiesProvider({
   children: ReactNode;
 }) {
   // Merge over the defaults so every capability key is a callable hook — keeps
-  // the accessor hooks unconditional (the merged object is stable for the app's
-  // lifetime, so the hook order never changes between renders).
-  const merged: Required<ShellCapabilities> = { ...DEFAULT_CAPABILITIES, ...value };
+  // the accessor hooks unconditional. Memoized on `value` so consumers don't
+  // re-render on every provider render, and explicitly-undefined keys are
+  // stripped first (otherwise `{ useSearch: undefined }` would override the
+  // default and crash the unconditional accessor).
+  const merged = useMemo<Required<ShellCapabilities>>(() => {
+    const defined = Object.fromEntries(
+      Object.entries(value ?? {}).filter(([, v]) => v !== undefined),
+    ) as ShellCapabilities;
+    return { ...DEFAULT_CAPABILITIES, ...defined };
+  }, [value]);
   return (
     <CapabilitiesContext.Provider value={merged}>{children}</CapabilitiesContext.Provider>
   );

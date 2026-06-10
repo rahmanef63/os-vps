@@ -35,6 +35,16 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased overflow-hidden select-none`}
       >
+        {/* Pre-hydration theme: AppearanceProvider applies tweaks in a
+            post-hydration effect, which gave dark-theme users a light flash on
+            every cold load. This parser-blocking script sets data-theme before
+            first paint (html has suppressHydrationWarning for the attr swap). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{var t=JSON.parse(localStorage.getItem("os-vps:tweaks"));if(t&&t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}',
+          }}
+        />
         {children}
         <RegisterSW />
         <InstallPrompt />

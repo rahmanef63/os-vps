@@ -1,33 +1,54 @@
 "use client";
 /* Android (Material-You) mobile shell — same store + apps as every other shell,
-   one fullscreen app at a time (mirrors MobileShell). Chrome: status bar →
-   pull-down notification shade with quick-settings tiles, search + app-grid
-   home, swipe-up App Drawer, gesture nav (back / home / recents), and a Recents
-   card deck. Drives the shared store only. Bottom inset system: the root sets
-   `--android-nav` (NavBar row height); every surface that must clear the bottom
-   chrome pads with `calc(var(--android-nav) + var(--sai-bottom))`. */
+   one fullscreen app at a time (mirrors MobileShell). Chrome: pull-DOWN on the
+   home surface → the REAL Control Center feature (controlCenter slot; the old
+   fake Shade is gone), big clock + date on the wallpaper, search pill →
+   Spotlight, swipe-up App Drawer, gesture nav (back / home / recents), and a
+   Recents card deck. Transparent root: the shared <Wallpaper> (auto →
+   wp-material, or the user's custom image) shows through, like every other
+   shell. Bottom inset system: the root sets `--android-nav` (NavBar row
+   height); every surface that must clear the bottom chrome pads with
+   `calc(var(--android-nav) + var(--sai-bottom))`. */
 import { Button } from "@/components/ui/button";
-import { useMemo, useState, type CSSProperties } from "react";
-import { Search, ChevronLeft, Wifi, Battery, Signal, Bot } from "lucide-react";
+import { useRef, useState, type CSSProperties } from "react";
+import { usePathname } from "next/navigation";
+import { Search, ChevronLeft, Bot } from "lucide-react";
 import { useApps } from "../../../lib/registry";
+import { usePullDown } from "../../../hooks/use-pull-down";
 import { useWindowOrder, useFocused, useWindow } from "../../../hooks/use-shell";
-import { shellStore, openWindow, minimizeWindow, restoreWindow } from "../../../lib/store";
-import { AppIcon } from "../../app-icon";
+import { shellStore, openWindow, focusApp, minimizeWindow, restoreWindow, toggleSpotlight } from "../../../lib/store";
 import { WindowContent } from "../../window-content";
 import { registerShell } from "../../../registry/shells";
-import { Clock, Recents, Shade } from "./android-parts";
+import { Slot } from "../../../registry/feature-registry";
+import { useShellConfig } from "../../../registry/shell-config";
+import { ShellUIProvider, type ShellUI } from "../../../registry/shell-ui";
+import { Clock } from "../../clock";
+import { AppCell, AppDrawer, Recents } from "./android-parts";
 import type { AppDescriptor } from "../../../lib/types";
 
 function AndroidShell() {
   const apps = useApps();
   const order = useWindowOrder();
   const focused = useFocused();
-  const [home, setHome] = useState(true);
   const [drawer, setDrawer] = useState(false);
-  const [shade, setShade] = useState(false);
+  const [cc, setCc] = useState(false); // control center (pull down on home)
   const [recents, setRecents] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // URL → surface (same derivation as the iOS shell): a pathname naming an app
+  // slug shows the app pane (UrlSync opens/focuses its window in the store);
+  // user gestures override, keyed to the pathname they were made at — covers
+  // initial deep links AND back/forward without effect-driven setState.
+  const { routing } = useShellConfig();
+  const pathname = usePathname();
+  const urlSlug = pathname.split("/").filter(Boolean)[0];
+  const urlIsApp = routing !== false && !!urlSlug && apps.some((a) => (a.slug ?? a.id) === urlSlug);
+  const [homeChoice, setHomeChoice] = useState<{ key: string; home: boolean } | null>(null);
+  const home = homeChoice?.key === pathname ? homeChoice.home : !urlIsApp;
+  const setHome = (h: boolean) => setHomeChoice({ key: pathname, home: h });
 
   const dockable = apps.filter((a) => !a.noDock);
+  const pinned = dockable.filter((a) => a.pinned);
   const topId =
     focused && !shellStore.getWindow(focused)?.minimized
       ? focused
@@ -37,10 +58,16 @@ function AndroidShell() {
   const activeApp = top ? apps.find((a) => a.id === top.app) : null;
 
   const launch = (app: AppDescriptor) => {
-    openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
+    // Resume-don't-duplicate (real-Android): a home/drawer tap brings the
+    // existing window forward; only a missing one spawns.
+    if (!focusApp(app.id)) openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
     setDrawer(false);
     setRecents(false);
     setHome(false);
+  };
+  const launchById = (id: string) => {
+    const app = apps.find((a) => a.id === id);
+    if (app) launch(app);
   };
   const goHome = () => {
     if (topId) minimizeWindow(topId);
@@ -53,79 +80,78 @@ function AndroidShell() {
     setRecents(false);
     setHome(false);
   };
+  // Pull-DOWN anywhere on home opens the Control Center (no status-bar row).
+  // The app grid keeps scrolling: the pull only arms while the grid is at top.
+  const pullDown = usePullDown(() => setCc(true), gridRef);
+
+  const shellUI: ShellUI = {
+    controlCenterOpen: cc,
+    setControlCenterOpen: setCc,
+    openApp: launch,
+    openAppById: launchById,
+    quickAppIds: (pinned.length ? pinned : dockable.slice(0, 4)).map((a) => a.id),
+  };
 
   return (
-    <div
-      className="absolute inset-0 z-[10] flex flex-col overflow-hidden bg-gradient-to-b from-[var(--brand-soft,#dbeafe)] via-background to-background text-foreground"
-      style={{ "--android-nav": "48px" } as CSSProperties}
-    >
-      {/* Status bar: full-width tap opens the Shade — that IS real-Android
-          behaviour (tap/swipe the status bar → quick settings), so it stays one
-          deliberate control: labeled for AT and ≥32px hit height (h-8). */}
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => setShade(true)}
-        aria-label="Open quick settings"
-        inert={showApp}
-        className="h-8 w-full shrink-0 justify-between rounded-none p-0 px-4 text-[11px] font-semibold hover:bg-transparent"
+    <ShellUIProvider value={shellUI}>
+      <div
+        className="absolute inset-0 z-[10] flex flex-col overflow-hidden text-foreground"
+        style={{ "--android-nav": "48px" } as CSSProperties}
       >
-        <Clock mode="time" />
-        <span className="flex items-center gap-1">
-          <Signal className="size-3" /> <Wifi className="size-3" /> <Battery className="size-3.5" />
-        </span>
-      </Button>
+        {/* HOME (always mounted; app overlays it — inert while covered so its
+            grid + NavBar drop out of tab/AT order under the z-20 app layer).
+            Pull down → Control Center; clock+date live on the wallpaper. */}
+        <div className="flex min-h-0 flex-1 flex-col px-5 pb-1" inert={showApp} aria-hidden={showApp} onPointerDown={pullDown} style={{ paddingTop: "var(--sai-top, 0px)" }}>
+          <div className="mt-6 shrink-0">
+            <Clock mode="big" />
+            <Clock mode="date" />
+          </div>
+          <button
+            type="button"
+            onClick={toggleSpotlight}
+            className="mt-4 flex h-11 shrink-0 items-center gap-3 rounded-full border border-border bg-card/80 px-4 text-left shadow-sm backdrop-blur"
+          >
+            <Search className="size-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Search</span>
+          </button>
+          <div ref={gridRef} className="mt-6 grid min-h-0 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-y-auto">
+            {dockable.slice(0, 12).map((a) => (
+              <AppCell key={a.id} app={a} onClick={() => launch(a)} />
+            ))}
+          </div>
+          <Button type="button" variant="ghost"
+            onClick={() => setDrawer(true)}
+            className="h-auto p-0 font-normal hover:bg-transparent mx-auto mb-1 mt-auto flex flex-col items-center gap-0.5 text-[11px] text-muted-foreground"
+          >
+            <span className="h-1 w-9 rounded-full bg-foreground/30" />
+            All apps
+          </Button>
+        </div>
 
-      {/* HOME (always mounted; app overlays it — inert while covered so its
-          grid + NavBar drop out of tab/AT order under the z-20 app layer) */}
-      <div className="flex min-h-0 flex-1 flex-col px-5 pb-1" inert={showApp} aria-hidden={showApp}>
-        <div className="mt-4 flex h-11 shrink-0 items-center gap-3 rounded-full border border-border bg-card/80 px-4 shadow-sm backdrop-blur">
-          <Search className="size-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Search apps</span>
-        </div>
-        <div className="mt-6 grid min-h-0 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-y-auto">
-          {dockable.slice(0, 12).map((a) => (
-            <AppCell key={a.id} app={a} onClick={() => launch(a)} />
-          ))}
-        </div>
-        <Button type="button" variant="ghost"
-          onClick={() => setDrawer(true)}
-          className="h-auto p-0 font-normal hover:bg-transparent mx-auto mb-1 mt-auto flex flex-col items-center gap-0.5 text-[11px] text-muted-foreground"
-        >
-          <span className="h-1 w-9 rounded-full bg-foreground/30" />
-          All apps
-        </Button>
+        <NavBar inactive={showApp} onBack={goHome} onHome={goHome} onRecents={() => setRecents(true)} />
+
+        {/* fullscreen app */}
+        {showApp && activeApp && top && (
+          <div className="absolute inset-0 z-[20] flex flex-col bg-background [animation:appOpen_.24s_cubic-bezier(.2,.8,.2,1)] [transform-origin:center_bottom]">
+            <header
+              className="flex shrink-0 items-center gap-3 px-3 text-white"
+              style={{ background: activeApp.gradient, height: "calc(3rem + var(--sai-top, 0px))", paddingTop: "var(--sai-top, 0px)" }}
+            >
+              <Button type="button" variant="ghost" onClick={goHome} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent"><ChevronLeft className="size-5" /></Button>
+              <strong className="flex-1 truncate text-base">{activeApp.title}</strong>
+            </header>
+            <main className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]">
+              <WindowContent app={top.app} payload={top.payload} />
+            </main>
+            <NavBar onBack={goHome} onHome={goHome} onRecents={() => setRecents(true)} />
+          </div>
+        )}
+
+        {drawer && <AppDrawer apps={dockable} onLaunch={launch} onClose={() => setDrawer(false)} />}
+        {recents && <Recents order={order} apps={apps} onResume={resume} onHome={goHome} />}
+        <Slot region="controlCenter" />
       </div>
-
-      <NavBar inactive={showApp} onBack={goHome} onHome={goHome} onRecents={() => setRecents(true)} />
-
-      {/* fullscreen app */}
-      {showApp && activeApp && top && (
-        <div className="absolute inset-0 z-[20] flex flex-col bg-background [animation:appOpen_.24s_cubic-bezier(.2,.8,.2,1)] [transform-origin:center_bottom]">
-          <header className="flex h-12 shrink-0 items-center gap-3 px-3 text-white" style={{ background: activeApp.gradient }}>
-            <Button type="button" variant="ghost" onClick={goHome} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent"><ChevronLeft className="size-5" /></Button>
-            <strong className="flex-1 truncate text-base">{activeApp.title}</strong>
-          </header>
-          <main className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]">
-            <WindowContent app={top.app} payload={top.payload} />
-          </main>
-          <NavBar onBack={goHome} onHome={goHome} onRecents={() => setRecents(true)} />
-        </div>
-      )}
-
-      {drawer && <AppDrawer apps={dockable} onLaunch={launch} onClose={() => setDrawer(false)} />}
-      {recents && <Recents order={order} apps={apps} onResume={resume} onHome={goHome} />}
-      {shade && <Shade onClose={() => setShade(false)} />}
-    </div>
-  );
-}
-
-function AppCell({ app, onClick }: { app: AppDescriptor; onClick: () => void }) {
-  return (
-    <Button type="button" variant="ghost" onClick={onClick} className="h-auto p-0 font-normal hover:bg-transparent flex flex-col items-center gap-1.5">
-      <span className="size-14"><AppIcon app={app} /></span>
-      <span className="w-full truncate text-center text-[11px]">{app.title}</span>
-    </Button>
+    </ShellUIProvider>
   );
 }
 
@@ -149,28 +175,6 @@ function NavBar({ inactive = false, onBack, onHome, onRecents }: { inactive?: bo
       <Button type="button" variant="ghost" onClick={onRecents} aria-label="Recents" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
         <span className="size-3.5 rounded-[3px] border-2 border-foreground/70" />
       </Button>
-    </div>
-  );
-}
-
-function AppDrawer({ apps, onLaunch, onClose }: { apps: AppDescriptor[]; onLaunch: (a: AppDescriptor) => void; onClose: () => void }) {
-  const [q, setQ] = useState("");
-  const list = useMemo(() => apps.filter((a) => a.title.toLowerCase().includes(q.toLowerCase())), [apps, q]);
-  return (
-    <div className="absolute inset-0 z-[30] flex flex-col bg-background/95 backdrop-blur-xl [animation:appOpen_.2s_ease]">
-      <Button type="button" variant="ghost" onClick={onClose} className="h-auto p-0 font-normal hover:bg-transparent mx-auto mt-2 h-1 w-10 rounded-full bg-foreground/30" aria-label="Close" />
-      <div className="mx-4 mt-3 flex h-11 items-center gap-3 rounded-full border border-border bg-card px-4">
-        <Search className="size-4 text-muted-foreground" />
-        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search apps" className="w-full bg-transparent text-sm outline-none" />
-      </div>
-      <div
-        className="grid min-h-0 flex-1 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-auto p-5"
-        style={{ paddingBottom: "calc(var(--android-nav) + var(--sai-bottom))" }}
-      >
-        {list.map((a) => (
-          <AppCell key={a.id} app={a} onClick={() => onLaunch(a)} />
-        ))}
-      </div>
     </div>
   );
 }

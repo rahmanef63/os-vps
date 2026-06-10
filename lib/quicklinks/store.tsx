@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -118,11 +119,9 @@ export function QuicklinksProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  return (
-    <QuicklinksContext.Provider value={{ items, add, update, remove, move }}>
-      {children}
-    </QuicklinksContext.Provider>
-  );
+  // Memoized ctx (callbacks are stable) — consumers only re-render on items.
+  const ctx = useMemo(() => ({ items, add, update, remove, move }), [items, add, update, remove, move]);
+  return <QuicklinksContext.Provider value={ctx}>{children}</QuicklinksContext.Provider>;
 }
 
 export function useQuicklinks(): Ctx {

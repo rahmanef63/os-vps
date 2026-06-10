@@ -170,26 +170,17 @@ body {
   backdrop-filter: blur(var(--blur)) saturate(180%);
 }
 
-/* wallpapers (os-rr) */
+/* Wallpapers — ONLY per-shell native backdrops remain (the user-facing preset
+   grid is gone: theme presets own color identity; "auto" resolves to the
+   active shell's pick via ShellDescriptor.wallpaper, custom images override). */
 .wp-aurora { background:
   radial-gradient(120% 120% at 18% 12%, #6a8dff 0%, rgba(106,141,255,0) 46%),
   radial-gradient(120% 110% at 86% 22%, #ff7ac4 0%, rgba(255,122,196,0) 42%),
   radial-gradient(120% 120% at 70% 88%, #5be0c8 0%, rgba(91,224,200,0) 48%),
   linear-gradient(160deg, #2a2f6b 0%, #1b2050 60%, #141738 100%); }
-.wp-dusk { background:
-  radial-gradient(130% 120% at 80% 8%, #ffb066 0%, rgba(255,176,102,0) 45%),
-  radial-gradient(120% 120% at 12% 30%, #ff6f91 0%, rgba(255,111,145,0) 42%),
-  linear-gradient(160deg, #5a2a55 0%, #2e1b46 55%, #16122e 100%); }
-.wp-mist { background:
-  radial-gradient(120% 120% at 22% 18%, #c9d4e6 0%, rgba(201,212,230,0) 50%),
-  radial-gradient(120% 120% at 86% 80%, #aebfd6 0%, rgba(174,191,214,0) 50%),
-  linear-gradient(160deg, #eef1f6 0%, #dde3ee 60%, #cfd7e6 100%); }
 .wp-graphite { background:
   radial-gradient(120% 120% at 30% 20%, #3a3f4b 0%, rgba(58,63,75,0) 55%),
   linear-gradient(160deg, #23262e 0%, #16181d 70%, #0e0f13 100%); }
-.wp-noir { background: linear-gradient(160deg, #121316 0%, #0a0a0c 100%); }
-/* Per-OS flavours — the "auto" wallpaper resolves to the active shell's pick
-   (ShellDescriptor.wallpaper); these are also selectable as plain presets. */
 .wp-win11    { background: radial-gradient(90% 75% at 50% 35%, #3b82f6 0%, #1e40af 42%, #0b1f4a 100%); }
 .wp-material { background: linear-gradient(150deg, #cfe0ff 0%, #e8def8 55%, #ffd8e4 100%); }
 .dark .wp-material { background: linear-gradient(150deg, #1f2c47 0%, #322c4b 55%, #46263a 100%); }

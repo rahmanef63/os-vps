@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AppDescriptor } from "../lib/types";
 import { AppIcon } from "./app-icon";
+import { Clock } from "./clock";
 import { Slot } from "../registry/feature-registry";
 import { MobileAppLibrary } from "./mobile-app-library";
 import { AppActionSheet, AppsGrid } from "./mobile-home-parts";
 
-// Paged iPhone home: [Today widgets] · [App grid] · [App Library]. The dock,
-// page dots, search pill and home-indicator persist across pages.
+// Paged iPhone home: [Today widgets] · [App grid] · [App Library]. The status
+// clock, dock, page dots and home-indicator persist across pages.
 export function MobileHome({
   apps,
   dockApps,
@@ -70,13 +71,15 @@ export function MobileHome({
 
   return (
     <div className="absolute inset-0 flex flex-col" inert={inactive} aria-hidden={inactive}>
-      {/* top safe area: Dynamic Island lives here; swipe down → NC (left) / CC (right).
-          Height = base bar + the device notch inset so content never hides under it. */}
+      {/* top safe area: status clock + Dynamic Island live here; swipe down →
+          NC (left) / CC (right). Height = base bar + the device notch inset. */}
       <div
-        className="shrink-0 [touch-action:none]"
+        className="flex shrink-0 items-end px-7 pb-0.5 text-[13px] font-semibold text-white/90 [touch-action:none]"
         style={{ height: "calc(2.25rem + var(--sai-top))" }}
         onPointerDown={onTopPointerDown}
-      />
+      >
+        <Clock mode="time" />
+      </div>
 
       <div
         ref={pagerRef}

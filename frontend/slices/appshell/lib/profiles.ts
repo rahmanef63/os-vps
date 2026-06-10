@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import type { PersistedWindow } from "./types";
 import { hydrate, serialize } from "./store";
-import { setShell, type ShellPrefs } from "../registry/shells";
+import { getShellPrefs, setShell, type ShellPrefs } from "../registry/shells";
 import { registerCommands } from "./commands";
 import { toast } from "./toast";
 
@@ -40,15 +40,9 @@ function commit(next: Record<string, SessionProfile>) {
   syncProfileCommands();
 }
 
-function currentShellPrefs(): ShellPrefs {
-  try {
-    const raw = localStorage.getItem("sv:shell");
-    if (raw) return JSON.parse(raw) as ShellPrefs;
-  } catch {
-    /* fall through */
-  }
-  return { desktop: "macos", mobile: "ios" };
-}
+// Shell prefs come from the registry's validated store (SSOT) — never re-read
+// or re-default the `sv:shell` key here.
+const currentShellPrefs = (): ShellPrefs => getShellPrefs();
 
 export function saveProfile(name?: string): string {
   let n = name?.trim() ?? "";

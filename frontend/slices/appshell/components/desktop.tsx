@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState, type ComponentType } from "react";
-import { Monitor, Smartphone, Grid3x3, Minimize2, Maximize2 } from "lucide-react";
-import { useShellAppearance } from "../registry/capabilities";
-import { AppRegistryProvider } from "../lib/registry";
-import { ResponsiveProvider } from "../responsive/responsive-provider";
+import { Monitor, Smartphone, Grid3x3, Minimize2, Maximize2, X } from "lucide-react";
 import { useResponsive } from "../responsive/use-responsive";
 import { useWindowOrder } from "../hooks/use-shell";
 import { usePersistLayout } from "../hooks/use-persist-layout";
+import { useOverviewKey } from "../hooks/use-overview-key";
 import { MenuBar } from "./menu-bar";
 import { Dock } from "./dock";
 import { AppLauncher } from "./app-launcher";
@@ -15,7 +13,7 @@ import { Wallpaper } from "./wallpaper";
 import { MobileShell } from "./mobile-shell";
 import { Window } from "./window";
 import { Slot } from "../registry/feature-registry";
-import { toggleSpotlight, toggleInspector, snapWindow, toggleMaximize, minimizeWindow, minimizeAll, restoreWindow, shellStore } from "../lib/store";
+import { toggleSpotlight, toggleInspector, snapWindow, toggleMaximize, minimizeWindow, minimizeAll, restoreWindow, closeAll, shellStore } from "../lib/store";
 import { WindowOverview } from "./shells/window-overview";
 import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
@@ -29,19 +27,13 @@ import "../lib/spaces";
 import "../lib/window-tabs";
 import "../lib/focus-mode";
 import "../lib/profiles";
-// NOTE: Dashboard/Mobile shells live in the APP layer (data-agnostic slice).
-import type { AppDescriptor } from "../lib/types";
+// NOTE: the Dashboard shell lives in the APP layer (data-agnostic slice).
 
-// The OS surface. Apps come from the app layer; subscribes only to `order`.
-export function OsDesktop({ apps }: { apps: AppDescriptor[] }) {
-  const { device } = useShellAppearance();
-  return (
-    <AppRegistryProvider apps={apps}>
-      <ResponsiveProvider device={device}>
-        <Surface />
-      </ResponsiveProvider>
-    </AppRegistryProvider>
-  );
+// The OS surface. The app registry + responsive providers mount in AppShell
+// (above the feature-provider seam — see provider/app-shell.tsx), so this is
+// the pure chrome layer.
+export function OsDesktop() {
+  return <Surface />;
 }
 
 function Surface() {
@@ -142,18 +134,6 @@ function useWindowSnapKeys(enabled: boolean) {
   }, [enabled]);
 }
 
-// F3 (or ⌘/Ctrl + Up is taken by maximize) opens Mission Control — the shared
-// window overview. Local to the shell so switching shells drops the overlay.
-function useOverviewKey(open: () => void) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "F3") { e.preventDefault(); open(); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-}
-
 function DesktopChrome() {
   const order = useWindowOrder();
   const [overview, setOverview] = useState(false);
@@ -187,6 +167,7 @@ function DesktopChrome() {
           { type: "sep" },
           { label: "Show all windows", icon: Maximize2, disabled: order.length === 0, onClick: () => order.forEach((id) => shellStore.getWindow(id)?.minimized && restoreWindow(id)) },
           { label: "Minimize all", icon: Minimize2, disabled: order.length === 0, onClick: () => minimizeAll() },
+          { label: "Close all", icon: X, disabled: order.length === 0, onClick: () => closeAll() },
         ]}
       />
     </>

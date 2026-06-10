@@ -9,6 +9,55 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-10 — Shell parity sweep: Android rebuilt · Dashboard store-driven · wallpaper presets retired (DONE)
+
+Two audits (provider/wrapper consistency + a 12-feature × 5-shell parity
+matrix) drove this round; every gap found was built, not just listed.
+
+- **Android shell rebuilt for parity**: status-bar row removed (user call: the
+  SCREEN header goes, the wallpaper clock stays) — big clock + date back on the
+  wallpaper; pull-DOWN on home now opens the REAL Control Center feature
+  (`controlCenter` slot + `ShellUIProvider`; the fake wifi/bt Shade is deleted),
+  via the new shared `usePullDown` hook (fires at threshold, pointercancel-safe,
+  scroll-aware). Root is transparent so the shared `<Wallpaper>` (auto →
+  `wp-material`, or the user's custom image) finally shows. `home` is derived
+  from the pathname (iOS pattern) → deep links / back-forward work in Android
+  now. Search pill → Spotlight. App header pads `--sai-top` (notch). Drawer
+  close handle ≥36px hit; Recents ✕ 36px on coarse pointers.
+- **Resume-don't-duplicate** (iOS + Android): a home tap on a running app now
+  `focusApp`s its window instead of spawning a second one (Files used to
+  multiply on every tap).
+- **Dashboard shell store-driven**: dropped its private `route` state — panes
+  are real store windows (`openWindow`/`minimizeWindow`, focused-window
+  derivation), so URL sync, deep links and title sync work; added a Running
+  sidebar section (resume/✕), an app filter, and the missing
+  `[container-type:inline-size]` on the pane.
+- **Windows shell**: ⌘Tab AppSwitcher + NotificationCenter mounted (clock is
+  now the notifications button), F3 Task View via the extracted
+  `use-overview-key` hook, Start menu closes on Esc.
+- **macOS**: Launchpad gets a live search field + `inert` while closed (its ~20
+  links were tab-reachable invisible); desktop context menu gains "Close all";
+  Launchpad z drops to 8400 (was colliding with the clipboard overlay at 8500).
+- **iOS**: status clock in the top safe-area strip (shared `<Clock>`); switcher
+  ✕ 36px on coarse pointers.
+- **Wallpaper presets retired**: aurora/dusk/mist/graphite/noir picker grid is
+  gone from Settings → Appearance — theme presets own color identity; wallpaper
+  is "auto" (per-shell native backdrop) or a custom image. Legacy stored keys
+  coerce to "auto" on every hydrate path (`normalizeWallpaper`); shell-backdrop
+  CSS (`wp-aurora/graphite/win11/material/ios`) stays.
+- **Provider/wrapper audit fixes**: `AppRegistryProvider`+`ResponsiveProvider`
+  hoisted above the feature-provider seam (a `FeatureDescriptor.provider`
+  calling `useResponsive` no longer throws by construction); capabilities merge
+  memoized + `undefined`-stripped; pre-hydration theme script kills the
+  dark-mode light flash; Settings used raw `env(safe-area-inset-bottom)` and
+  ignored the iOS +34px pill bump (now `var(--sai-bottom)`); profiles read
+  `sv:shell` via the registry SSOT (`getShellPrefs`); `MOBILE_W` deduped;
+  appearance/quicklinks context values memoized; phantom `"mobile"` ShellId
+  deleted; mobile dock ids moved from a hardcode in generic appshell to
+  `AppDescriptor.pinned` set by the Topside manifest.
+
+---
+
 ## 2026-06-09 (round 2) — Mobile maximized: prefs sync · terminal key bar · deep-link fixes (DONE)
 
 Phone testing surfaced the real gaps — everything below e2e-verified on prod

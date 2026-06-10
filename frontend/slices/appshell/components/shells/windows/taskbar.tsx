@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Search, LayoutGrid, ArrowUpRight, Minimize2, X } from "lucide-react";
 import { useApps } from "../../../lib/registry";
 import { useWindowOrder, useWindow, useFocused } from "../../../hooks/use-shell";
-import { focusWindow, minimizeWindow, restoreWindow, closeWindow } from "../../../lib/store";
+import { focusWindow, minimizeWindow, restoreWindow, closeWindow, toggleNotificationCenter } from "../../../lib/store";
 import { AppIcon } from "../../app-icon";
 import { ContextMenu, useContextMenu } from "../context-menu";
 import { StartMenu } from "./start-menu";
@@ -18,6 +18,14 @@ export const TASKBAR_H = 48;
 export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
   const [startOpen, setStartOpen] = useState(false);
   const order = useWindowOrder();
+  useEffect(() => {
+    if (!startOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setStartOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [startOpen]);
   return (
     <>
       {startOpen && <StartMenu onClose={() => setStartOpen(false)} />}
@@ -113,6 +121,7 @@ function TaskButton({ id }: { id: string }) {
   );
 }
 
+// Clock doubles as the Notification Center toggle, like the real Win11 tray.
 function Clock() {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -120,9 +129,13 @@ function Clock() {
     return () => clearInterval(t);
   }, []);
   return (
-    <div className="flex flex-col items-end px-2 text-[11px] leading-tight text-muted-foreground">
+    <Button type="button" variant="ghost"
+      onClick={toggleNotificationCenter}
+      aria-label="Notifications"
+      className="h-auto p-0 font-normal hover:bg-transparent flex h-9 min-w-9 flex-col items-end justify-center gap-0 rounded-md px-2 text-[11px] leading-tight text-muted-foreground hover:bg-muted"
+    >
       <span>{now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
       <span>{now.toLocaleDateString([], { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-    </div>
+    </Button>
   );
 }

@@ -9,7 +9,7 @@ import {
   type SafeArea,
 } from "./use-responsive";
 
-const MOBILE_W = 768; // phone-width cutoff (matches the rr useIsMobile contract)
+export const MOBILE_W = 768; // phone-width cutoff — THE breakpoint (useIsMobile fallback imports it)
 const TABLET_W = 1024; // touch-portrait tablets below this read as mobile
 
 function bucket(vw: number): Pane {

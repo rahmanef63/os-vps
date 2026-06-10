@@ -25,9 +25,7 @@ export {
   DEVICE_OPTIONS,
   FONT_SCALE_OPTIONS,
   THEME_MODE_OPTIONS,
-  WALLPAPER_OPTIONS,
-  wallpaperLabel,
 } from "./options";
 export { FONT_OPTIONS, fontStack, asFontKey, type FontKey, type FontOption } from "./fonts";
-export { WALLPAPERS, wallpaperClass, type WallpaperPreset } from "./wallpapers";
+export { normalizeWallpaper, wallpaperClass, wallpaperLabel } from "./wallpapers";
 export { uploadWallpaper, WALLPAPER_DIR } from "./wallpaper-upload";

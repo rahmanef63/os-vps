@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useApps } from "../lib/registry";
 import { useWindowOrder, useFocused, useWindow } from "../hooks/use-shell";
-import { shellStore, openWindow, minimizeWindow, restoreWindow, toggleSpotlight } from "../lib/store";
+import { shellStore, openWindow, focusApp, minimizeWindow, restoreWindow, toggleSpotlight } from "../lib/store";
 import { AppIcon } from "./app-icon";
 import { HomeIndicator } from "./home-indicator";
 import { WindowContent } from "./window-content";
@@ -15,8 +15,6 @@ import { MobileNotifications } from "./mobile-notifications";
 import { Slot } from "../registry/feature-registry";
 import { useShellConfig } from "../registry/shell-config";
 import { ShellUIProvider, type ShellUI } from "../registry/shell-ui";
-
-const DOCK_IDS = ["files-manager", "os-terminal", "system-monitor", "os-settings"];
 
 // Phones: no floating windows — a paged home + one fullscreen app at a time.
 // Reuses the same store (open/minimize/focus) so state matches the desktop.
@@ -28,7 +26,10 @@ export function MobileShell() {
   const [cc, setCc] = useState(false);
   const [nc, setNc] = useState(false); // notification center (pull down, left half)
 
-  const dockApps = apps.filter((a) => DOCK_IDS.includes(a.id));
+  // Dock = manifest-pinned apps (AppDescriptor.pinned — the generic shell never
+  // hardcodes project app ids); falls back to the first 4 dockable apps.
+  const pinned = apps.filter((a) => a.pinned);
+  const dockApps = (pinned.length ? pinned : apps.filter((a) => !a.noDock)).slice(0, 4);
 
   // URL → surface: a pathname naming an app slug shows the app pane (UrlSync
   // opens/focuses its window in the shared store; we only flip off the grid),
@@ -58,8 +59,11 @@ export function MobileShell() {
   const activeApp = top ? apps.find((a) => a.id === top.app) : null;
 
   // SSOT navigation: open / resume bring a window to the front; home minimises.
+  // Resume-don't-duplicate (real-iOS): a home tap brings the existing window
+  // forward; only a missing one spawns — multi apps get extra windows from
+  // explicit affordances (dock hover "New Window" on desktop), not home taps.
   const launch = (app: (typeof apps)[number]) => {
-    openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
+    if (!focusApp(app.id)) openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
     setSwitcher(false);
     setHome(false);
   };

@@ -1,5 +1,4 @@
-import { FONT_SCALES, type Device, type Theme, type Wallpaper } from "./types";
-import { WALLPAPERS, wallpaperClass } from "./wallpapers";
+import { FONT_SCALES, type Device, type Theme } from "./types";
 
 export type Option<T extends string = string> = {
   value: T;
@@ -13,14 +12,8 @@ export const THEME_MODE_OPTIONS: Option<Theme>[] = [
   { value: "dark", label: "Dark", hint: "Dim system chrome" },
 ];
 
-// Derived from the wallpapers.ts registry (SSOT) so labels/keys/classes never
-// drift from the appearance type or globals.css.
-export const WALLPAPER_OPTIONS: Option<Wallpaper>[] = WALLPAPERS.map((w) => ({
-  value: w.key,
-  label: w.label,
-  hint: w.hint,
-  className: wallpaperClass(w.key),
-}));
+// Wallpaper presets are gone on purpose: theme presets own color identity, the
+// wallpaper is "auto" (per-shell backdrop) or a custom image (wallpapers.ts).
 
 export const DEVICE_OPTIONS: Option<Device>[] = [
   { value: "auto", label: "Auto", hint: "Match viewport" },
@@ -33,5 +26,3 @@ export const FONT_SCALE_OPTIONS = FONT_SCALES.map((value) => ({
   label: value === 1 ? "Default" : `${Math.round(value * 100)}%`,
   hint: value < 1 ? "Compact" : value > 1 ? "Larger" : "System",
 }));
-
-export { wallpaperLabel } from "./wallpapers";

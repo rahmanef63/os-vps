@@ -40,22 +40,24 @@ export const TOPSIDE_PERSIST_KEY = "os-vps:layout";
 // Short URL slug per app for deep-linking (`/files`), assigned here so the app
 // slices stay URL-agnostic. Falls back to the app id when unmapped.
 const withSlug = (app: AppDescriptor, slug: string): AppDescriptor => ({ ...app, slug });
+// Pinned = the mobile dock / quick-shortcut set (appshell stays id-agnostic).
+const pin = (app: AppDescriptor): AppDescriptor => ({ ...app, pinned: true });
 
 // Built-in apps (dock order; media-viewer is noDock). Runtime apps append.
 export const BUILTIN_APPS: AppDescriptor[] = [
-  withSlug(filesManagerApp, "files"),
+  pin(withSlug(filesManagerApp, "files")),
   withSlug(browserApp, "browser"),
   withSlug(codeEditorApp, "code"),
-  withSlug(osTerminalApp, "terminal"),
+  pin(withSlug(osTerminalApp, "terminal")),
   withSlug(mediaStudioApp, "studio"),
   withSlug(reelEditorApp, "reel"),
   withSlug(mediaViewerApp, "viewer"),
   withSlug(appStoreApp, "store"),
   withSlug(createAppApp, "create"),
-  withSlug(systemMonitorApp, "monitor"),
+  pin(withSlug(systemMonitorApp, "monitor")),
   withSlug(assistantApp, "assistant"),
   withSlug(quicklinksApp, "links"),
-  withSlug(osSettingsApp, "settings"),
+  pin(withSlug(osSettingsApp, "settings")),
 ];
 
 // Shell features — each lives in its own `shell-*` slice and mounts into the

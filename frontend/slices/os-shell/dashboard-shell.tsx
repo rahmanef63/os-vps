@@ -2,23 +2,69 @@
 /* Dashboard shell — a single-pane cockpit surface (no floating windows):
    sidebar + breadcrumb + content. Lives in the os-shell CONSUMER (not the
    appshell framework) because its home page reads Topside capabilities
-   (system stats); the framework stays data-agnostic. Apps mount inline via
-   <AppHost> — the SAME lazy-loaded components the windowed shells render —
-   so a file open here shares state with macOS/Windows windows. */
-import { useState } from "react";
-import { LayoutDashboard, Home, Activity, Cpu, MemoryStick, HardDrive } from "lucide-react";
+   (system stats); the framework stays data-agnostic. It DRIVES the shared
+   window store: launching calls openWindow, the pane shows the focused
+   (or newest non-minimized) window via <AppHost>, Home minimizes it — so
+   UrlSync deep links work here and open windows (with their payloads)
+   carry over intact when switching to the macOS/Windows/mobile shells. */
+import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Home, Activity, Search } from "lucide-react";
 import {
-  registerShell, AppHost, AppIcon, useApps, useSystemStats,
+  registerShell, AppHost, AppIcon, useApps, useShellConfig,
+  useWindowOrder, useFocused, useWindow, shellStore,
+  openWindow, minimizeWindow, restoreWindow,
   type AppDescriptor,
 } from "@/features/appshell";
-
-type Route = { view: "home" } | { view: "app"; appId: string; title: string };
+import { DashboardHome, NavItem, RunningRow, SidebarLabel } from "./dashboard-parts";
 
 function DashboardShell() {
-  const [route, setRoute] = useState<Route>({ view: "home" });
-  const apps = useApps().filter((a) => !a.noDock);
-  const openApp = (appId: string, title: string) => setRoute({ view: "app", appId, title });
-  const home = () => setRoute({ view: "home" });
+  const allApps = useApps();
+  const apps = allApps.filter((a) => !a.noDock);
+  const [q, setQ] = useState("");
+  const filtered = useMemo(
+    () => apps.filter((a) => a.title.toLowerCase().includes(q.toLowerCase())),
+    [apps, q],
+  );
+
+  // URL → view, same derivation as the mobile shell: a pathname naming an app
+  // slug shows the app pane (UrlSync opens/focuses its window in the shared
+  // store), anything else shows Home. User gestures override, keyed to the
+  // pathname they were made at, so the derivation wins again when the URL
+  // actually changes — no effect-driven setState.
+  const { routing } = useShellConfig();
+  const pathname = usePathname();
+  const urlSlug = pathname.split("/").filter(Boolean)[0];
+  const urlIsApp =
+    routing !== false && !!urlSlug && allApps.some((a) => (a.slug ?? a.id) === urlSlug);
+  const [homeChoice, setHomeChoice] = useState<{ key: string; home: boolean } | null>(null);
+  const home = homeChoice?.key === pathname ? homeChoice.home : !urlIsApp;
+  const setHome = (h: boolean) => setHomeChoice({ key: pathname, home: h });
+
+  // The pane shows the FOCUSED window — fall back to the newest non-minimized
+  // one (`order` is append-only and doesn't track focus).
+  const order = useWindowOrder();
+  const focused = useFocused();
+  const topId =
+    focused && !shellStore.getWindow(focused)?.minimized
+      ? focused
+      : ([...order].reverse().find((id) => !shellStore.getWindow(id)?.minimized) ?? null);
+  const top = useWindow(topId ?? "__none__"); // reactive: re-renders on the active window's payload/title changes
+  const pane = !home && top ? top : null;
+
+  // SSOT navigation: open / resume bring a window to the front; Home minimizes.
+  const launch = (app: AppDescriptor) => {
+    openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
+    setHome(false);
+  };
+  const resume = (id: string) => {
+    restoreWindow(id);
+    setHome(false);
+  };
+  const goHome = () => {
+    if (topId) minimizeWindow(topId);
+    setHome(true);
+  };
 
   return (
     <div className="absolute inset-0 z-[10] flex bg-background">
@@ -28,122 +74,68 @@ function DashboardShell() {
         </div>
 
         <div className="flex flex-col gap-0.5 px-2">
-          <NavItem active={route.view === "home"} onClick={home} icon={<Home className="size-4" />} label="Home" />
+          <NavItem active={!pane} onClick={goHome} icon={<Home className="size-4" />} label="Home" />
         </div>
 
-        <div className="px-4 pb-1.5 pt-4 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Apps</div>
+        {order.length > 0 && (
+          <>
+            <SidebarLabel>Running</SidebarLabel>
+            <div className="flex flex-col gap-0.5 px-2">
+              {order.map((id) => (
+                <RunningRow key={id} id={id} active={pane?.id === id} onPick={() => resume(id)} />
+              ))}
+            </div>
+          </>
+        )}
+
+        <SidebarLabel>Apps</SidebarLabel>
+        <div className="px-2 pb-1.5">
+          <div className="flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5">
+            <Search className="size-3.5 shrink-0 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filter apps"
+              className="w-full bg-transparent text-sm outline-none"
+            />
+          </div>
+        </div>
         <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-auto px-2 pb-3">
-          {apps.map((a) => (
+          {filtered.map((a) => (
             <NavItem
               key={a.id}
-              active={route.view === "app" && route.appId === a.id}
-              onClick={() => openApp(a.id, a.title)}
+              active={pane?.app === a.id}
+              onClick={() => launch(a)}
               icon={<span className="size-5"><AppIcon app={a} /></span>}
               label={a.title}
             />
           ))}
+          {filtered.length === 0 && (
+            <div className="px-2.5 py-2 text-xs text-muted-foreground">No apps</div>
+          )}
         </nav>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-5 text-sm">
-          <button onClick={home} className="text-muted-foreground transition-colors hover:text-foreground">Home</button>
-          {route.view === "app" && (
+          <button onClick={goHome} className="text-muted-foreground transition-colors hover:text-foreground">Home</button>
+          {pane && (
             <>
               <span className="text-muted-foreground/50">/</span>
-              <span className="font-medium">{route.title}</span>
+              <span className="font-medium">{pane.title}</span>
             </>
           )}
         </header>
-        <main className="min-h-0 flex-1 overflow-hidden">
-          {route.view === "home" ? (
-            <DashboardHome apps={apps} onOpenApp={openApp} />
+        {/* container context is REQUIRED: app @container styles never match without it */}
+        <main className="min-h-0 flex-1 overflow-hidden [container-type:inline-size]">
+          {pane ? (
+            <AppHost key={pane.id} app={pane.app} payload={pane.payload} winId={pane.id} />
           ) : (
-            <AppHost key={route.appId} app={route.appId} />
+            <DashboardHome apps={apps} onOpenApp={launch} />
           )}
         </main>
       </div>
     </div>
-  );
-}
-
-function DashboardHome({ apps, onOpenApp }: { apps: AppDescriptor[]; onOpenApp: (id: string, title: string) => void }) {
-  const stats = useSystemStats();
-  const cards = stats
-    ? [
-        { icon: Cpu, label: "CPU", value: `${Math.round(stats.cpu.pct)}%`, hint: `${stats.cpu.cores} cores` },
-        { icon: MemoryStick, label: "Memory", value: `${Math.round((stats.mem.used / stats.mem.total) * 100)}%`, hint: fmtGb(stats.mem.used) + " / " + fmtGb(stats.mem.total) },
-        { icon: HardDrive, label: "Disk", value: `${Math.round((stats.disk.used / stats.disk.total) * 100)}%`, hint: fmtGb(stats.disk.used) + " / " + fmtGb(stats.disk.total) },
-      ]
-    : [];
-
-  return (
-    <div className="mx-auto h-full max-w-6xl overflow-auto px-8 py-7">
-      <h1 className="mb-1 text-xl font-semibold tracking-tight">Welcome back</h1>
-      <p className="mb-8 text-sm text-muted-foreground">Your VPS, one pane at a time.</p>
-
-      {cards.length > 0 && (
-        <Section title="Host">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {cards.map((c) => (
-              <button
-                key={c.label}
-                onClick={() => onOpenApp("system-monitor", "System Monitor")}
-                className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md"
-              >
-                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"><c.icon className="size-5" /></span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium">{c.label} · {c.value}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{c.hint}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      <Section title="Apps">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {apps.map((a) => (
-            <button
-              key={a.id}
-              onClick={() => onOpenApp(a.id, a.title)}
-              className="flex flex-col items-start gap-1.5 rounded-xl border border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md"
-            >
-              <span className="size-10"><AppIcon app={a} /></span>
-              <span className="mt-1.5 w-full truncate text-sm font-medium">{a.title}</span>
-            </button>
-          ))}
-        </div>
-      </Section>
-    </div>
-  );
-}
-
-function fmtGb(bytes: number): string {
-  return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
-}
-
-function NavItem({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors ${
-        active ? "bg-primary/10 font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      }`}
-    >
-      {icon}
-      <span className="truncate">{label}</span>
-    </button>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mb-9">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
-      {children}
-    </section>
   );
 }
 

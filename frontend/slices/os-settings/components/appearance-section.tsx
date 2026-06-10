@@ -6,7 +6,6 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
   DEVICE_OPTIONS,
-  WALLPAPER_OPTIONS,
   uploadWallpaper,
   useAppearance,
   wallpaperLabel,
@@ -70,7 +69,7 @@ export function AppearanceSection() {
                 {customWallpaper ? String(customWallpaper.metadata?.title ?? customWallpaper.metadata?.filename ?? "Custom image") : wallpaperLabel(tweaks.wallpaper)}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Image picker supports gallery, upload, link, and curated Unsplash. Custom image wins over presets.
+                Auto follows the active shell&apos;s backdrop; colors come from the theme preset. Pick a custom image to override.
               </p>
             </div>
             <ImagePickerButton
@@ -83,26 +82,19 @@ export function AppearanceSection() {
             />
           </div>
           {customWallpaper && (
-            <Button type="button" variant="ghost" size="sm" className="mt-2 h-8 px-2 text-xs" onClick={() => setWallpaperImage(null)}>
-              Reset to presets
-            </Button>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {WALLPAPER_OPTIONS.map((wp) => (
-            <ChoiceCard
-              key={wp.value}
-              active={!customWallpaper && tweaks.wallpaper === wp.value}
-              label={wp.label}
-              hint={wp.hint}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="mt-2 h-8 px-2 text-xs"
               onClick={() => {
                 setWallpaperImage(null);
-                setTweaks({ wallpaper: wp.value as Wallpaper });
+                setTweaks({ wallpaper: "auto" });
               }}
             >
-              <span className={cn("block h-14 rounded-xl ring-1 ring-border", wp.className)} />
-            </ChoiceCard>
-          ))}
+              Reset to Auto
+            </Button>
+          )}
         </div>
       </Section>
 

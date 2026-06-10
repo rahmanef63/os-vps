@@ -1,36 +1,24 @@
-// SSOT for the built-in wallpaper presets. The visual `.wp-<key>` gradients live
-// in app/globals.css (the CSS truth); THIS registry is the single TypeScript
-// source for the keys, labels, and the `Wallpaper` union, so options.ts, the
-// settings UI, and the appearance types can never drift. Add a wallpaper = one
-// entry here + one `.wp-<key>` rule in globals.css. "auto" follows the active
-// shell's own backdrop (ShellDescriptor.wallpaper) for per-OS fidelity.
+// SSOT for wallpaper keys. The visual `.wp-<key>` gradients live in
+// app/globals.css (the CSS truth). There is NO user-facing preset picker any
+// more — color/identity comes from the theme presets (lib/appearance/presets);
+// the wallpaper is either "auto" (each shell's native backdrop, the keys below)
+// or a custom image via the image picker. Legacy stored keys (dusk/mist/noir/…)
+// are coerced to "auto" by normalizeWallpaper on every hydrate path.
 
-export type Wallpaper =
-  | "auto" | "aurora" | "dusk" | "mist" | "graphite" | "noir"
-  | "win11" | "material" | "ios";
+/** "auto" + the per-shell native backdrops (ShellDescriptor.wallpaper). */
+export type Wallpaper = "auto" | "aurora" | "graphite" | "win11" | "material" | "ios";
 
-export type WallpaperPreset = {
-  key: Wallpaper;
-  label: string;
-  hint?: string;
-};
+const SHELL_KEYS: readonly Wallpaper[] = ["auto", "aurora", "graphite", "win11", "material", "ios"];
 
-export const WALLPAPERS: readonly WallpaperPreset[] = [
-  { key: "auto", label: "Auto", hint: "Follow active shell" },
-  { key: "aurora", label: "Aurora" },
-  { key: "dusk", label: "Dusk" },
-  { key: "mist", label: "Mist" },
-  { key: "graphite", label: "Graphite" },
-  { key: "noir", label: "Noir" },
-  { key: "win11", label: "Bloom" },
-  { key: "material", label: "Material" },
-  { key: "ios", label: "iOS" },
-];
+/** Coerce any stored/synced value (incl. removed legacy presets) to a valid key. */
+export function normalizeWallpaper(value: unknown): Wallpaper {
+  return SHELL_KEYS.includes(value as Wallpaper) ? (value as Wallpaper) : "auto";
+}
 
 /** The globals.css class that paints a wallpaper key. */
 export const wallpaperClass = (key: Wallpaper): string => `wp-${key}`;
 
-/** Human label for a wallpaper key (falls back to the raw key). */
+/** Human label for a wallpaper key (settings header). */
 export function wallpaperLabel(key: Wallpaper): string {
-  return WALLPAPERS.find((w) => w.key === key)?.label ?? key;
+  return key === "auto" ? "Auto — follows shell & theme" : key;
 }

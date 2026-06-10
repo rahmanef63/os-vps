@@ -51,7 +51,7 @@ function SectionDetail({ id }: { id: SectionId }) {
   const meta = SECTIONS.find((s) => s.id === id);
   return (
     <ScrollArea className="h-full">
-      <div className="mx-auto min-w-0 max-w-3xl space-y-4 overflow-x-hidden p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:space-y-5 sm:p-5">
+      <div className="mx-auto min-w-0 max-w-3xl space-y-4 overflow-x-hidden p-3 pb-[max(1rem,var(--sai-bottom,0px))] sm:space-y-5 sm:p-5">
         {meta && (
           <header className="space-y-0.5">
             <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>

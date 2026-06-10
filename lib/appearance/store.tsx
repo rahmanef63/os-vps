@@ -12,6 +12,7 @@ import {
 import { parseImage, imageStyle, isCssImage, type ImageValue } from "@/features/image-picker";
 import { usePrefsSync } from "@/lib/prefs/use-prefs-sync";
 import { TWEAK_DEFAULTS, type Tweaks, type ServerConfig } from "./types";
+import { normalizeWallpaper } from "./wallpapers";
 import { ensureServerTargets } from "./server-targets";
 import { fontStack } from "./fonts";
 import { applyPreset, clearPreset } from "./presets/apply";
@@ -79,6 +80,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         setState(withWallpaperStyle({
           ...TWEAK_DEFAULTS,
           ...parsed,
+          // Removed legacy presets (dusk/mist/noir/…) coerce to "auto".
+          wallpaper: normalizeWallpaper(parsed.wallpaper),
           wallpaperImage,
           server: ensureServerTargets(server),
         }));
@@ -122,6 +125,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     setState(withWallpaperStyle({
       ...TWEAK_DEFAULTS,
       ...t,
+      wallpaper: normalizeWallpaper(t.wallpaper),
       wallpaperImage: parseImage(t.wallpaperImage ?? null),
       server: ensureServerTargets({ ...TWEAK_DEFAULTS.server, ...t.server }),
     }));
@@ -147,11 +151,12 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  return (
-    <AppearanceContext.Provider value={{ tweaks, setTweaks, setServer, setWallpaperImage }}>
-      {children}
-    </AppearanceContext.Provider>
+  // Memoized ctx (setters are stable) — consumers only re-render on tweaks.
+  const ctx = useMemo(
+    () => ({ tweaks, setTweaks, setServer, setWallpaperImage }),
+    [tweaks, setTweaks, setServer, setWallpaperImage],
   );
+  return <AppearanceContext.Provider value={ctx}>{children}</AppearanceContext.Provider>;
 }
 
 export function useAppearance(): Ctx {

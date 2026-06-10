@@ -3,12 +3,21 @@
 import { useEffect, type ComponentType, type ReactNode } from "react";
 import { OsDesktop } from "../components/desktop";
 import { configureWindowTitle, startWindowTitleSync } from "../lib/window-title";
+import { AppRegistryProvider } from "../lib/registry";
+import { ResponsiveProvider } from "../responsive/responsive-provider";
 import { BrandProvider } from "../registry/brand";
 import { FeatureRegistryProvider } from "../registry/feature-registry";
 import { ShellConfigProvider } from "../registry/shell-config";
-import { CapabilitiesProvider } from "../registry/capabilities";
+import { CapabilitiesProvider, useShellAppearance } from "../registry/capabilities";
 import { UrlSync } from "../runtime/use-url-sync";
 import type { ShellManifest } from "../registry/types";
+
+// ResponsiveProvider needs the appearance device override, so it mounts via a
+// child of CapabilitiesProvider (a plain hoist couldn't call the hook).
+function ResponsiveBoundary({ children }: { children: ReactNode }) {
+  const { device } = useShellAppearance();
+  return <ResponsiveProvider device={device}>{children}</ResponsiveProvider>;
+}
 
 function withProviders(
   providers: ComponentType<{ children: ReactNode }>[],
@@ -46,8 +55,14 @@ export function AppShell({ manifest }: { manifest: ShellManifest }) {
           }}
         >
           <FeatureRegistryProvider features={features}>
-            {manifest.routing !== false && <UrlSync apps={manifest.apps} />}
-            {withProviders(providers, <OsDesktop apps={manifest.apps} />)}
+            {/* Registry + responsive mount ABOVE the feature-provider seam so a
+                FeatureDescriptor.provider can call useApps()/useResponsive(). */}
+            <AppRegistryProvider apps={manifest.apps}>
+              <ResponsiveBoundary>
+                {manifest.routing !== false && <UrlSync apps={manifest.apps} />}
+                {withProviders(providers, <OsDesktop />)}
+              </ResponsiveBoundary>
+            </AppRegistryProvider>
           </FeatureRegistryProvider>
         </ShellConfigProvider>
       </BrandProvider>

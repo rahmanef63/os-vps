@@ -72,6 +72,9 @@ export type AppDescriptor = {
   defaultSize?: { w: number; h: number };
   /** Hide from the dock (still launchable via launcher). */
   noDock?: boolean;
+  /** Pinned to the mobile dock / quick-shortcut set (consumer manifest decides
+   *  — the generic shell never hardcodes project app ids). */
+  pinned?: boolean;
   /** Allow several windows at once (e.g. Files); default = single instance. */
   multi?: boolean;
 
