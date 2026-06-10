@@ -4,35 +4,74 @@
    android-shell.tsx so each file stays small (rr ≤200 LOC gate). */
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Wifi, Bluetooth, Moon, Flashlight, Plane, RotateCw, Sun, X } from "lucide-react";
-import { shellStore } from "../../../lib/store";
+import { shellStore, closeWindow, closeAll } from "../../../lib/store";
+import { useSwipeUpClose } from "../../../hooks/use-swipe-close";
 import { AppIcon } from "../../app-icon";
-import type { AppDescriptor } from "../../../lib/types";
+import type { AppDescriptor, WindowState } from "../../../lib/types";
 
 export function Recents({ order, apps, onResume, onHome }: { order: string[]; apps: AppDescriptor[]; onResume: (id: string) => void; onHome: () => void }) {
-  const wins = order.map((id) => shellStore.getWindow(id)).filter(Boolean);
+  const wins = order.map((id) => shellStore.getWindow(id)).filter(Boolean) as WindowState[];
   return (
     <div className="absolute inset-0 z-[30] flex flex-col bg-background/90 backdrop-blur-xl" onClick={onHome}>
       <div className="flex min-h-0 flex-1 items-center gap-3 overflow-x-auto p-5" onClick={(e) => e.stopPropagation()}>
         {wins.length === 0 && <div className="m-auto text-sm text-muted-foreground">No recent apps</div>}
-        {wins.map((w) => {
-          const app = apps.find((a) => a.id === w!.app);
-          return (
-            <Button type="button" variant="ghost"
-              key={w!.id}
-              onClick={() => onResume(w!.id)}
-              className="h-auto p-0 font-normal hover:bg-transparent flex h-[60%] w-44 shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
-            >
-              <span className="flex items-center gap-2 px-3 py-2 text-left">
-                {app && <span className="size-5"><AppIcon app={app} /></span>}
-                <span className="truncate text-xs font-medium">{w!.title}</span>
-              </span>
-              <span className="min-h-0 flex-1" style={{ background: app?.gradient, opacity: 0.15 }} />
-            </Button>
-          );
-        })}
+        {wins.map((w) => (
+          <RecentCard key={w.id} win={w} app={apps.find((a) => a.id === w.app)} onResume={() => onResume(w.id)} />
+        ))}
       </div>
+      {wins.length > 0 && (
+        <div
+          className="flex shrink-0 items-center justify-center pt-1"
+          style={{ paddingBottom: "calc(72px + var(--sai-bottom))" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => { closeAll(); onHome(); }}
+            className="h-auto rounded-full bg-muted px-4 py-1.5 text-[13px] font-semibold text-foreground hover:bg-muted/80"
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecentCard({ win, app, onResume }: { win: WindowState; app?: AppDescriptor; onResume: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { onPointerDown, draggedRef } = useSwipeUpClose(ref, () => closeWindow(win.id));
+  return (
+    <div
+      ref={ref}
+      onPointerDown={onPointerDown}
+      onClick={(e) => {
+        e.stopPropagation(); // a card tap resumes; only empty space → home
+        if (!draggedRef.current) onResume();
+      }}
+      style={{ touchAction: "pan-x" }}
+      className="flex h-[60%] w-44 shrink-0 cursor-grab flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+    >
+      <span className="flex items-center gap-2 px-3 py-2">
+        {app && <span className="size-5"><AppIcon app={app} /></span>}
+        <span className="min-w-0 flex-1 truncate text-left text-xs font-medium">{win.title}</span>
+        <button
+          type="button"
+          aria-label={`Close ${win.title}`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation(); // don't let the card's onClick resume the app
+            closeWindow(win.id);
+          }}
+          className="-mr-1 flex size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/10 active:bg-foreground/20"
+        >
+          <X className="size-3.5" />
+        </button>
+      </span>
+      <span className="min-h-0 flex-1" style={{ background: app?.gradient, opacity: 0.15 }} />
     </div>
   );
 }
