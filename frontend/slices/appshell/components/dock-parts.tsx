@@ -141,7 +141,7 @@ export function PlainIcon({
     <div ref={slotRef} className={cn(`relative shrink-0 ${SLOT_TRANS}`)} style={{ width: BASE, height: BASE }}>
       <div ref={zoneRef} className={cn(`group absolute inset-x-0 bottom-0 ${ZONE_TRANS}`)} style={{ height: BASE }}>
         <HoverPanel><span className="text-[12.5px] font-medium">{label}</span></HoverPanel>
-        <Button type="button" variant="ghost" onClick={onClick} className="h-auto p-0 font-normal hover:bg-transparent relative block size-full drop-shadow-[0_6px_10px_rgba(0,0,0,0.3)]">
+        <Button type="button" variant="ghost" onClick={onClick} aria-label={label} className="h-auto p-0 font-normal hover:bg-transparent relative block size-full drop-shadow-[0_6px_10px_rgba(0,0,0,0.3)]">
           {children}
         </Button>
       </div>
