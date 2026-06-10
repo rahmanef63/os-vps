@@ -15,8 +15,11 @@ export function Recents({ order, apps, onResume, onHome }: { order: string[]; ap
   const wins = order.map((id) => shellStore.getWindow(id)).filter(Boolean) as WindowState[];
   return (
     <div className="absolute inset-0 z-[30] flex flex-col bg-background/90 backdrop-blur-xl" onClick={onHome}>
-      <div className="flex min-h-0 flex-1 items-center gap-3 overflow-x-auto p-5" onClick={(e) => e.stopPropagation()}>
-        {wins.length === 0 && <div className="m-auto text-sm text-muted-foreground">No recent apps</div>}
+      {/* Empty deck must stay tappable-through: the inner container fills the
+          overlay (no Clear-all bar), so swallowing clicks would trap the user
+          with no exit (NavBar sits under the z-30 overlay). */}
+      <div className="flex min-h-0 flex-1 items-center gap-3 overflow-x-auto p-5" onClick={(e) => { if (wins.length > 0) e.stopPropagation(); }}>
+        {wins.length === 0 && <div className="m-auto text-sm text-muted-foreground">No recent apps · tap to go home</div>}
         {wins.map((w) => (
           <RecentCard key={w.id} win={w} app={apps.find((a) => a.id === w.app)} onResume={() => onResume(w.id)} />
         ))}
