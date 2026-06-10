@@ -18,7 +18,7 @@ function errText(err: unknown): string {
 
 // Scoped Alfa chat. Prepends the focused app's context so replies are grounded
 // in what the user is looking at (the mock-os "AI mode" per app, made real).
-export function InspectorAI({ appId, subject, info }: { appId: string; subject: string; info: InspectorInfo }) {
+export function InspectorAI({ subject, info }: { appId: string; subject: string; info: InspectorInfo }) {
   const chat = useShellChat();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);

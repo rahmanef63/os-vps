@@ -126,7 +126,7 @@ function useWindowSnapKeys(enabled: boolean) {
         case "ArrowLeft": snapWindow(id, "left"); break;
         case "ArrowRight": snapWindow(id, "right"); break;
         case "ArrowUp": if (!win.maximized) toggleMaximize(id); break;
-        case "ArrowDown": win.maximized ? toggleMaximize(id) : minimizeWindow(id); break;
+        case "ArrowDown": if (win.maximized) toggleMaximize(id); else minimizeWindow(id); break;
       }
     };
     window.addEventListener("keydown", onKey);

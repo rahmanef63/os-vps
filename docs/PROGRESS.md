@@ -9,6 +9,34 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-10 (round 3) — Full upstream sync into rr: shell framework + every OS app slice (DONE)
+
+- **rr (`resources`) is no longer "basic"** — the whole os-vps feature set is
+  now consumable from the catalog by any project (`npx rr add <slug>`):
+  - **appshell 1.4.0** in rr = byte-synced to this repo's framework (Android
+    Material-You rebuild, macOS dock behaviour, window store + snap geometry,
+    UrlSync, shell registry minus the phantom "mobile" id, store-persist split,
+    Clock/HomeIndicator/pull-down/swipe-close/overview-key, `useQuickLinks`
+    capability + `QuicklinkIcon`). The 10 shell features (search/inspector/
+    notifications/control-center/widgets/clipboard/share/quick-look/
+    shortcut-help/lock-screen) synced into rr's bundled `appshell/features/*`.
+  - **Dashboard shell LIFTED into the framework** (rr bundles it; brand via
+    `useBrand`, stats via the capability seam) — os-vps keeps its consumer copy.
+  - **12 app slices upgraded** in rr via per-slice 3-way merges that keep rr's
+    self-contained `lib/host.ts` seams (mock adapters + `configure*()` for real
+    wiring): browser (multitab/screencast/AI panel), os-terminal (exec emulator
+    + injectable PTY), file-explorer, assistant, reel-editor, image-editor,
+    app-store, media-viewer, system-monitor, image-picker (incl. the CSS-escape
+    security fix), code-editor.
+  - **3 new lifts**: media-studio 1.0.0, quicklinks 1.0.0, shell-settings 1.0.0
+    (+ catalog entries, previews, agent.md). Skipped: os-settings (Topside-
+    specific), create-app (already bundled in rr app-store).
+  - rr gates all green: tsc · eslint 0 · vitest 448 · slices:check 68 slices.
+- **Backported here from rr's lint-zero sweep** (keeps the trees
+  line-mergeable): desktop.tsx snap-key ternary→if/else; InspectorAI drops the
+  unused `appId` destructure. Behaviour identical — prod NOT redeployed for
+  this; next deploy picks it up.
+
 ## 2026-06-10 (round 2) — Theme preset owns the typeface; font pipeline actually works now (DONE)
 
 - **Font picker merged into theme presets**: the tweakcn preset's
