@@ -9,6 +9,29 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-11 — Full audit + shell fidelity plan (docs only, no code changes)
+
+- **`docs/AUDIT-2026-06-11.md`** — six parallel audit passes (security, shell
+  core, app slices, fidelity inventory, Next/React best-practice, DX) over
+  HEAD `84e857c`; single-source P1s re-verified by hand. Headlines: security
+  clean (no P0/P1 — hardening list only); 5 app P0s (image-editor export
+  renders viewport + failed-load clobbers files, Settings SSH target
+  uneditable, code-editor ⌘S broken while typing, Files Download stub);
+  5 shell P1s (resize +30px drift `use-window-drag.ts:96`, Spotlight infinite
+  search loop `os-shell/capabilities.ts:42`, deep-link reload duplicates Files
+  windows `store-persist.ts:60`, no offscreen re-clamp, z-order by creation
+  not focus). Fix waves 1–5 prioritized at the bottom (data safety first).
+- **`docs/SHELL-FIDELITY-PLAN.md`** — make the 5 shells feel native to their
+  OSes while staying light: shared foundations first (per-shell `data-shell`
+  token layer, motion scale + window lifecycle animation, system font stacks,
+  one `<WindowPreview>` primitive, z-ladder tokens, shell code-splitting),
+  then per-shell top cuts (macOS scale-minimize + Spaces strip; Win11 taskbar
+  grouping + snap-layouts popup + Alt-Tab; iOS zoom-from-icon + status bar +
+  edit mode; Android status bar + notification shade + ripple + back-bus;
+  Dashboard ops-console identity). Phases A–F + authenticity cheat sheet.
+  Hard constraints: no new deps, CSS-first motion, verify on demo :4006.
+- No code changed; prod untouched.
+
 ## 2026-06-10 (round 3) — Full upstream sync into rr: shell framework + every OS app slice (DONE)
 
 - **rr (`resources`) is no longer "basic"** — the whole os-vps feature set is
