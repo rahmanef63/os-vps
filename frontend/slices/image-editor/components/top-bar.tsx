@@ -27,7 +27,7 @@ import {
 import { FilePicker, type FilePickerHandle } from "../lib/host";
 import { useEditor } from "../lib/store";
 import { createLayer } from "../lib/model";
-import { loadImage } from "../lib/konva-helpers";
+import { fileToDataURL, loadImage } from "../lib/konva-helpers";
 import { removeImageBackground } from "../lib/bg-removal";
 import { stageToDataURL } from "../lib/export";
 import { downloadProject, parseProject } from "../lib/project";
@@ -35,7 +35,7 @@ import { downloadProject, parseProject } from "../lib/project";
 // Compact mobile command bar: a "⋯" menu folds the less-used file actions (open,
 // remove BG, project open/save) so undo/redo, zoom, and Save stay one tap away.
 export function TopBar({ onSave, onSaveAs }: { onSave?: (dataUrl: string) => void; onSaveAs?: (dataUrl: string) => void }) {
-  const { doc, selected, addLayer, update, undo, redo, canUndo, canRedo, zoom, setZoom, stageRef, exportProject, loadProject } = useEditor();
+  const { doc, selected, addLayer, update, undo, redo, canUndo, canRedo, zoom, setZoom, stageRef, docView, exportProject, loadProject } = useEditor();
   const fileRef = useRef<FilePickerHandle>(null);
   const projRef = useRef<FilePickerHandle>(null);
   const [busy, setBusy] = useState(false);
@@ -46,13 +46,17 @@ export function TopBar({ onSave, onSaveAs }: { onSave?: (dataUrl: string) => voi
   }
 
   async function openFile(file: File) {
-    const url = URL.createObjectURL(file);
-    const img = await loadImage(url);
+    // Persist a data URL, not a blob: URL — the latter is revoked on unload and
+    // would serialize dead into autosave/Save. Object URL is transient (measure
+    // only) and revoked immediately.
+    const objUrl = URL.createObjectURL(file);
+    const img = await loadImage(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+    const src = await fileToDataURL(file);
     const max = Math.min(doc.width, doc.height) * 0.9;
     const k = Math.min(1, max / Math.max(img.width, img.height));
     const w = Math.round(img.width * k);
     const h = Math.round(img.height * k);
-    addLayer(createLayer("image", { name: file.name, src: url, t: { x: Math.round((doc.width - w) / 2), y: Math.round((doc.height - h) / 2), width: w, height: h, rotation: 0, scaleX: 1, scaleY: 1 } }));
+    addLayer(createLayer("image", { name: file.name, src, t: { x: Math.round((doc.width - w) / 2), y: Math.round((doc.height - h) / 2), width: w, height: h, rotation: 0, scaleX: 1, scaleY: 1 } }));
   }
 
   async function removeBg() {
@@ -101,12 +105,12 @@ export function TopBar({ onSave, onSaveAs }: { onSave?: (dataUrl: string) => voi
 
       <div className="flex-1" />
       {onSaveAs && (
-        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { const s = stageRef.current; if (s) onSaveAs(stageToDataURL(s, { format: "png" })); }} aria-label="Save As">
+        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { const s = stageRef.current; if (s) onSaveAs(stageToDataURL(s, { format: "png", view: docView() })); }} aria-label="Save As">
           <HardDriveDownload className="size-4" />
         </Button>
       )}
       {onSave && (
-        <Button size="sm" className="shrink-0" onClick={() => { const s = stageRef.current; if (s) onSave(stageToDataURL(s, { format: "png" })); }}>
+        <Button size="sm" className="shrink-0" onClick={() => { const s = stageRef.current; if (s) onSave(stageToDataURL(s, { format: "png", view: docView() })); }}>
           <Save className="size-4" /> Save
         </Button>
       )}

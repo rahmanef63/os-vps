@@ -9,6 +9,50 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-11 (round 2) — Audit fix wave 1–4: P0/P1 bugs + hygiene + security hardening (DONE)
+
+Acted on `AUDIT-2026-06-11.md`. 73 files, +973/−300; typecheck + lint + build
+green, vitest 136 → 154. 6 disjoint agents did the app slices; shell core +
+lib + security done by hand. Prod rebuilt + restarted.
+
+- **App P0s fixed:** image-editor export now renders the DOC rect at doc
+  resolution (Transformer/shadow hidden during capture) + a failed project load
+  no longer clobbers the file (load-success gate); Settings SSH "Laptop" target
+  editable (server-targets dedupe precedence inverted); code-editor ⌘S saves
+  instead of opening the browser dialog (scoped stopPropagation); files-manager
+  "Download" actually downloads (raw-URL anchor).
+- **App P1s:** files rename-collision + same-dir cut-paste guards + failed-listing
+  error state; image-editor delete/duplicate keep paint pixels + imports stored as
+  data URLs (not dead `blob:`) + editor hotkeys scoped to the focused window;
+  code-editor stale-buffer/openPath/inspector-save fixes + dirty-tab close guard;
+  assistant abort seam end-to-end (Stop button, `req.signal`, no token bleed after
+  close) + partial reply kept on error + conversation survives tab switch; browser
+  unmount closes remote pages (keepalive) + "service offline — Retry" state;
+  settings AI-key save errors surfaced; login errors visible in pending state +
+  English strings; quicklinks hydrate shape-guarded; prefs writes serialized.
+- **Shell core (hand):** resize commits via `offsetLeft/offsetTop` (no +30px
+  drift); Spotlight `useSearch` memoized (no infinite search loop); pollers gated
+  on `document.hidden`; `hydrateBoot` dedupes a multi-app window by payload (no
+  Files dup on `/files/*` reload); restored + resized windows clamped on-screen
+  (`clampRect` + resize listener); window stacking + ⌘Tab + close-focus now follow
+  z (focus recency); dock/Window-menu read a reactive windows map (no stale hover
+  lists); `inEditable` guards on ⌘I + ⌘⇧V; context menu above the dock; dead
+  `.dark .wp-material` → `[data-theme=dark]`; dashboard wallpaper no longer hidden;
+  clipboard/recents SSR snapshots stabilized.
+- **Hygiene:** deleted media-studio's ~1,870-line orphan editor (manifest
+  trimmed); `tailwind-merge` 2 → 3 (Tailwind 4 class tables); `app/global-error.tsx`;
+  `agent-log` route reads `readAuditTail()` (no lib/host bypass); `.env.example`
+  gains `OS_FS_ALLOW_SENSITIVE` + `OS_PREFS_PATH`; ARCHITECTURE catch-all fix.
+- **Security hardening:** sensitive-file denylist extended (`.aws`/`.kube`/
+  `.docker`/`.config/gcloud`/`.netrc`/`.git-credentials`/`*_history`); browser
+  fill/type audit lines redact typed values; spawned shells (exec + PTY) run with
+  the app's own secrets scrubbed from env (`lib/host/child-env.ts`) — `printenv`
+  no longer leaks the session secret/BYOK key; SECURITY.md notes the `/proc`
+  residual. New tests: child-env scrub, clampRect, server-targets, quicklinks,
+  prefs serialization.
+- Deferred (documented, not done this wave): UX error-doctrine sweep, confirm/undo
+  pass, focused-window hotkey capability, the SHELL-FIDELITY-PLAN phases.
+
 ## 2026-06-11 — Full audit + shell fidelity plan (docs only, no code changes)
 
 - **`docs/AUDIT-2026-06-11.md`** — six parallel audit passes (security, shell

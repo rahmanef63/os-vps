@@ -31,8 +31,12 @@ export async function readPrefs(): Promise<OsPrefs> {
   }
 }
 
-/** Section-level merge (last write wins per section) + updatedAt stamp. */
-export async function writePrefs(patch: Partial<OsPrefs>): Promise<OsPrefs> {
+// Serializes the read-modify-write below so two concurrent section POSTs
+// (tweaks + quicklinks) can't both read the same `current` and clobber each
+// other's section. Each call chains onto the previous one's settle.
+let writeChain: Promise<unknown> = Promise.resolve();
+
+async function writePrefsUnlocked(patch: Partial<OsPrefs>): Promise<OsPrefs> {
   const file = prefsPath();
   const current = await readPrefs();
   const next: OsPrefs = { ...current, ...patch, updatedAt: Date.now() };
@@ -41,4 +45,13 @@ export async function writePrefs(patch: Partial<OsPrefs>): Promise<OsPrefs> {
   await fs.writeFile(tmp, JSON.stringify(next, null, 2), { encoding: "utf8", mode: 0o600 });
   await fs.rename(tmp, file);
   return next;
+}
+
+/** Section-level merge (last write wins per section) + updatedAt stamp.
+ *  Writes are serialized through a queue to avoid a read-modify-write race. */
+export async function writePrefs(patch: Partial<OsPrefs>): Promise<OsPrefs> {
+  const run = writeChain.then(() => writePrefsUnlocked(patch));
+  // Keep the chain alive even if a write rejects (don't poison later writes).
+  writeChain = run.catch(() => undefined);
+  return run;
 }

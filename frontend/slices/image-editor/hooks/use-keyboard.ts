@@ -16,9 +16,14 @@ const TOOL_KEYS: Record<string, "move" | "select" | "brush" | "eraser" | "eyedro
 // Delete/Backspace removes the selection, V/B/E/H pick tools. Ignored while a
 // text field is focused so typing in panels isn't hijacked.
 export function useKeyboard() {
-  const { undo, redo, removeLayer, selectedId, setTool, swapColors, resetColors } = useEditor();
+  const { undo, redo, removeLayer, selectedId, setTool, swapColors, resetColors, rootRef } = useEditor();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Window-scoped guard: only act when focus is inside THIS editor. The
+      // listener is on `window` (so canvas keystrokes are caught), but another
+      // OS window being focused must NOT let Backspace delete a layer here.
+      const root = rootRef.current;
+      if (!root || !root.contains(document.activeElement)) return;
       const el = e.target as HTMLElement;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
       const mod = e.metaKey || e.ctrlKey;
@@ -45,5 +50,5 @@ export function useKeyboard() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [undo, redo, removeLayer, selectedId, setTool, swapColors, resetColors]);
+  }, [undo, redo, removeLayer, selectedId, setTool, swapColors, resetColors, rootRef]);
 }

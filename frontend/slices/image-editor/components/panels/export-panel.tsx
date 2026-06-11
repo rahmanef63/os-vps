@@ -19,7 +19,7 @@ import { useEditor } from "../../lib/store";
 import { exportStage, type ExportFormat } from "../../lib/export";
 
 export function ExportPanel() {
-  const { stageRef, doc } = useEditor();
+  const { stageRef, doc, docView } = useEditor();
   const [format, setFormat] = useState<ExportFormat>("png");
   const [quality, setQuality] = useState(92);
   const [scale, setScale] = useState(1);
@@ -33,7 +33,8 @@ export function ExportPanel() {
     exportStage(stage, {
       format,
       quality: quality / 100,
-      pixelRatio: scale,
+      scale,
+      view: docView(),
       name,
     });
   }

@@ -13,7 +13,9 @@ import { EditorSurface } from "./components/editor-surface";
 import { TabStrip } from "./components/tab-strip";
 import { StatusBar } from "./components/status-bar";
 import { NewFileModal } from "./components/new-file-modal";
+import { CloseGuardDialog } from "./components/close-guard-dialog";
 import { useEditor } from "./lib/use-editor";
+import { useCloseGuard } from "./lib/use-close-guard";
 import { baseName, langOf } from "./lib/util";
 
 const TAB_SIZE = 2;
@@ -28,11 +30,17 @@ function payloadPath(payload: unknown): string | null {
 }
 
 // Default export so os-shell can lazy-load it as a window app.
-export default function CodeEditor({ payload }: AppProps) {
+export default function CodeEditor({ payload, winId }: AppProps) {
   const ed = useEditor();
   const [explorerOpen, setExplorerOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [pos, setPos] = useState({ ln: 1, col: 1 });
+
+  // Save-on-shortcut + dirty-window close guard. `saveRef` always points at the
+  // current save (no stale closures in the global listener / Inspector action).
+  const { confirmClose, setConfirmClose, forceClose, saveThenClose, saveRef } =
+    useCloseGuard(winId, ed.dirty, ed.save);
+  const save = () => void saveRef.current();
 
   // Open the payload path (cross-app "open this file"). Re-runs when the host
   // updates the payload on a re-open. Falls back to the seed when absent.
@@ -42,18 +50,6 @@ export default function CodeEditor({ payload }: AppProps) {
     else ed.open("/Projects/hello.ts");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path]);
-
-  // Cmd/Ctrl+S saves the active buffer regardless of focus within the app.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        if (ed.active) void ed.save();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [ed]);
 
   const lang = ed.active ? langOf(ed.active) : "txt";
   const lineCount = ed.active != null ? ed.value.split("\n").length : 0;
@@ -71,7 +67,7 @@ export default function CodeEditor({ payload }: AppProps) {
         { label: "Unsaved", value: ed.dirty ? "yes" : "no" },
       ],
       actions: [
-        { id: "save", label: "Save", run: () => void ed.save() },
+        { id: "save", label: "Save", run: save },
         { id: "new", label: "New file", run: () => setNewOpen(true) },
       ],
       context: `Code editor with ${ed.active ?? "no file"} open (${lang}).`,
@@ -113,7 +109,7 @@ export default function CodeEditor({ payload }: AppProps) {
           dirty={ed.dirty}
           canSave={ed.active != null}
           onOpenExplorer={() => setExplorerOpen(true)}
-          onSave={() => void ed.save()}
+          onSave={save}
         />
 
         {ed.active != null ? (
@@ -122,6 +118,7 @@ export default function CodeEditor({ payload }: AppProps) {
             onChange={ed.edit}
             lang={lang}
             onCursor={setPos}
+            onSave={save}
           />
         ) : (
           <div className="grid flex-1 place-items-center text-[#7d8590]">
@@ -158,6 +155,15 @@ export default function CodeEditor({ payload }: AppProps) {
       </div>
 
       <NewFileModal open={newOpen} onOpenChange={setNewOpen} onCreate={ed.create} />
+
+      <CloseGuardDialog
+        open={confirmClose}
+        onOpenChange={(o) => !o && setConfirmClose(false)}
+        fileLabel={ed.active ? baseName(ed.active) : "This file"}
+        onSave={() => void saveThenClose()}
+        onDiscard={() => { setConfirmClose(false); forceClose(); }}
+        onCancel={() => setConfirmClose(false)}
+      />
     </div>
   );
 }

@@ -132,13 +132,18 @@ function LiveBrowser() {
             url={url}
             isNewTab={blank}
             loading={rb.busy}
+            // TODO: the remote /state only returns {url,title} — no history
+            // depth — so Back/Forward can't be honestly disabled. Wire these to
+            // real canGoBack/canGoForward once the browser service exposes them.
             canBack
             canForward
             bookmarked={bookmarked}
             onBack={() => void rb.back()}
             onForward={() => void rb.forward()}
             onReload={() => void rb.reload()}
-            onStop={() => void rb.refresh()}
+            // TODO: no stop endpoint on the browser service yet — reload is the
+            // closest "interrupt the current load". Swap for a real /stop when added.
+            onStop={() => void rb.reload()}
             onHome={home}
             onSubmit={navigate}
             onToggleBookmark={toggleBookmark}
@@ -158,6 +163,8 @@ function LiveBrowser() {
         shot={rb.shot}
         busy={rb.busy}
         live={rb.live}
+        offline={rb.offline}
+        onRetry={rb.retry}
         onClick={(x, y) => void rb.click(x, y)}
         onType={(t) => void rb.type(t)}
         onKey={(k) => void rb.key(k)}

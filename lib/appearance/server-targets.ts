@@ -31,10 +31,13 @@ function uniqueTargets(targets: ServerTarget[]): ServerTarget[] {
 export function ensureServerTargets(server: ServerConfig): NormalizedServerConfig {
   const legacyActive = server.mode === "live" ? "vps" : "mock";
   const existing = server.targets?.map(normalizeTarget) ?? [];
-  const legacyVps = CORE_TARGETS.map((target) =>
+  // Saved/edited targets win (first-wins dedupe). Only APPEND core targets whose
+  // id is missing, so a user's host/user/port edits survive ensureServerTargets.
+  const have = new Set(existing.map((target) => target.id));
+  const missingCore = CORE_TARGETS.filter((target) => !have.has(target.id)).map((target) =>
     target.id === "vps" && target.kind === "local" ? { ...target, url: server.url ?? "" } : target,
   );
-  const targets = uniqueTargets([...legacyVps, ...existing]);
+  const targets = uniqueTargets([...existing, ...missingCore]);
   const activeTargetId = server.activeTargetId ?? legacyActive;
   return {
     ...server,

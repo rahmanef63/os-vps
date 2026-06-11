@@ -31,10 +31,16 @@ export function useEditor() {
       api.fs
         .read(path)
         .then((content) => {
-          if (typeof content === "string" && content.length) {
-            setDisk((d) => ({ ...d, [path]: content }));
-            setBuffers((b) => (b[path] ? b : { ...b, [path]: content }));
-          }
+          if (typeof content !== "string" || !content.length) return;
+          // Adopt the fresh host content as the new disk baseline. Only keep the
+          // working buffer if it had UNSAVED edits (buffer !== old disk);
+          // otherwise a clean/reopened buffer must follow the file, or it shows
+          // stale text and a later Save overwrites the newer host file.
+          setBuffers((b) => {
+            const hadEdits = path in b && b[path] !== disk[path];
+            return hadEdits ? b : { ...b, [path]: content };
+          });
+          setDisk((d) => ({ ...d, [path]: content }));
         })
         .catch(() => {});
     },
@@ -52,11 +58,17 @@ export function useEditor() {
       api.fs
         .read(path)
         .then((content) => {
-          if (typeof content === "string") {
-            setDisk((d) => ({ ...d, [path]: content }));
-            setBuffers((b) => ({ ...b, [path]: content }));
-            setSaveState("idle");
-          }
+          if (typeof content !== "string") return;
+          // The read may resolve after keystrokes landed in the buffer. Only
+          // overwrite the buffer if it's still clean (unchanged vs the disk
+          // baseline at read time) or absent; otherwise keep the user's edits
+          // and just refresh the disk baseline.
+          setBuffers((b) => {
+            const hasEdits = path in b && b[path] !== disk[path];
+            return hasEdits ? b : { ...b, [path]: content };
+          });
+          setDisk((d) => ({ ...d, [path]: content }));
+          setSaveState("idle");
         })
         .catch(() => setSaveState("error"));
     },
@@ -99,16 +111,24 @@ export function useEditor() {
     async (path = active) => {
       if (path == null) return;
       const value = buffers[path] ?? "";
+      const prevDisk = disk[path];
+      // Optimistically mark clean, then write. On failure revert the disk
+      // baseline so the buffer stays dirty and Save re-enables for a retry.
       setDisk((d) => ({ ...d, [path]: value }));
       try {
         await api.fs.write(path, value);
         setSaveState("saved");
       } catch {
-        // Live host may be read-only; keep the local save, flag the write.
+        setDisk((d) => {
+          const next = { ...d };
+          if (prevDisk === undefined) delete next[path];
+          else next[path] = prevDisk;
+          return next;
+        });
         setSaveState("error");
       }
     },
-    [active, api, buffers],
+    [active, api, buffers, disk],
   );
 
   const value = active != null ? (buffers[active] ?? "") : "";

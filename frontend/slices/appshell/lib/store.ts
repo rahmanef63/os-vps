@@ -4,7 +4,7 @@ import { GAP, workArea, spawnRect } from "./store-geometry";
 // Store barrel: state in store-state; geometry in store-geometry; snap in
 // store-snap; hydrate/serialize in store-persist.
 
-export { shellStore } from "./store-state";
+export { shellStore, stackByZ } from "./store-state";
 export { snapRect, snapZoneAt, GAP } from "./store-geometry";
 export { applyChromeInsets, retileSnapped, snapWindow, onSnap } from "./store-snap";
 export { hydrate, hydrateBoot, serialize } from "./store-persist";
@@ -68,11 +68,17 @@ export function closeWindow(id: WinId) {
   closeGuards.delete(id);
   const { [id]: _gone, ...rest } = M.state.windows;
   const order = M.state.order.filter((w) => w !== id);
+  // Focus falls to the most-recently-focused remaining window (highest z), not
+  // the newest-created — matches what the user sees on top after a close.
+  const nextFocus = order.reduce<WinId | null>(
+    (top, w) => (top === null || (rest[w]?.z ?? 0) >= (rest[top]?.z ?? 0) ? w : top),
+    null,
+  );
   M.state = {
     ...M.state,
     windows: rest,
     order,
-    focused: M.state.focused === id ? (order[order.length - 1] ?? null) : M.state.focused,
+    focused: M.state.focused === id ? nextFocus : M.state.focused,
   };
   emit();
 }

@@ -9,6 +9,7 @@ import { promises as fs } from "fs";
 import type { ExecResult } from "@/lib/os-api/types";
 import { HostError } from "./host-error";
 import { homeDir, isUnderRoot, writeRootList } from "./paths";
+import { childEnv } from "./child-env";
 
 const TIMEOUT_MS = 30_000;
 const MAX_OUTPUT = 1_000_000; // 1 MiB per stream
@@ -86,8 +87,10 @@ export async function runCommand(cmd: string, cwd?: string): Promise<ExecResult>
   return new Promise<ExecResult>((resolve) => {
     exec(
       cmd,
-      { cwd: dir, timeout: TIMEOUT_MS, maxBuffer: MAX_OUTPUT, env: process.env, shell: SHELL },
-      (err, stdout, stderr) => {
+      // childEnv preserves NODE_ENV (only the app's secrets are stripped), so the
+      // ProcessEnv cast is sound — the typed shape just demands NODE_ENV present.
+      { cwd: dir, timeout: TIMEOUT_MS, maxBuffer: MAX_OUTPUT, env: childEnv() as NodeJS.ProcessEnv, shell: SHELL },
+      (err: Error | null, stdout: string, stderr: string) => {
         const e = err as (Error & { code?: number; killed?: boolean }) | null;
         const code = e && typeof e.code === "number" ? e.code : e ? 1 : 0;
         resolve({

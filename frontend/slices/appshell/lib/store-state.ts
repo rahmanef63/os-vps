@@ -36,6 +36,12 @@ export const shellStore = {
   getWindow(id: WinId): WindowState | undefined {
     return M.state.windows[id];
   },
+  // The whole windows map — a stable ref that changes (via patch) whenever any
+  // window does, so a component reading several windows re-renders on any change
+  // instead of tearing (reading getWindow during render under an order-only sub).
+  getWindows(): Record<WinId, WindowState> {
+    return M.state.windows;
+  },
   getOrder(): WinId[] {
     return M.state.order;
   },
@@ -61,6 +67,13 @@ export const shellStore = {
 
 export function topZ(): number {
   return M.state.order.reduce((m, id) => Math.max(m, M.state.windows[id]?.z ?? 0), 0);
+}
+
+/** A copy of `ids` sorted ascending by window z (focus recency) — paint order
+ *  for the window layer so the visible stack matches the store's MRU. Takes the
+ *  windows map so callers can `useMemo` on the reactive snapshot (not raw z). */
+export function stackByZ(ids: WinId[], windows: Record<WinId, WindowState>): WinId[] {
+  return [...ids].sort((a, b) => (windows[a]?.z ?? 0) - (windows[b]?.z ?? 0));
 }
 
 export function patch(id: WinId, p: Partial<WindowState>) {

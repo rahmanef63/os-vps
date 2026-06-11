@@ -11,9 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useApps } from "../lib/registry";
 import { useBrand } from "../registry/brand";
-import { useWindowOrder } from "../hooks/use-shell";
+import { useWindowOrder, useWindowsMap } from "../hooks/use-shell";
 import {
-  shellStore,
   openWindow,
   setLauncherOpen,
   toggleSpotlight,
@@ -122,9 +121,11 @@ export function DefaultMenus({
 // (✓ marks the focused one; picking restores + focuses).
 export function WindowMenu({ focusedId }: { focusedId: string | null }) {
   const order = useWindowOrder();
+  // Reactive map read so the ✓/title list + Pin label re-render on any patch.
+  const winMap = useWindowsMap();
   const windows = order
-    .map((id) => ({ id, win: shellStore.getWindow(id) }))
-    .filter((w): w is { id: string; win: NonNullable<ReturnType<typeof shellStore.getWindow>> } => !!w.win);
+    .map((id) => ({ id, win: winMap[id] }))
+    .filter((w): w is { id: string; win: NonNullable<typeof w.win> } => !!w.win);
   return (
     <Menu label="Window">
       <DropdownMenuItem disabled={!focusedId} onSelect={() => focusedId && minimizeWindow(focusedId)}>
@@ -134,7 +135,7 @@ export function WindowMenu({ focusedId }: { focusedId: string | null }) {
         Zoom
       </DropdownMenuItem>
       <DropdownMenuItem disabled={!focusedId} onSelect={() => focusedId && togglePin(focusedId)}>
-        {focusedId && shellStore.getWindow(focusedId)?.pinned ? "Unpin Window" : "Pin Window on Top"}</DropdownMenuItem>
+        {focusedId && winMap[focusedId]?.pinned ? "Unpin Window" : "Pin Window on Top"}</DropdownMenuItem>
       <DropdownMenuItem disabled={windows.length === 0} onSelect={() => minimizeAll()}>
         Minimize All
       </DropdownMenuItem>

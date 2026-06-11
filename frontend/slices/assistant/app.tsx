@@ -83,7 +83,10 @@ export default function Assistant() {
         </div>
       ) : null}
 
-      {tab === "chat" ? (
+      {/* ChatPanel stays MOUNTED across tab switches (hidden via CSS) so the
+          live stream + messages survive — unmounting it mid-stream would wipe
+          state and orphan the `for await` into a dead component. */}
+      <div className={tab === "chat" ? "flex min-h-0 flex-1 flex-col" : "hidden"}>
         <ChatPanel
           ref={chatRef}
           agent={store.activeAgent}
@@ -95,12 +98,14 @@ export default function Assistant() {
                   tab group left-aligns and all tabs stay reachable by scrolling. */}
               <div className="flex-1" />
               <div className="shrink-0">
-                <TabBar tab={tab} setTab={setTab} />
+                <TabBar tab="chat" setTab={setTab} />
               </div>
             </>
           }
         />
-      ) : tab === "agents" ? (
+      </div>
+
+      {tab === "agents" ? (
         <LibraryGrid
           kind="agent"
           store={store}
@@ -114,14 +119,14 @@ export default function Assistant() {
           onNew={() => setForm({ kind: "skill" })}
           onEdit={(it) => setForm({ kind: "skill", item: it as Skill })}
         />
-      ) : (
+      ) : tab === "automations" ? (
         <AutomationView
           store={store}
           onRun={runAutomation}
           onNew={() => setForm({ kind: "automation" })}
           onEdit={(it) => setForm({ kind: "automation", item: it })}
         />
-      )}
+      ) : null}
     </div>
   );
 }

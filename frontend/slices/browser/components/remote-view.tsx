@@ -5,7 +5,7 @@
 // hook — this component just renders `shot` and maps input into the 1280x800
 // remote viewport. A small badge shows whether the live stream is connected.
 import { useRef } from "react";
-import { Camera, CheckCircle2, Loader2 } from "lucide-react";
+import { Camera, CheckCircle2, Loader2, PlugZap, RotateCw } from "lucide-react";
 import { VIEW_W, VIEW_H } from "../lib/use-remote-browser";
 
 const KEYS = new Set(["Enter", "Backspace", "Tab", "Delete", "Escape"]);
@@ -14,6 +14,8 @@ type RemoteViewProps = {
   shot: string | null;
   busy: boolean;
   live: boolean;
+  offline: boolean;
+  onRetry: () => void;
   onClick: (x: number, y: number) => void;
   onType: (text: string) => void;
   onKey: (key: string) => void;
@@ -27,6 +29,8 @@ export function RemoteView({
   shot,
   busy,
   live,
+  offline,
+  onRetry,
   onClick,
   onType,
   onKey,
@@ -80,14 +84,38 @@ export function RemoteView({
           onClick={handleClick}
           className="size-full cursor-default object-contain select-none"
         />
+      ) : offline ? (
+        <div className="absolute inset-0 grid place-items-center p-6 text-center">
+          <div className="flex max-w-xs flex-col items-center gap-3">
+            <PlugZap className="size-8 text-muted-foreground" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">Browser service offline</p>
+              <p className="text-xs text-muted-foreground">
+                The remote Chromium isn&apos;t responding. Check the browser service, then retry.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90"
+            >
+              <RotateCw className="size-3.5" />
+              Retry
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
           Loading remote browser…
         </div>
       )}
       <div className="absolute top-2 left-2 flex items-center gap-1.5 rounded-full bg-card/90 px-2.5 py-1 text-[11px] font-medium shadow-sm backdrop-blur">
-        <span className={live ? "size-2 rounded-full bg-success" : "size-2 rounded-full bg-amber-500"} />
-        <span className="text-muted-foreground">{live ? "live" : "polling"}</span>
+        <span
+          className={
+            offline ? "size-2 rounded-full bg-destructive" : live ? "size-2 rounded-full bg-success" : "size-2 rounded-full bg-amber-500"
+          }
+        />
+        <span className="text-muted-foreground">{offline ? "offline" : live ? "live" : "polling"}</span>
       </div>
       {busy && (
         <div className="absolute top-2 right-2 flex items-center gap-1.5 rounded-full bg-card/90 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur">

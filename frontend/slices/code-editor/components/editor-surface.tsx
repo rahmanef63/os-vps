@@ -32,11 +32,13 @@ export function EditorSurface({
   onChange,
   lang,
   onCursor,
+  onSave,
 }: {
   value: string;
   onChange: (v: string) => void;
   lang: Lang;
   onCursor: (pos: { ln: number; col: number }) => void;
+  onSave: () => void;
 }) {
   const preRef = useRef<HTMLPreElement>(null);
   const gutRef = useRef<HTMLDivElement>(null);
@@ -96,7 +98,16 @@ export function EditorSurface({
           onClick={(e) => report(e.currentTarget)}
           onKeyUp={(e) => report(e.currentTarget)}
           onKeyDown={(e) => {
-            e.stopPropagation();
+            // Cmd/Ctrl+S must save, not open the browser's Save dialog. Handle
+            // it here and stop it bubbling so the window-level save listener
+            // doesn't ALSO fire (double-save). The old blanket stopPropagation
+            // on every key is gone — it swallowed this very shortcut.
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+              e.preventDefault();
+              e.stopPropagation();
+              onSave();
+              return;
+            }
             if (e.key === "Tab") {
               e.preventDefault();
               const ta = e.currentTarget;

@@ -39,15 +39,17 @@ export function LoginScreen({ onAuthed }: { onAuthed: () => void }) {
       if (res.status === 403 && data.error === "device_pending") {
         setPending(true);
       } else if (data.error === "not_configured") {
-        setError("Login belum dikonfigurasi di server.");
+        setError("Login isn’t configured on the server.");
       } else if (res.status === 429) {
-        setError("Terlalu banyak percobaan. Coba lagi nanti.");
+        setError("Too many attempts. Try again later.");
+      } else if (res.status === 401 || res.status === 403) {
+        setError("Incorrect password.");
       } else {
-        setError("Password salah.");
+        setError("Something went wrong. Try again.");
       }
     } catch {
       setBusy(false);
-      setError("Gagal menghubungi server.");
+      setError("Couldn’t reach the server.");
     }
   }
 
@@ -95,6 +97,7 @@ export function LoginScreen({ onAuthed }: { onAuthed: () => void }) {
               {busy && <Loader2 className="size-4 animate-spin" />}
               Check again
             </Button>
+            {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">

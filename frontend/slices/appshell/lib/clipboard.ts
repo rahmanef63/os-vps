@@ -101,11 +101,14 @@ const subscribe = (cb: () => void) => {
   };
 };
 
+// SSR snapshot must be a stable constant matching the server render (empty /
+// closed) — returning the client-loaded module state here would hydrate-mismatch.
+const SSR_CLIPS: Clip[] = [];
 export function useClips(): Clip[] {
-  return useSyncExternalStore(subscribe, () => clips, () => clips);
+  return useSyncExternalStore(subscribe, () => clips, () => SSR_CLIPS);
 }
 export function useClipboardOpen(): boolean {
-  return useSyncExternalStore(subscribe, () => open, () => open);
+  return useSyncExternalStore(subscribe, () => open, () => false);
 }
 
 /** Capture document copy/cut selections into the history. Idempotent. */

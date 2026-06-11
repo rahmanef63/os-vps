@@ -99,8 +99,11 @@ export type AppMenuItem =
       disabled?: boolean;
     };
 
-/** Serialisable slice of a window persisted to Convex (no z/focus churn). */
+/** Serialisable slice of a window persisted to localStorage (no z/focus churn).
+ *  Includes `payload`/`snapZone`/`prevRect` — `serialize()` keeps them so a
+ *  deep-link path survives a reload and snapped windows re-tile after a shell
+ *  switch; the restore (hydrateBoot) also dedupes a multi-app window by payload. */
 export type PersistedWindow = Pick<
   WindowState,
-  "id" | "app" | "title" | "x" | "y" | "w" | "h" | "minimized" | "maximized" | "pinned" | "spaceId" | "groupId"
+  "id" | "app" | "title" | "x" | "y" | "w" | "h" | "minimized" | "maximized" | "pinned" | "spaceId" | "groupId" | "payload" | "snapZone" | "prevRect"
 >;

@@ -25,7 +25,7 @@ os-vps/
 ├── app/                      Next 16 App Router
 │   ├── layout.tsx            fonts + theme + providers
 │   ├── globals.css           Tailwind 4 + glass theme tokens
-│   ├── page.tsx / os-root.tsx mounts <OsDesktop/> behind the auth gate
+│   ├── [[...slug]]/page.tsx  one catch-all route → os-root → <OsDesktop/> (auth-gated)
 │   └── api/
 │       ├── v1/               host Cloud API — fs · exec · sys · term · stock · browser
 │       ├── auth/             login · logout · me · devices

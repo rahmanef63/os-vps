@@ -61,6 +61,38 @@ function trunc(s: string | undefined, max = 512): string | undefined {
   return s.length > max ? s.slice(0, max) + "…" : s;
 }
 
+export interface AuditRecord {
+  ts?: string;
+  action: string;
+  actor?: string | null;
+  ip?: string | null;
+  target?: string;
+  ok?: boolean;
+  detail?: string;
+}
+
+// Read the tail of the audit log, newest-first, optionally filtered to actions
+// with a given prefix (e.g. "browser."). Returns [] if the log doesn't exist.
+// The single reader of the trail — routes must not re-derive the log path.
+export async function readAuditTail(opts?: { prefix?: string; limit?: number }): Promise<AuditRecord[]> {
+  const { prefix, limit = 100 } = opts ?? {};
+  const raw = await fs.readFile(auditPath(), "utf8").catch(() => "");
+  return raw
+    .split("\n")
+    .filter(Boolean)
+    .slice(-500)
+    .map((l) => {
+      try {
+        return JSON.parse(l) as AuditRecord;
+      } catch {
+        return null;
+      }
+    })
+    .filter((e): e is AuditRecord => Boolean(e && typeof e.action === "string" && (!prefix || e.action.startsWith(prefix))))
+    .slice(-limit)
+    .reverse();
+}
+
 // Fire-and-forget. A failed audit write must never break the action it records,
 // but it is logged to stderr so a broken trail is at least visible in journald.
 export function audit(entry: AuditEntry): void {

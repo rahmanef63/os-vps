@@ -17,10 +17,15 @@ export function AppSwitcher() {
   const order = useWindowOrder();
   const [idx, setIdx] = useState<number | null>(null); // null = closed
 
-  // MRU app list: distinct app ids, most-recently-focused first.
+  // MRU app list: distinct app ids, most-recently-focused first. `order` is
+  // append (creation) order, so sort by window z (focus recency) descending —
+  // that's what makes ⌘Tab land on the last-used app, not the oldest.
   const runningIds: string[] = [];
-  for (let i = order.length - 1; i >= 0; i--) {
-    const a = shellStore.getWindow(order[i])?.app;
+  const byRecency = [...order].sort(
+    (a, b) => (shellStore.getWindow(b)?.z ?? 0) - (shellStore.getWindow(a)?.z ?? 0),
+  );
+  for (const wid of byRecency) {
+    const a = shellStore.getWindow(wid)?.app;
     if (a && !runningIds.includes(a)) runningIds.push(a);
   }
   const running = runningIds

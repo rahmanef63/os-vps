@@ -80,7 +80,7 @@ export function FileContextMenu({
           { label: "Cut", shortcut: "⌘X", run: onCut },
           { label: "Copy", shortcut: "⌘C", run: onCopy },
           ...(hasClipboard ? [{ label: "Paste", shortcut: "⌘V", run: onPaste }] : []),
-          { label: "Download", run: onDownload },
+          ...(ctx.entry.kind === "file" ? [{ label: "Download", run: onDownload }] : []),
         ],
         [
           {

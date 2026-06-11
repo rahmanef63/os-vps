@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { GAP, spawnRect, workArea } from "./store-geometry";
+import { GAP, clampRect, spawnRect, workArea } from "./store-geometry";
 
 // spawnRect reads window.innerWidth/Height — stub a 1280x800 viewport.
 vi.stubGlobal("window", Object.assign(globalThis.window ?? {}, { innerWidth: 1280, innerHeight: 800 }));
@@ -27,6 +27,34 @@ describe("spawnRect (cascade clamp)", () => {
   it("shrinks oversized windows to fit the work area", () => {
     const { vw, top, bottom } = workArea();
     const r = spawnRect(0, 5000, 5000);
+    expect(r.w).toBe(vw - GAP * 2);
+    expect(r.h).toBe(bottom - top);
+  });
+});
+
+describe("clampRect (restore / resize re-clamp)", () => {
+  it("leaves an on-screen window untouched", () => {
+    const r = { x: 100, y: 100, w: 400, h: 300 };
+    expect(clampRect(r)).toMatchObject(r);
+  });
+
+  it("pulls a window stranded off the right edge back on-screen", () => {
+    const { vw } = workArea();
+    const r = clampRect({ x: vw + 500, y: 100, w: 400, h: 300 });
+    expect(r.x + r.w).toBeLessThanOrEqual(vw - GAP);
+    expect(r.x).toBeGreaterThanOrEqual(GAP);
+  });
+
+  it("keeps the title bar below the top inset and above the bottom chrome", () => {
+    const { top, bottom } = workArea();
+    const r = clampRect({ x: 100, y: -200, w: 400, h: 300 });
+    expect(r.y).toBeGreaterThanOrEqual(top);
+    expect(r.y + r.h).toBeLessThanOrEqual(bottom);
+  });
+
+  it("shrinks a window larger than the work area", () => {
+    const { vw, top, bottom } = workArea();
+    const r = clampRect({ x: 0, y: 0, w: 9000, h: 9000 });
     expect(r.w).toBe(vw - GAP * 2);
     expect(r.h).toBe(bottom - top);
   });

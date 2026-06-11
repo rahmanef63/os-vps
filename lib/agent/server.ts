@@ -30,6 +30,22 @@ const BROWSER_AUDIT: Record<string, AuditAction> = {
   "/reload": "browser.reload",
 };
 
+// Audit target for a browser action — but NEVER persist what the user typed.
+// fill/type bodies carry credentials (a password typed into a third-party site);
+// the audit trail keeps the selector but redacts the value/text.
+function auditTarget(action: AuditAction, body: string | undefined): string | undefined {
+  if (!body) return undefined;
+  if (action !== "browser.fill" && action !== "browser.type") return body;
+  try {
+    const o = JSON.parse(body) as Record<string, unknown>;
+    if ("value" in o) o.value = "[redacted]";
+    if ("text" in o) o.text = "[redacted]";
+    return JSON.stringify(o);
+  } catch {
+    return "[redacted]";
+  }
+}
+
 // True when the headless-Chromium (Playwright) bridge env is configured.
 export function browserConfigured(): boolean {
   return BROWSER_URL.length > 0 && BROWSER_SECRET.length > 0;
@@ -50,7 +66,7 @@ export async function browserFetch(path: string, init?: RequestInit, req?: Reque
   if (tab) consumer = tab.replace(/[^a-z0-9_-]/gi, "").slice(0, 32) || consumer;
   const action = BROWSER_AUDIT[path];
   if (action) {
-    const target = typeof init?.body === "string" ? init.body : undefined;
+    const target = auditTarget(action, typeof init?.body === "string" ? init.body : undefined);
     audit({ action, actor, target });
   }
   const res = await fetch(BROWSER_URL + path, {

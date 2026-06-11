@@ -1,19 +1,22 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-// Pinned composer: Enter sends, Shift+Enter inserts a newline. Locked out while
-// the assistant is streaming so a second prompt can't race the first.
+// Pinned composer: Enter sends, Shift+Enter inserts a newline. While the
+// assistant is streaming the action button becomes a Stop button (aborts the
+// upstream generation) — the composer is never permanently locked.
 export function ChatComposer({
   onSend,
   streaming,
+  onStop,
 }: {
   onSend: (text: string) => void;
   streaming: boolean;
+  onStop: () => void;
 }) {
   const [value, setValue] = useState("");
   const canSend = value.trim().length > 0 && !streaming;
@@ -25,7 +28,7 @@ export function ChatComposer({
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !streaming) {
       e.preventDefault();
       submit();
     }
@@ -38,7 +41,6 @@ export function ChatComposer({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={onKeyDown}
-        disabled={streaming}
         rows={1}
         placeholder={streaming ? "Alfa is replying…" : "Message Alfa…"}
         className={cn(
@@ -46,20 +48,29 @@ export function ChatComposer({
           "scrollbar-thin",
         )}
       />
-      <Button
-        type="button"
-        size="icon"
-        onClick={submit}
-        disabled={!canSend}
-        aria-label="Send message"
-        className="size-9 flex-none"
-      >
-        {streaming ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
+      {streaming ? (
+        <Button
+          type="button"
+          size="icon"
+          variant="secondary"
+          onClick={onStop}
+          aria-label="Stop generating"
+          className="size-9 flex-none"
+        >
+          <Square className="size-4 fill-current" />
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          size="icon"
+          onClick={submit}
+          disabled={!canSend}
+          aria-label="Send message"
+          className="size-9 flex-none"
+        >
           <Send className="size-4" />
-        )}
-      </Button>
+        </Button>
+      )}
     </div>
   );
 }

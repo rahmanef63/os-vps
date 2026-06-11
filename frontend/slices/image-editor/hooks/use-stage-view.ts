@@ -15,7 +15,7 @@ const clampZoom = (z: number) => Math.min(MAX, Math.max(MIN, z));
 // leave the viewport. Auto-refits when the doc size changes; re-clamps on
 // container resize. ⌘0 = Fit, ⌘1 = 100%.
 export function useStageView(size: { w: number; h: number }) {
-  const { doc, zoom, pan, tool, setZoom, setPan } = useEditor();
+  const { doc, zoom, pan, tool, setZoom, setPan, rootRef } = useEditor();
   const [space, setSpace] = useState(false);
   const lastDoc = useRef("");
   const pinch = useRef<{ dist: number } | null>(null);
@@ -59,7 +59,11 @@ export function useStageView(size: { w: number; h: number }) {
 
   useEffect(() => {
     const typing = () => ["input", "textarea"].includes((document.activeElement?.tagName ?? "").toLowerCase());
+    // Only handle nav keys when focus is inside THIS editor — otherwise Space was
+    // swallowed OS-wide (e.g. it scrolls / activates buttons in another window).
+    const inEditor = () => { const r = rootRef.current; return !!r && r.contains(document.activeElement); };
     const down = (e: KeyboardEvent) => {
+      if (!inEditor()) return;
       if (e.code === "Space" && !typing()) { e.preventDefault(); setSpace(true); }
       else if ((e.metaKey || e.ctrlKey) && e.key === "0") { e.preventDefault(); fit(); }
       else if ((e.metaKey || e.ctrlKey) && e.key === "1") { e.preventDefault(); center100(); }
@@ -68,7 +72,7 @@ export function useStageView(size: { w: number; h: number }) {
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); };
-  }, [fit, center100]);
+  }, [fit, center100, rootRef]);
 
   const zoomTo = useCallback((nextZoom: number, px: number, py: number) => {
     const z2 = clampZoom(nextZoom);

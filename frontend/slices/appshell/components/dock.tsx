@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { LayoutGrid, Grid3x3 } from "lucide-react";
 import { useApps } from "../lib/registry";
-import { useWindowOrder, useFocused } from "../hooks/use-shell";
-import { shellStore, setLauncherOpen } from "../lib/store";
+import { useWindowOrder, useFocused, useWindowsMap } from "../hooks/use-shell";
+import { setLauncherOpen } from "../lib/store";
 import { useQuickLinks } from "../registry/capabilities";
 import { BASE, DockIcon, PlainIcon } from "./dock-parts";
 import { QuicklinkIcon } from "./quicklink-icon";
@@ -34,7 +34,10 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
   const order = useWindowOrder();
   const focused = useFocused();
   const { items: links, open: openLink } = useQuickLinks();
-  const wins = order.map((id) => shellStore.getWindow(id)).filter(Boolean) as WindowState[];
+  // Reactive read: re-renders on any window patch (e.g. minimize) so the hover
+  // window-list + running state never go stale under an order-only subscription.
+  const winMap = useWindowsMap();
+  const wins = order.map((id) => winMap[id]).filter(Boolean) as WindowState[];
   const rowRef = useRef<HTMLDivElement>(null);
 
   const slots: Slot[] = [

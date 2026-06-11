@@ -11,6 +11,7 @@ import type {
   Tool,
 } from "./types";
 import type { Project } from "./project";
+import type { DocView } from "./export";
 
 export type Brush = { size: number; color: string; opacity: number; hardness: number };
 export type { Pan };
@@ -34,7 +35,13 @@ export type Ctx = {
   /** Id of the layer whose MASK the brush currently paints (null = none). */
   maskEditId: string | null;
   stageRef: React.MutableRefObject<Konva.Stage | null>;
+  /** The editor's outer DOM element — used to SCOPE global hotkeys so they only
+   * fire when focus is inside this editor (not another OS window). */
+  rootRef: React.MutableRefObject<HTMLDivElement | null>;
   canvasFor: (id: string, w: number, h: number) => HTMLCanvasElement;
+  /** The document's current placement on the stage — passed to the exporter so
+   * Save/Export render the DOC rect at 1:1 resolution, not the zoomed viewport. */
+  docView: () => DocView;
   select: (id: string | null) => void;
   setTool: (t: Tool) => void;
   setZoom: (z: number) => void;

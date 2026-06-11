@@ -110,3 +110,16 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
     img.src = src;
   });
 }
+
+// Read a picked File into a self-contained data URL. Opened images MUST be stored
+// as data URLs, not `URL.createObjectURL` blob: URLs — a blob: URL is revoked when
+// the document unloads, so it gets serialized into autosave/Save and renders null
+// after a reload. Data URLs round-trip through persistence intact.
+export function fileToDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}

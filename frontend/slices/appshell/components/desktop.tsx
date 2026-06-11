@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { Monitor, Smartphone, Grid3x3, Minimize2, Maximize2, X } from "lucide-react";
 import { useResponsive } from "../responsive/use-responsive";
-import { useWindowOrder } from "../hooks/use-shell";
+import { useWindowOrder, useWindowsMap } from "../hooks/use-shell";
+import { stackByZ } from "../lib/store";
 import { usePersistLayout } from "../hooks/use-persist-layout";
 import { useOverviewKey } from "../hooks/use-overview-key";
 import { MenuBar } from "./menu-bar";
@@ -92,11 +93,19 @@ function useSpotlightHotkey() {
   }, []);
 }
 
-// ⌘I / Ctrl+I toggles the AI Inspector.
+// True when focus is in a text field — chord hotkeys that collide with editor
+// bindings (⌘I = italic, ⌘+Arrow = word-select) must stand down there.
+function inEditable(el: EventTarget | null): boolean {
+  const t = el as HTMLElement | null;
+  return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+}
+
+// ⌘I / Ctrl+I toggles the AI Inspector — but not while typing (⌘I is italic in
+// every editor; stealing it mid-edit is surprising).
 function useInspectorHotkey() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i" && !inEditable(e.target)) {
         e.preventDefault();
         toggleInspector();
       }
@@ -115,8 +124,7 @@ function useWindowSnapKeys(enabled: boolean) {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
       if (!e.key.startsWith("Arrow")) return;
-      const el = e.target as HTMLElement | null;
-      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      if (inEditable(e.target)) return;
       const id = shellStore.getFocused();
       if (!id) return;
       const win = shellStore.getWindow(id);
@@ -136,6 +144,11 @@ function useWindowSnapKeys(enabled: boolean) {
 
 function DesktopChrome() {
   const order = useWindowOrder();
+  const winMap = useWindowsMap();
+  // Paint windows in z-order (focus recency) so the visible stack matches the
+  // store's MRU — unfocused windows share one CSS z tier, so DOM order is the
+  // tiebreak. winMap re-identifies on any window patch (incl. focus z bump).
+  const stacked = useMemo(() => stackByZ(order, winMap), [order, winMap]);
   const [overview, setOverview] = useState(false);
   const menu = useContextMenu();
   useOverviewKey(() => setOverview(true));
@@ -149,7 +162,7 @@ function DesktopChrome() {
         // (which sit in child layers) keep their native right-click.
         onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e); }}
       >
-        {order.map((id) => (
+        {stacked.map((id) => (
           <Window key={id} id={id} />
         ))}
       </section>

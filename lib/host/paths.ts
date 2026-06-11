@@ -59,7 +59,14 @@ const APP_DIR = (() => {
 // though the session belongs to the owner — a hijacked session shouldn't walk
 // away with SSH keys or shell history. Override with OS_FS_ALLOW_SENSITIVE=1
 // (or narrow the roots entirely via OS_FS_READ_ROOTS).
-const SENSITIVE_HOME = [".ssh", ".gnupg", ".secrets", ".bash_history", ".npmrc", "vault"];
+const SENSITIVE_HOME = [
+  ".ssh", ".gnupg", ".secrets", ".npmrc", "vault",
+  // shell + REPL history (the host shell may be zsh/fish, not just bash)
+  ".bash_history", ".zsh_history", ".python_history", ".mysql_history",
+  // cloud / infra credentials
+  ".aws", ".config/gcloud", ".kube", ".docker", ".config/rclone",
+  ".git-credentials", ".netrc",
+];
 
 export function isSensitivePath(real: string): boolean {
   if (process.env.OS_FS_ALLOW_SENSITIVE === "1") return false;

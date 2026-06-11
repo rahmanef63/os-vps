@@ -1,12 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { effectiveServerTarget, selectServerTarget, useAppearance } from "@/lib/appearance";
 import { useOsApi } from "@/lib/os-api";
 import { IS_DEMO } from "@/lib/demo";
 import { streamReply } from "@/lib/ai/stream";
 import { faviconUrl, openQuicklink, useQuicklinks } from "@/lib/quicklinks";
 import { openWindow, type ShellCapabilities, type SystemStats } from "@/features/appshell";
+
+// Polls `poll` every `ms`, but only fires while the tab is visible (a hidden
+// cockpit shouldn't keep hammering its own VPS), and refreshes immediately when
+// the tab is shown again. Returns the cleanup. The interval ticks regardless but
+// no-ops cheaply when hidden — no network calls in the background.
+function startVisiblePoll(poll: () => void, ms: number): () => void {
+  const tick = () => {
+    if (typeof document === "undefined" || !document.hidden) poll();
+  };
+  tick();
+  const t = setInterval(tick, ms);
+  const onVis = () => {
+    if (!document.hidden) poll();
+  };
+  if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVis);
+  return () => {
+    clearInterval(t);
+    if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVis);
+  };
+}
 
 // Adapts os-vps's appearance store + host API + AI stream to the generic AppShell
 // capability contract, so `appshell` AND its feature slices carry NO dependency on
@@ -28,27 +48,32 @@ export const topsideCapabilities: ShellCapabilities = {
     const [cpu, setCpu] = useState<number | null>(null);
     useEffect(() => {
       let alive = true;
-      const poll = () => api.sys.stats().then((s) => alive && setCpu(Math.round(s.cpu.pct)));
-      poll();
-      const t = setInterval(poll, 4000);
+      const poll = () =>
+        api.sys.stats().then((s) => alive && setCpu(Math.round(s.cpu.pct))).catch(() => {});
+      const stop = startVisiblePoll(poll, 4000);
       return () => {
         alive = false;
-        clearInterval(t);
+        stop();
       };
     }, [api]);
     return cpu;
   },
   // Spotlight folder search → ready-to-run hits that open Files at the path.
+  // MUST be a stable callback — Spotlight keys its debounce effect on this fn's
+  // identity, so a fresh closure each render would spin an endless search loop.
   useSearch: () => {
     const api = useOsApi();
-    return async (query) =>
-      (await api.fs.search(query)).map((h) => ({
-        id: `dir:${h.path}`,
-        label: h.name,
-        hint: "Folder",
-        // Files is multi-instance — each folder hit opens its own window.
-        run: () => openWindow("files-manager", h.name, undefined, { path: h.path }, { multi: true }),
-      }));
+    return useCallback(
+      async (query: string) =>
+        (await api.fs.search(query)).map((h) => ({
+          id: `dir:${h.path}`,
+          label: h.name,
+          hint: "Folder",
+          // Files is multi-instance — each folder hit opens its own window.
+          run: () => openWindow("files-manager", h.name, undefined, { path: h.path }, { multi: true }),
+        })),
+      [api],
+    );
   },
   // Today-widget telemetry — sys.stats + fs.usage, polled.
   useSystemStats: () => {
@@ -69,11 +94,10 @@ export const topsideCapabilities: ShellCapabilities = {
           /* leave last value */
         }
       };
-      poll();
-      const t = setInterval(poll, 3000);
+      const stop = startVisiblePoll(poll, 3000);
       return () => {
         alive = false;
-        clearInterval(t);
+        stop();
       };
     }, [api]);
     return s;

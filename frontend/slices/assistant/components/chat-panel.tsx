@@ -29,11 +29,16 @@ function errText(err: unknown): string {
 let seq = 0;
 const nextId = () => `m${Date.now()}-${seq++}`;
 
-export type ChatHandle = { runSteps: (auto: Automation, agent?: Agent) => void };
+export type ChatHandle = {
+  runSteps: (auto: Automation, agent?: Agent) => void;
+  stop: () => void;
+};
 
 // The REAL streaming chat. Keeps streamReply + useAuthToken exactly as before;
 // the only addition is prepending the active agent's persona as a leading
-// system-style turn so replies adopt the selected agent's voice.
+// system-style turn so replies adopt the selected agent's voice. An
+// AbortController threads through streamReply so closing the window, switching
+// tabs, or hitting Stop cancels the upstream generation (no orphaned billing).
 export const ChatPanel = forwardRef<
   ChatHandle,
   { agent: Agent; onSwitchAgent: () => void; switcher: React.ReactNode }
@@ -41,12 +46,21 @@ export const ChatPanel = forwardRef<
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const agentRef = useRef(agent);
   agentRef.current = agent;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
+
+  const stop = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, []);
+
+  // Abort the in-flight stream if the panel unmounts (window close / app swap).
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const send = useCallback(
     async (text: string) => {
@@ -68,19 +82,28 @@ export const ChatPanel = forwardRef<
         userMsg,
         { id: replyId, role: "assistant", text: "" },
       ]);
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
       setStreaming(true);
       try {
-        for await (const token of streamReply(wire)) {
+        for await (const token of streamReply(wire, ctrl.signal)) {
           setMessages((prev) =>
             prev.map((m) => (m.id === replyId ? { ...m, text: m.text + token } : m)),
           );
         }
       } catch (err) {
+        if (ctrl.signal.aborted) return; // user stopped — keep partial reply
+        // APPEND the error so the streamed tokens are never erased.
         const note = errText(err);
         setMessages((prev) =>
-          prev.map((m) => (m.id === replyId ? { ...m, text: note } : m)),
+          prev.map((m) =>
+            m.id === replyId
+              ? { ...m, text: m.text ? `${m.text}\n\n⚠ ${note}` : note }
+              : m,
+          ),
         );
       } finally {
+        if (abortRef.current === ctrl) abortRef.current = null;
         setStreaming(false);
       }
     },
@@ -100,6 +123,7 @@ export const ChatPanel = forwardRef<
         "\n\n(Steps logged — no real execution in this build.)";
       setMessages((prev) => [...prev, { id: nextId(), role: "assistant", text: body }]);
     },
+    stop,
   }));
 
   return (
@@ -121,7 +145,7 @@ export const ChatPanel = forwardRef<
           </div>
         </ScrollArea>
       )}
-      <ChatComposer onSend={send} streaming={streaming} />
+      <ChatComposer onSend={send} streaming={streaming} onStop={stop} />
     </div>
   );
 });

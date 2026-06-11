@@ -14,6 +14,11 @@ export const VIEW_H = 800;
 export type Tab = { id: number; url: string; title: string };
 export type { RemoteState } from "./host";
 
+// Consecutive failed polls/acts before we declare the service offline. ~3s of a
+// dead endpoint at the 320ms poll cadence — long enough to ride out a blip,
+// short enough that an eternal spinner never happens.
+const OFFLINE_AFTER = 8;
+
 export function useRemoteBrowser() {
   const api = useBrowserApi();
   const [tabs, setTabs] = useState<Tab[]>([{ id: 1, url: "", title: "New Tab" }]);
@@ -22,16 +27,34 @@ export function useRemoteBrowser() {
   const [state, setState] = useState<RemoteState>({ url: "", title: "" });
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState(false);
+  const [offline, setOffline] = useState(false);
   const urlRef = useRef<string | null>(null);
   const liveRef = useRef(false);
   const activityRef = useRef(0);
   const lastPollRef = useRef(0);
+  const failRef = useRef(0);
   const nextId = useRef(1);
+
+  // Live set of consumer ids this hook owns — read by the unmount cleanup so it
+  // can keepalive-close every remote page, not just the active one.
+  const ownedRef = useRef<Set<string>>(new Set(["ui-1"]));
 
   const consumer = `ui-${activeId}`;
   const consumerRef = useRef(consumer);
   // eslint-disable-next-line react-hooks/refs -- latest-value ref: async stream/poll callbacks compare against the CURRENT consumer synchronously; an effect-based sync would lag a commit
   consumerRef.current = consumer;
+  useEffect(() => { ownedRef.current = new Set(tabs.map((t) => `ui-${t.id}`)); }, [tabs]);
+
+  // Any successful round-trip clears the failure streak + offline flag.
+  const markOk = useCallback(() => {
+    failRef.current = 0;
+    setOffline((o) => (o ? false : o));
+  }, []);
+  // A failed round-trip; flip offline once the streak crosses the threshold.
+  const markFail = useCallback(() => {
+    failRef.current += 1;
+    if (failRef.current >= OFFLINE_AFTER) setOffline((o) => (o ? o : true));
+  }, []);
 
   const setFrame = useCallback((blob: Blob) => {
     const next = URL.createObjectURL(blob);
@@ -44,10 +67,17 @@ export function useRemoteBrowser() {
     try {
       const blob = await api.screenshot(consumerRef.current);
       if (blob) setFrame(blob);
+      markOk();
     } catch {
-      /* keep last frame */
+      markFail(); // keep last frame; count toward offline
     }
-  }, [api, setFrame]);
+  }, [api, setFrame, markOk, markFail]);
+
+  const retry = useCallback(() => {
+    failRef.current = 0;
+    setOffline(false);
+    void refresh();
+  }, [refresh]);
 
   const mergeState = useCallback((s: RemoteState) => {
     setState(s);
@@ -62,13 +92,14 @@ export function useRemoteBrowser() {
         const data = await api.act(path, body, consumerRef.current);
         if (typeof data.url === "string") mergeState({ url: data.url, title: data.title ?? data.url });
         if (!liveRef.current) await refresh();
+        else markOk();
       } catch {
-        /* stale frame; retry */
+        markFail(); // service erroring; surface offline instead of a stale frame
       } finally {
         setBusy(false);
       }
     },
-    [api, refresh, mergeState],
+    [api, refresh, mergeState, markOk, markFail],
   );
 
   const navigate = useCallback((url: string) => act("navigate", { url }), [act]);
@@ -136,16 +167,20 @@ export function useRemoteBrowser() {
     return () => clearInterval(beat);
   }, [consumer, api, refresh, mergeState]);
 
+  // Unmount = window close: revoke the live object URL AND keepalive-close
+  // every remote Chromium page this hook owns (the active tab's close from the
+  // tab-X path isn't enough). keepalive lets the fetch survive page unload.
   useEffect(
     () => () => {
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+      for (const id of ownedRef.current) void api.close(id, true);
     },
-    [],
+    [api],
   );
 
   return {
-    shot, state, busy, live, tabs, activeId,
-    navigate, click, type, key, scroll, back, forward, reload, refresh,
+    shot, state, busy, live, offline, tabs, activeId,
+    navigate, click, type, key, scroll, back, forward, reload, refresh, retry,
     newTab, switchTab, closeTab,
     agentLog: api.agentLog,
   };

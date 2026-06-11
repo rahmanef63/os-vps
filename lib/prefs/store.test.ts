@@ -52,6 +52,16 @@ describe("lib/prefs/store", () => {
     expect(got.quicklinks?.[0]?.id).toBe("b");
   });
 
+  it("serializes concurrent section writes (no read-modify-write loss)", async () => {
+    const quicklinks = [{ id: "gh", title: "GitHub", url: "https://github.com" }];
+    const { wallpaperStyle: _computed, ...tweaks } = { ...TWEAK_DEFAULTS, theme: "dark" as const };
+    // Fire both in the same tick — pre-fix they'd both read {} and one section is lost.
+    await Promise.all([writePrefs({ quicklinks }), writePrefs({ tweaks })]);
+    const got = await readPrefs();
+    expect(got.quicklinks).toEqual(quicklinks);
+    expect(got.tweaks?.theme).toBe("dark");
+  });
+
   it("writes the file with mode 0600 and no leftover tmp file", async () => {
     await writePrefs({ quicklinks: [] });
     const stat = await fs.stat(file);

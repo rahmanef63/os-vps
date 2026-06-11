@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { AppFrame, AppSidebar, type AppProps } from "@/features/os-shell";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropOverlay } from "./components/drop-overlay";
 import { FilesSidebar } from "./components/files-sidebar";
@@ -143,7 +144,14 @@ export default function FilesManager({ payload }: AppProps) {
           onClick={() => sel.clear()}
           onContextMenu={(e) => cmd.onContext(e, null)}
         >
-          {ordered === null ? (
+          {fs.loadFailed ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center text-xs text-muted-foreground">
+              <span>Couldn’t read this folder.</span>
+              <Button variant="outline" size="sm" onClick={fs.refresh}>
+                Retry
+              </Button>
+            </div>
+          ) : ordered === null ? (
             <div className="flex h-full items-center justify-center gap-2 p-8 text-xs text-muted-foreground">
               <Loader2 className="size-4 animate-spin" /> Loading…
             </div>
@@ -180,7 +188,7 @@ export default function FilesManager({ payload }: AppProps) {
           onCut={() => cmd.cut(cmd.targets())}
           onCopy={() => cmd.copy(cmd.targets())}
           onPaste={fs.paste}
-          onDownload={() => fs.setError(null)}
+          onDownload={() => cmd.download(cmd.ctx?.entry ?? null)}
           onDelete={() => cmd.del(cmd.targets())}
         />
       )}

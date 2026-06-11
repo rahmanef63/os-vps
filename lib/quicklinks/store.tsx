@@ -41,6 +41,21 @@ function newId(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
+/** Drop anything that isn't a `{ id, title, url }` row of strings — one bad
+ *  row from a stale cache or the server would otherwise crash every consumer
+ *  (dock, Launchpad, widget, Settings). */
+export function sanitizeQuicklinks(raw: unknown): Quicklink[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (x): x is Quicklink =>
+      !!x &&
+      typeof x === "object" &&
+      typeof (x as Quicklink).id === "string" &&
+      typeof (x as Quicklink).title === "string" &&
+      typeof (x as Quicklink).url === "string",
+  );
+}
+
 /** Bare host/path → https URL; leaves an existing scheme untouched. */
 export function normalizeUrl(raw: string): string {
   const t = raw.trim();
@@ -71,7 +86,7 @@ export function QuicklinksProvider({ children }: { children: ReactNode }) {
     try {
       const raw = localStorage.getItem(KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot post-hydration restore from localStorage (a lazy initializer would read storage on the server and hydration-mismatch)
-      if (raw) setItems(JSON.parse(raw) as Quicklink[]);
+      if (raw) setItems(sanitizeQuicklinks(JSON.parse(raw)));
     } catch {
       /* malformed cache — keep defaults */
     }
@@ -88,7 +103,7 @@ export function QuicklinksProvider({ children }: { children: ReactNode }) {
   // Cross-device sync (lib/prefs): server list wins on initial load, local edits
   // debounce back up. No-op in demo / before login (silent 401 → retry on auth).
   const applyServer = useCallback((xs: Quicklink[]) => {
-    if (Array.isArray(xs)) setItems(xs);
+    if (Array.isArray(xs)) setItems(sanitizeQuicklinks(xs));
   }, []);
   usePrefsSync({ section: "quicklinks", value: items, apply: applyServer });
 

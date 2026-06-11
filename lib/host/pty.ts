@@ -14,6 +14,7 @@ import type { IPty } from "node-pty";
 import { randomBytes } from "crypto";
 import { HostError } from "./host-error";
 import { resolveCwd } from "./exec";
+import { childEnv } from "./child-env";
 
 const MAX_SESSIONS = 8; // concurrent live shells
 const BUFFER_CAP = 256 * 1024; // chars of replay buffer per session
@@ -86,8 +87,7 @@ export async function openPty(opts: {
 
   const cwd = await resolveCwd(opts.cwd); // write-root bounded, falls back home
   const shell = process.env.SHELL || "/bin/bash";
-  const env: Record<string, string> = {};
-  for (const [k, v] of Object.entries(process.env)) if (v !== undefined) env[k] = v;
+  const env = childEnv(); // process.env minus the app's own secrets
   env.TERM = "xterm-256color";
   env.COLORTERM = "truecolor";
 

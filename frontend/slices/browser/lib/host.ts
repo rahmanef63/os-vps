@@ -31,7 +31,9 @@ export type BrowserAdapter = {
   state: (tab: string) => Promise<RemoteState>;
   screenshot: (tab: string) => Promise<Blob | null>;
   act: (path: string, body: unknown, tab: string) => Promise<Partial<RemoteState>>;
-  close: (tab: string) => Promise<void>;
+  // keepalive: the close survives an unmount/page-unload (mirrors the PTY
+  // dispose pattern) so window-close doesn't orphan the remote Chromium page.
+  close: (tab: string, keepalive?: boolean) => Promise<void>;
   agentLog: () => Promise<AgentLogEntry[]>;
 };
 
@@ -41,21 +43,29 @@ const api: BrowserAdapter = {
     if (!r.ok) throw new Error(`http_${r.status}`);
     return (await r.json()) as RemoteState;
   },
+  // Throw on !r.ok (service offline / 5xx) instead of silently returning null —
+  // the hook counts these to surface an "offline" state rather than spin forever.
   screenshot: async (tab) => {
     const r = await fetch(`/api/v1/browser/screenshot?type=jpeg&q=55&tab=${encodeURIComponent(tab)}`);
-    if (!r.ok) return null;
+    if (!r.ok) throw new Error(`http_${r.status}`);
     return await r.blob();
   },
+  // Throw on !r.ok so a dead/erroring service surfaces instead of being
+  // swallowed into `{}` (which read as a successful no-op forever).
   act: async (path, body, tab) => {
     const r = await fetch(`/api/v1/browser/${path}?tab=${encodeURIComponent(tab)}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
+    if (!r.ok) throw new Error(`http_${r.status}`);
     return (await r.json().catch(() => ({}))) as Partial<RemoteState>;
   },
-  close: async (tab) => {
-    await fetch(`/api/v1/browser/close?tab=${encodeURIComponent(tab)}`, { method: "POST" }).catch(() => {});
+  close: async (tab, keepalive = false) => {
+    await fetch(`/api/v1/browser/close?tab=${encodeURIComponent(tab)}`, {
+      method: "POST",
+      keepalive,
+    }).catch(() => {});
   },
   agentLog: async () => {
     const r = await fetch("/api/v1/browser/agent-log", { cache: "no-store" });

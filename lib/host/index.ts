@@ -6,8 +6,8 @@ export { listDir, readFile, writeFile, makeDir, remove, move, copy, uploadInto, 
 export { runCommand } from "./exec";
 export { openPty, attachPty, writePty, resizePty, closePty, hasPty } from "./pty";
 export { stats, processes } from "./sys";
-export { audit } from "./audit";
-export type { AuditAction, AuditEntry } from "./audit";
+export { audit, readAuditTail } from "./audit";
+export type { AuditAction, AuditEntry, AuditRecord } from "./audit";
 export { rateLimited } from "./rate-limit";
 export { HostError } from "./host-error";
 export { apiError, readJson, requireString, optionalString, requireInt, invalidRequest } from "./api-error";

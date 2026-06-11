@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { FilePicker, type FilePickerHandle } from "../lib/host";
 import { useEditor } from "../lib/store";
 import { ASPECT_PRESETS, createLayer } from "../lib/model";
-import { loadImage } from "../lib/konva-helpers";
+import { fileToDataURL, loadImage } from "../lib/konva-helpers";
 import { removeImageBackground } from "../lib/bg-removal";
 import { exportStage, stageToDataURL } from "../lib/export";
 import { downloadProject, parseProject } from "../lib/project";
@@ -34,7 +34,7 @@ export function MenuBar({
 }) {
   const ed = useEditor();
   const {
-    doc, selected, selectedId, fg, stageRef,
+    doc, selected, selectedId, fg, stageRef, docView,
     addLayer, duplicateLayer, removeLayer, raise, lower, addMask, removeMask, update,
     undo, redo, canUndo, canRedo, zoom, setZoom, setDocSize, setTool, select,
     exportProject, loadProject,
@@ -43,17 +43,21 @@ export function MenuBar({
   const projRef = useRef<FilePickerHandle>(null);
   const [busy, setBusy] = useState(false);
 
-  const png = () => { const s = stageRef.current; return s ? stageToDataURL(s, { format: "png" }) : null; };
+  const png = () => { const s = stageRef.current; return s ? stageToDataURL(s, { format: "png", view: docView() }) : null; };
   const z = (d: number) => setZoom(Math.min(5, Math.max(0.1, Math.round((zoom + d) * 100) / 100)));
   const add = (kind: LayerKind) =>
     addLayer(createLayer(kind, kind === "text" ? { fill: fg } : kind === "shape" ? { fillColor: fg } : {}));
 
   async function openImage(file: File) {
-    const url = URL.createObjectURL(file);
-    const img = await loadImage(url);
+    // Read the file to a persistable data URL (NOT a blob: URL, which dies on
+    // reload and would serialize dead into autosave/Save). Use a transient object
+    // URL only to measure the image, then revoke it.
+    const objUrl = URL.createObjectURL(file);
+    const img = await loadImage(objUrl).finally(() => URL.revokeObjectURL(objUrl));
+    const src = await fileToDataURL(file);
     const k = Math.min(1, (Math.min(doc.width, doc.height) * 0.9) / Math.max(img.width, img.height));
     const w = Math.round(img.width * k), h = Math.round(img.height * k);
-    addLayer(createLayer("image", { name: file.name, src: url, t: { x: Math.round((doc.width - w) / 2), y: Math.round((doc.height - h) / 2), width: w, height: h, rotation: 0, scaleX: 1, scaleY: 1 } }));
+    addLayer(createLayer("image", { name: file.name, src, t: { x: Math.round((doc.width - w) / 2), y: Math.round((doc.height - h) / 2), width: w, height: h, rotation: 0, scaleX: 1, scaleY: 1 } }));
   }
   async function openProject(file: File) { const p = parseProject(await file.text()); if (p) loadProject(p); }
   async function removeBg() {
@@ -76,7 +80,7 @@ export function MenuBar({
         {onSave && <Item onSelect={() => { const u = png(); if (u) onSave(u); }} shortcut="⌘S">Save</Item>}
         {onSaveAs && <Item onSelect={() => { const u = png(); if (u) onSaveAs(u); }} shortcut="⇧⌘S">Save As…</Item>}
         <Item onSelect={() => downloadProject(exportProject())}>Save Project (.json)</Item>
-        <Item onSelect={() => { const s = stageRef.current; if (s) exportStage(s, { format: "png", name: "export" }); }}>Export PNG</Item>
+        <Item onSelect={() => { const s = stageRef.current; if (s) exportStage(s, { format: "png", name: "export", view: docView() }); }}>Export PNG</Item>
         {onClose && <><DropdownMenuSeparator /><Item onSelect={onClose} shortcut="⌘W">Close</Item></>}
       </Menu>
 

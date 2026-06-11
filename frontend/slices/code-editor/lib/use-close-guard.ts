@@ -1,0 +1,61 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { setCloseGuard, closeWindow } from "./host";
+
+// Owns save-on-shortcut + the dirty-window close guard. `save` and `dirty` are
+// read through refs so the global keydown listener and the shell close guard
+// each register ONCE yet always act on the current buffer (no stale closures).
+export function useCloseGuard(
+  winId: string | undefined,
+  dirty: boolean,
+  save: () => Promise<void> | void,
+) {
+  const [confirmClose, setConfirmClose] = useState(false);
+  // Latest-ref mirrors, written post-render (react-hooks/refs forbids mutating
+  // a ref during render) so the once-registered listener + guard stay current.
+  const saveRef = useRef(save);
+  const dirtyRef = useRef(dirty);
+  useEffect(() => {
+    saveRef.current = save;
+    dirtyRef.current = dirty;
+  });
+
+  // Cmd/Ctrl+S saves the active buffer regardless of focus within the app.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        void saveRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Veto a close while dirty and surface the Save / Don't Save / Cancel prompt.
+  useEffect(() => {
+    if (!winId) return;
+    setCloseGuard(winId, () => {
+      if (!dirtyRef.current) return true;
+      setConfirmClose(true);
+      return false;
+    });
+    return () => setCloseGuard(winId, null);
+  }, [winId]);
+
+  const forceClose = useCallback(() => {
+    if (winId) {
+      setCloseGuard(winId, null);
+      closeWindow(winId);
+    }
+  }, [winId]);
+
+  const saveThenClose = useCallback(async () => {
+    setConfirmClose(false);
+    await saveRef.current();
+    forceClose();
+  }, [forceClose]);
+
+  return { confirmClose, setConfirmClose, forceClose, saveThenClose, saveRef };
+}

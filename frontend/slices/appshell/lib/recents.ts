@@ -53,6 +53,9 @@ export function listRecents(): RecentApp[] {
   return recents;
 }
 
+// Stable SSR snapshot (the server renders no recents) — returning the
+// client-loaded module state would mismatch on hydration.
+const SSR_RECENTS: RecentApp[] = [];
 export function useRecents(): RecentApp[] {
   return useSyncExternalStore(
     (cb) => {
@@ -62,6 +65,6 @@ export function useRecents(): RecentApp[] {
       };
     },
     () => recents,
-    () => recents,
+    () => SSR_RECENTS,
   );
 }

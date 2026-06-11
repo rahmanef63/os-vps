@@ -77,6 +77,9 @@ export function EditorProvider({ initialDoc, children }: { initialDoc?: Doc; chi
   );
   const canvases = useRef<Map<string, HTMLCanvasElement>>(new Map());
   const stageRef = useRef<Konva.Stage | null>(null);
+  // The editor's root DOM node — the keyboard hooks gate on it so Delete/Space/
+  // tool keys only act when focus is inside THIS editor, never a sibling window.
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   // Restore a paint layer's pixels from a PNG snapshot (undo/redo of strokes).
   const applyPaint = useCallback((id: string, dataUrl: string) => {
@@ -125,19 +128,26 @@ export function EditorProvider({ initialDoc, children }: { initialDoc?: Doc; chi
     return c;
   }, []);
 
+  // Where the doc sits on the stage right now (pan = its top-left in stage px,
+  // zoom = on-screen scale) — the exporter normalizes this back to doc px.
+  const docView = useCallback(
+    () => ({ x: pan.x, y: pan.y, width: doc.width, height: doc.height, zoom }),
+    [pan.x, pan.y, doc.width, doc.height, zoom],
+  );
+
   const { exportProject, loadProject } = useProjectIO({ doc, canvases, canvasFor, setDoc: setDocState, setSelected: setSelectedId, stageRef });
   const { addMask, removeMask } = useMaskOps({ canvasFor, canvases, update, docSize: () => ({ w: doc.width, h: doc.height }), setMaskEdit: setMaskEditId });
 
   const value = useMemo<Ctx>(() => ({
     doc, selectedId, selected: doc.layers.find((l) => l.id === selectedId) ?? null,
-    tool, zoom, pan, brush, fg, bg, recentColors, canUndo, canRedo, version: rev, maskEditId, stageRef, canvasFor,
+    tool, zoom, pan, brush, fg, bg, recentColors, canUndo, canRedo, version: rev, maskEditId, stageRef, rootRef, canvasFor, docView,
     select: setSelectedId, setTool, setZoom, setPan, setMaskEdit,
     setBrush: (b) => setBrushState((s) => ({ ...s, ...b })),
     setFg, setBg: setBgState, swapColors, resetColors,
     setDocSize, update, patchStyle, patchShadow, patchGlow, patchStroke, patchAdj,
     addLayer, removeLayer, duplicateLayer, reorder, raise, lower, applyCrop, addMask, removeMask,
     recordPaint, exportProject, loadProject, undo, redo,
-  }), [doc, selectedId, setSelectedId, tool, zoom, pan, brush, fg, bg, recentColors, canUndo, canRedo, rev, maskEditId, canvasFor, setFg, swapColors, resetColors, setMaskEdit, setDocSize, update, patchStyle, patchShadow, patchGlow, patchStroke, patchAdj, addLayer, removeLayer, duplicateLayer, reorder, raise, lower, applyCrop, addMask, removeMask, recordPaint, exportProject, loadProject, undo, redo]);
+  }), [doc, selectedId, setSelectedId, tool, zoom, pan, brush, fg, bg, recentColors, canUndo, canRedo, rev, maskEditId, canvasFor, docView, setFg, swapColors, resetColors, setMaskEdit, setDocSize, update, patchStyle, patchShadow, patchGlow, patchStroke, patchAdj, addLayer, removeLayer, duplicateLayer, reorder, raise, lower, applyCrop, addMask, removeMask, recordPaint, exportProject, loadProject, undo, redo]);
 
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;
 }

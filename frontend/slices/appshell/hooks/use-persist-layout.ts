@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { shellStore, hydrateBoot, serialize } from "../lib/store";
+import { shellStore, hydrateBoot, serialize, retileSnapped } from "../lib/store";
 import { useApps } from "../lib/registry";
 import { useShellConfig } from "../registry/shell-config";
 import type { PersistedWindow } from "../lib/types";
@@ -34,6 +34,21 @@ export function usePersistLayout() {
     }
     ready.current = true;
   }, [persistKey]);
+
+  // Re-clamp/re-tile windows when the viewport shrinks or rotates, so a window
+  // arranged on a wide screen never strands its title bar offscreen on resize.
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | null = null;
+    const onResize = () => {
+      if (t) clearTimeout(t);
+      t = setTimeout(retileSnapped, 150);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (t) clearTimeout(t);
+    };
+  }, []);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;

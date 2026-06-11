@@ -83,6 +83,24 @@ export function spawnRect(n: number, w: number, h: number): Rect {
   };
 }
 
+// Clamp a free-floating window rect into the current work area: shrink an
+// oversized window to fit, then nudge it so its whole frame stays on-screen
+// (title bar reachable, never under the bottom chrome). Used when restoring a
+// saved layout or after the viewport shrinks/rotates — a window saved on a wide
+// monitor must not strand its title bar off the right edge on a laptop.
+export function clampRect(r: Rect): Rect {
+  if (typeof window === "undefined") return r;
+  const { vw, top, bottom } = workArea();
+  const w = Math.min(r.w, vw - GAP * 2);
+  const h = Math.min(r.h, bottom - top);
+  return {
+    w,
+    h,
+    x: Math.max(GAP, Math.min(r.x, vw - GAP - w)),
+    y: Math.max(top, Math.min(r.y, bottom - h)),
+  };
+}
+
 // Zone from a pointer near the screen edges (drag-to-snap).
 export function snapZoneAt(px: number, py: number): SnapZone | null {
   const { vw, vh } = viewport();

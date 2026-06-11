@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { EditorProvider, useEditor } from "./lib/store";
 import { blankDoc, createLayer } from "./lib/model";
-import { loadAutosave, saveAutosave, type Project } from "./lib/project";
+import { loadAutosave, saveAutosave } from "./lib/project";
 import { stageToDataURL } from "./lib/export";
 import { imageEditorConfig } from "./config";
 import { ToolRail } from "./components/tool-rail";
 import { MenuBar } from "./components/menu-bar";
+import { ProjectLoader, ProjectLoadError } from "./components/project-loader";
 import { ToolOptionsBar } from "./components/tool-options-bar";
 import { SidePanel } from "./components/side-panel";
 import { MobileShell } from "./components/mobile-shell";
@@ -108,28 +109,6 @@ function useAutosave(autoRestore: boolean, saveDoc?: (doc: Doc) => void, ready =
   }, [doc, exportProject, saveDoc, ready]);
 }
 
-// Loads a saved Doc/Project JSON from a URL into the live store on mount —
-// accepts a full Project or a bare Doc (wrapped with empty paint). Renders null.
-function ProjectLoader({ src, onDone }: { src: string; onDone: () => void }) {
-  const { loadProject } = useEditor();
-  useEffect(() => {
-    let on = true;
-    fetch(src)
-      .then((r) => r.json())
-      .then((j: unknown) => {
-        if (!on || !j || typeof j !== "object") return;
-        const o = j as { v?: number; doc?: unknown; layers?: unknown };
-        const proj: Project | null =
-          o.v === 1 && o.doc ? (o as Project) : Array.isArray(o.layers) ? { v: 1, doc: o as Project["doc"], paint: {} } : null;
-        if (proj) loadProject(proj);
-      })
-      .catch(() => {})
-      .finally(() => { if (on) onDone(); });
-    return () => { on = false; };
-  }, [src, loadProject, onDone]);
-  return null;
-}
-
 // Picks desktop vs mobile layout; both share ONE EditorStage element + provider.
 type ShellProps = {
   onSave?: (d: string) => void;
@@ -148,7 +127,7 @@ function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveD
   useAutosave(autoRestore, saveDoc, ready);
   const autoMobile = useIsMobile();
   const mobile = compact ?? autoMobile;
-  const { version, canUndo, stageRef } = useEditor();
+  const { version, canUndo, stageRef, rootRef, docView } = useEditor();
   // Dirty = history moved past the last save. Derived (no effect-driven
   // setState): loadProject/autosave don't push history so opening a file never
   // trips it; api.markSaved() pins savedVersion to the current version.
@@ -161,7 +140,7 @@ function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveD
   useEffect(() => { onDirty?.(dirty); }, [dirty, onDirty]);
   useEffect(() => {
     onReady?.({
-      exportPng: () => { const s = stageRef.current; return s ? stageToDataURL(s, { format: "png" }) : null; },
+      exportPng: () => { const s = stageRef.current; return s ? stageToDataURL(s, { format: "png", view: docView() }) : null; },
       markSaved: () => setSavedVersion(versionRef.current),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,7 +148,21 @@ function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveD
   const stage = <EditorStage />;
   return (
     <TooltipProvider delayDuration={300}>
-      {mobile ? <MobileShell stage={stage} onSave={onSave} onSaveAs={onSaveAs} /> : <DesktopShell stage={stage} onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} />}
+      {/* Focusable editor root: hotkey hooks gate on `rootRef.contains(activeElement)`
+          so Delete/Space/tool keys only fire when THIS editor holds focus. Pulling
+          focus here on pointer-down (unless already inside) keeps that check true
+          while interacting with the canvas (which doesn't focus a DOM node). */}
+      <div
+        ref={rootRef}
+        tabIndex={-1}
+        className="h-full w-full outline-none"
+        onPointerDownCapture={() => {
+          const root = rootRef.current;
+          if (root && !root.contains(document.activeElement)) root.focus({ preventScroll: true });
+        }}
+      >
+        {mobile ? <MobileShell stage={stage} onSave={onSave} onSaveAs={onSaveAs} /> : <DesktopShell stage={stage} onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} />}
+      </div>
     </TooltipProvider>
   );
 }
@@ -181,15 +174,23 @@ export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height
     if (initialImage) d.layers.push(createLayer("image", { name: "Image", src: initialImage }));
     return d;
   }, [initialImage, width, height]);
-  // When loading a doc from a URL, gate the save-back until the load lands.
+  // When loading a doc from a URL, gate the save-back until the load LANDS. A
+  // failed load leaves `ready` false forever so autosave never writes the blank
+  // starter over the user's file; the error surfaces inline instead.
   const [ready, setReady] = useState(!projectSrc);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const onLoaded = useCallback((ok: boolean, error?: string) => {
+    if (ok) { setReady(true); setLoadError(null); }
+    else setLoadError(error ?? "Could not open project");
+  }, []);
 
   return (
-    <div className={cn("h-full w-full", className)}>
+    <div className={cn("relative h-full w-full", className)}>
       <EditorProvider initialDoc={initialDoc}>
-        {projectSrc && <ProjectLoader src={projectSrc} onDone={() => setReady(true)} />}
+        {projectSrc && <ProjectLoader src={projectSrc} onDone={onLoaded} />}
         <Shell onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} onDirty={onDirty} onReady={onReady} autoRestore={!initialImage && !projectSrc} saveDoc={onSaveDoc} ready={ready} compact={compact} />
       </EditorProvider>
+      {loadError && <ProjectLoadError message={loadError} />}
     </div>
   );
 }

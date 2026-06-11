@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import type { Doc, Layer } from "./types";
 import { createLayer } from "./model";
+import { maskKey } from "./mask";
 
 type SetDoc = (next: Doc | ((d: Doc) => Doc), track?: boolean) => void;
 
@@ -14,16 +15,34 @@ export function useDocOps(
   canvases: React.MutableRefObject<Map<string, HTMLCanvasElement>>,
   setSelectedId: (id: string | null | ((s: string | null) => string | null)) => void,
 ) {
+  // Copy the offscreen canvas at `fromKey` into a same-size canvas at `toKey`
+  // (no-op if the source is absent). Used to carry paint/mask pixels when a layer
+  // is duplicated, since the doc snapshot doesn't include bitmaps.
+  const cloneCanvas = useCallback((fromKey: string, toKey: string) => {
+    const src = canvases.current.get(fromKey);
+    if (!src) return;
+    const dst = document.createElement("canvas");
+    dst.width = src.width;
+    dst.height = src.height;
+    dst.getContext("2d")?.drawImage(src, 0, 0);
+    canvases.current.set(toKey, dst);
+  }, [canvases]);
+
   const addLayer = useCallback((layer: Layer, opts?: { select?: boolean }) => {
     setDoc((d) => ({ ...d, layers: [...d.layers, layer] }));
     if (opts?.select !== false) setSelectedId(layer.id);
   }, [setDoc, setSelectedId]);
 
   const removeLayer = useCallback((id: string) => {
-    canvases.current.delete(id);
+    // DON'T dispose the offscreen paint/mask canvases here: removal is a single
+    // tracked doc step whose snapshot has no pixels (they live in the canvas map,
+    // keyed by id). Deleting them now would make undo restore a BLANK layer.
+    // Keeping them means undoing the doc step re-finds the same-id canvas with its
+    // pixels intact. Orphans never leak into Save/autosave — buildProject only
+    // serializes canvases for layers still present in doc.layers.
     setDoc((d) => ({ ...d, layers: d.layers.filter((l) => l.id !== id) }));
     setSelectedId((s) => (s === id ? null : s));
-  }, [setDoc, canvases, setSelectedId]);
+  }, [setDoc, setSelectedId]);
 
   const duplicateLayer = useCallback((id: string) => {
     setDoc((d) => {
@@ -31,9 +50,15 @@ export function useDocOps(
       if (i < 0) return d;
       const src = d.layers[i];
       const copy = createLayer(src.kind, { ...src, name: `${src.name} copy`, t: { ...src.t, x: src.t.x + 24, y: src.t.y + 24 } });
+      // Paint layers (and any layer mask) keep their pixels in offscreen canvases
+      // keyed by id, which the doc snapshot doesn't carry — so a fresh-id copy is
+      // blank unless we clone those bitmaps too. Copy the source paint canvas and,
+      // if present, the mask canvas into the new id.
+      cloneCanvas(src.id, copy.id);
+      cloneCanvas(maskKey(src.id), maskKey(copy.id));
       return { ...d, layers: [...d.layers.slice(0, i + 1), copy, ...d.layers.slice(i + 1)] };
     });
-  }, [setDoc]);
+  }, [setDoc, cloneCanvas]);
 
   const reorder = useCallback((from: number, to: number) => {
     setDoc((d) => {
@@ -55,10 +80,18 @@ export function useDocOps(
     });
   }, [setDoc]);
 
+  // TODO(audit): resizing the doc doesn't resize paint/mask offscreen canvases,
+  // so after a size change the brush paints onto a stale-sized buffer (and the
+  // mask is mis-aligned). Needs a re-baked canvas per paint layer + a paired
+  // history entry — a larger change touching the undo model; tracked separately.
   const setDocSize = useCallback((w: number, h: number) => setDoc((d) => ({ ...d, width: w, height: h })), [setDoc]);
 
   // Crop: resize the doc to (w,h) anchored at (x,y), shift every layer by (-x,-y),
   // and re-bake each paint layer's pixels into a new (w,h) canvas at the offset.
+  // TODO(audit): the re-bake is DESTRUCTIVE — it overwrites the canvas at the same
+  // id while the pushed history step only snapshots the doc, so undoing a crop
+  // restores the doc dimensions but NOT the pre-crop paint pixels. A correct fix
+  // pairs a paint snapshot with the doc step (combined action) — deferred.
   const applyCrop = useCallback((x: number, y: number, w: number, h: number) => {
     setDoc((d) => {
       for (const l of d.layers) {

@@ -1,5 +1,19 @@
 import { API_VERSION, type OsApi, type SysStats } from "./types";
 
+// /api/v1 routes return `{ error: "..." }` (lib/host/api-error). Surface that
+// message instead of `${status} ${statusText}` — HTTP/2 has no statusText, so a
+// bare 403 would read "403 ". Defensive: body may be empty or non-JSON.
+async function errorFromResponse(res: Response): Promise<Error> {
+  let message = "";
+  try {
+    const body = (await res.json()) as { error?: unknown } | null;
+    if (body && typeof body.error === "string") message = body.error;
+  } catch {
+    /* empty / non-JSON body — fall back to status below */
+  }
+  return new Error(message || `${res.status} ${res.statusText}`.trim());
+}
+
 // Live adapter → REST + SSE against the VPS daemon / Control Room agent at
 // {baseUrl}/api/v1. Auth = the signed session cookie, sent automatically on
 // same-origin requests (no Bearer token). Host actions stay allowlisted
@@ -24,7 +38,7 @@ export function HttpAdapter(cfg: { url?: string }): OsApi {
       init.body = JSON.stringify(opts.body);
     }
     const res = await fetch(url, init);
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    if (!res.ok) throw await errorFromResponse(res);
     if (res.status === 204) return null as T;
     return res.json() as Promise<T>;
   }
@@ -65,7 +79,7 @@ export function HttpAdapter(cfg: { url?: string }): OsApi {
         fd.append("dest", dest);
         for (const f of files) fd.append("file", f.file, f.relPath);
         const res = await fetch(root + "/fs/upload", { method: "POST", body: fd });
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        if (!res.ok) throw await errorFromResponse(res);
         return res.json();
       },
       search: (query) => req("GET", "/fs/search", { query: { q: query } }),

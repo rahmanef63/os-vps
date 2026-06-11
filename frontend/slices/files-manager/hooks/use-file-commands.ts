@@ -2,7 +2,7 @@
 
 import { useCallback, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { openWindow } from "@/features/os-shell";
-import type { FsEntry } from "@/lib/os-api";
+import { rawUrl, type FsEntry } from "@/lib/os-api";
 import { appForFile, mediaKind } from "../lib/icons";
 import { joinPath, parentPath } from "../lib/format";
 import { TRASH_PATH, type UseFiles } from "./use-files";
@@ -70,6 +70,23 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
 
   const cut = useCallback((names: string[]) => fs.setClip({ mode: "cut", names, from: fs.path }), [fs]);
   const copy = useCallback((names: string[]) => fs.setClip({ mode: "copy", names, from: fs.path }), [fs]);
+
+  // Download a file's raw bytes via a hidden <a download>. Dirs aren't
+  // downloadable (no archive endpoint), so skip them. The raw route is
+  // cookie-authed same-origin; the demo serves /demo-media/* statically.
+  const download = useCallback(
+    (entry: FsEntry | null) => {
+      if (!entry || entry.kind !== "file") return;
+      const a = document.createElement("a");
+      a.href = rawUrl(joinPath(fs.path, entry.name));
+      a.download = entry.name;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    },
+    [fs.path],
+  );
   const del = useCallback(
     (names: string[]) => {
       if (inTrash) {
@@ -91,8 +108,15 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
   const doRename = useCallback(
     (from: string, to: string) => {
       setRenaming(null);
-      if (!to.trim() || to === from) return; // no-op rename → skip the round-trip
-      fs.rename(from, to);
+      const name = to.trim();
+      if (!name || name === from) return; // no-op rename → skip the round-trip
+      // POSIX rename clobbers the target — refuse a collision with a sibling
+      // instead of silently overwriting it (surface the same inline error bar).
+      if (fs.entries?.some((e) => e.name === name)) {
+        fs.setError("Name already exists");
+        return;
+      }
+      fs.rename(from, name);
     },
     [fs],
   );
@@ -130,6 +154,6 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
 
   return {
     renaming, setRenaming, ctx, setCtx, inTrash,
-    go, open, openPath, onContext, targets, cut, copy, del, emptyTrash, doRename, newFolder, onKey,
+    go, open, openPath, onContext, targets, cut, copy, del, download, emptyTrash, doRename, newFolder, onKey,
   };
 }

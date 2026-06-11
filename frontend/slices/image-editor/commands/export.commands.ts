@@ -17,7 +17,7 @@ export const exportCommands: EditorCommand[] = [
       const stage = ctx.stageRef.current;
       if (!stage) throw new Error("canvas not ready");
       const format = (a.format as ExportFormat) ?? "png";
-      exportStage(stage, { format, pixelRatio: a.scale ? Number(a.scale) : 1, name: a.name ? String(a.name) : "export" });
+      exportStage(stage, { format, scale: a.scale ? Number(a.scale) : 1, view: ctx.docView(), name: a.name ? String(a.name) : "export" });
       return `exported ${format} (${a.scale ?? 1}x)`;
     },
   },

@@ -28,6 +28,12 @@ the issue violates. Expect a reply within a week (solo maintainer).
 - The destructive-command guard in `lib/host/exec.ts` is an **accident
   tripwire, not a sandbox** — bypassing it with shell tricks is expected and
   documented.
+- Spawned shells (exec + PTY) run with the app's own secrets stripped from their
+  environment (`lib/host/child-env.ts`), so a casual `printenv` in the terminal
+  won't reveal `OS_SESSION_SECRET` / `OS_LOGIN_PASSWORD` / the BYOK key. This is
+  defense-in-depth, **not** a boundary: a same-UID process can still read
+  `/proc/<pid>/environ` of the os-vps process itself. The real boundary is the
+  OS user the app runs as — keep it unprivileged and dedicated.
 - Deployments that ignore the minimum security checklist (no TLS/VPN, `/` as a
   read root on a public box, weak `OS_SESSION_SECRET`).
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Sparkles, Check } from "lucide-react";
+import { toast } from "@/features/os-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Section } from "./section";
@@ -17,6 +18,7 @@ export function AiSection() {
   const [key, setKey] = useState("");
   const [model, setModel] = useState("");
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   // Pure fetch (no setState) so the mount effect can use the .then form
   // (react-hooks/set-state-in-effect).
@@ -43,18 +45,31 @@ export function AiSection() {
   }, [fetchCfg]);
 
   async function onSave() {
-    await fetch("/api/config", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        ...(key.trim() ? { anthropicApiKey: key.trim() } : {}),
-        ...(model.trim() ? { model: model.trim() } : {}),
-      }),
-    });
-    setKey("");
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-    void load();
+    setBusy(true);
+    try {
+      const r = await fetch("/api/config", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          // Empty string clears a stored key; undefined leaves it untouched.
+          ...(key.trim() ? { anthropicApiKey: key.trim() } : {}),
+          ...(model.trim() ? { model: model.trim() } : {}),
+        }),
+      });
+      if (!r.ok) {
+        // Keep the field on failure so the user doesn't lose their input.
+        toast(r.status === 401 ? "Session expired — sign in again" : "Couldn’t save AI config", { tone: "error" });
+        return;
+      }
+      setKey("");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+      void load();
+    } catch {
+      toast("Couldn’t reach the server", { tone: "error" });
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -77,9 +92,9 @@ export function AiSection() {
         />
       </Row>
       <div className="flex justify-end">
-        <Button size="sm" onClick={onSave} disabled={cfg === null}>
+        <Button size="sm" onClick={onSave} disabled={cfg === null || busy}>
           {saved ? <Check className="size-3.5" /> : null}
-          {saved ? "Saved" : "Save"}
+          {saved ? "Saved" : busy ? "Saving…" : "Save"}
         </Button>
       </div>
       <p className="text-[11px] leading-relaxed text-muted-foreground">

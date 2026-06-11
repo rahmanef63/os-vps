@@ -4,13 +4,13 @@
    caption-button windows instead of traffic lights). Drives the SHARED store;
    it never forks window state. Sets a bottom taskbar inset so snap/maximize tile
    above the taskbar (macOS dock inset is restored on unmount). */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppWindow, LayoutGrid, Minimize2, Maximize2 } from "lucide-react";
-import { useWindowOrder } from "../../../hooks/use-shell";
+import { useWindowOrder, useWindowsMap } from "../../../hooks/use-shell";
 import { useOverviewKey } from "../../../hooks/use-overview-key";
 import { Slot } from "../../../registry/feature-registry";
 import { registerShell } from "../../../registry/shells";
-import { shellStore, minimizeAll, restoreWindow, applyChromeInsets } from "../../../lib/store";
+import { shellStore, stackByZ, minimizeAll, restoreWindow, applyChromeInsets } from "../../../lib/store";
 import { Window } from "../../window";
 import { AppSwitcher } from "../../app-switcher";
 import { NotificationCenter } from "../../notification-center";
@@ -21,6 +21,8 @@ import { SnapAssist } from "./snap-assist";
 
 function WindowsShell() {
   const order = useWindowOrder();
+  const winMap = useWindowsMap();
+  const stacked = useMemo(() => stackByZ(order, winMap), [order, winMap]);
   const [taskView, setTaskView] = useState(false);
   const menu = useContextMenu();
   useOverviewKey(() => setTaskView((v) => !v)); // F3 toggles Task View, parity with macOS Mission Control
@@ -37,7 +39,7 @@ function WindowsShell() {
       <div className="absolute inset-0" onContextMenu={menu.open} />
       <Slot region="desktopWidgets" />
       <section className="absolute inset-0 z-[10]">
-        {order.map((id) => (
+        {stacked.map((id) => (
           <Window key={id} id={id} variant="windows" />
         ))}
       </section>

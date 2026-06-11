@@ -21,11 +21,13 @@ export async function streamAgentTurn(
   messages: AgentMsg[],
   tools: AiTool[],
   onDelta: (chunk: string) => void,
+  signal?: AbortSignal,
 ): Promise<AgentTurn> {
   const res = await fetch("/api/assistant", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ messages, tools }),
+    signal,
   });
   if (!res.ok || !res.body) {
     const err = await res.json().catch(() => ({}));
@@ -38,6 +40,7 @@ export async function streamAgentTurn(
   const toolUses: AiToolUse[] = [];
   let stopReason: string | null = null;
   while (true) {
+    if (signal?.aborted) { await reader.cancel().catch(() => {}); break; }
     const { done, value } = await reader.read();
     if (done) break;
     buf += dec.decode(value, { stream: true });
@@ -60,11 +63,15 @@ export async function streamAgentTurn(
   return { text, toolUses, stopReason };
 }
 
-export async function* streamReply(messages: WireMsg[]): AsyncGenerator<string> {
+export async function* streamReply(
+  messages: WireMsg[],
+  signal?: AbortSignal,
+): AsyncGenerator<string> {
   const res = await fetch("/api/assistant", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ messages }),
+    signal,
   });
 
   if (!res.ok || !res.body) {
@@ -76,6 +83,7 @@ export async function* streamReply(messages: WireMsg[]): AsyncGenerator<string> 
   const dec = new TextDecoder();
   let buf = "";
   while (true) {
+    if (signal?.aborted) { await reader.cancel().catch(() => {}); return; }
     const { done, value } = await reader.read();
     if (done) break;
     buf += dec.decode(value, { stream: true });

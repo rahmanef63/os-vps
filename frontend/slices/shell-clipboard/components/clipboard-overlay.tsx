@@ -16,6 +16,11 @@ import {
   useClips,
 } from "@/features/appshell";
 
+function inEditable(el: EventTarget | null): boolean {
+  const t = el as HTMLElement | null;
+  return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+}
+
 // ⌘⇧V clipboard history — pinned entries stick, click copies back to the
 // system clipboard. Capture (document copy/cut) starts with this feature.
 // The panel MOUNTS per open, so the search query starts fresh every time
@@ -26,7 +31,9 @@ export function ClipboardOverlay() {
   useEffect(() => startClipboardCapture(), []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "v") {
+      // ⌘⇧V is the canonical terminal/editor paste — don't hijack it while the
+      // user is typing; only summon the history panel from outside a field.
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "v" && !inEditable(e.target)) {
         e.preventDefault();
         toggleClipboard();
       } else if (e.key === "Escape") {

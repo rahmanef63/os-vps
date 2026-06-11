@@ -43,9 +43,12 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
 
   return (
     <>
-      <div className="fixed inset-0 z-[200]" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
+      {/* Above the dock (z-880) and menu bar (z-900): a right-click near the
+          bottom must sit OVER the dock, and the backdrop must swallow clicks on
+          the chrome (else a click launches an app while the menu is open). */}
+      <div className="fixed inset-0 z-[1200]" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
       <div
-        className="fixed z-[201] min-w-[200px] rounded-lg border border-border bg-popover/95 p-1 text-sm shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100"
+        className="fixed z-[1201] min-w-[200px] rounded-lg border border-border bg-popover/95 p-1 text-sm shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100"
         style={{ left: x, top: y }}
       >
         {items.map((it, i) =>

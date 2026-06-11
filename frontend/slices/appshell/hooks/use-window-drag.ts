@@ -94,9 +94,12 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
         window.removeEventListener("pointerup", up);
         const el = ref.current;
         if (el) {
-          const r = el.getBoundingClientRect();
-          moveWindow(id, r.left, r.top);
-          resizeWindow(id, r.width, r.height);
+          // offset* are relative to the desktop surface (the offset parent) —
+          // the same space win.x/win.y live in. getBoundingClientRect is
+          // viewport-relative and would add the surface's top offset (the macOS
+          // menu bar's 30px) into win.y on every resize, drifting the window down.
+          moveWindow(id, el.offsetLeft, el.offsetTop);
+          resizeWindow(id, el.offsetWidth, el.offsetHeight);
         }
       };
       window.addEventListener("pointermove", move);

@@ -27,6 +27,9 @@ export function useFiles(initialPath?: string) {
   // stale result stops matching and `entries` derives back to null (loading) —
   // no synchronous setState reset in the effect (react-hooks/set-state-in-effect).
   const [listing, setListing] = useState<{ key: string; entries: FsEntry[] } | null>(null);
+  // Keyed like `listing`: a failed list for the CURRENT request → show a Retry
+  // state instead of an empty folder. Stale errors derive away on path/reload.
+  const [listError, setListError] = useState<{ key: string } | null>(null);
   const [roots, setRoots] = useState<FsRoot[]>([]);
   const [usage, setUsage] = useState<FsUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +41,7 @@ export function useFiles(initialPath?: string) {
 
   const loadKey = `${path} ${reload}`;
   const entries = listing?.key === loadKey ? listing.entries : null;
+  const loadFailed = listError?.key === loadKey;
 
   useEffect(() => {
     let alive = true;
@@ -49,7 +53,9 @@ export function useFiles(initialPath?: string) {
         if (res.roots?.length) setRoots(res.roots);
       })
       .catch(() => {
-        if (alive) setListing({ key: loadKey, entries: [] });
+        // Don't fake an empty folder (its "drop to upload" invite is misleading)
+        // — flag the failed request so the view offers a Retry instead.
+        if (alive) setListError({ key: loadKey });
       });
     return () => {
       alive = false;
@@ -90,6 +96,7 @@ export function useFiles(initialPath?: string) {
     api,
     path,
     entries,
+    loadFailed,
     roots,
     usage,
     error,

@@ -24,6 +24,16 @@ export function useWindowOrder(): WinId[] {
   );
 }
 
+// The windows map — for components that read several windows during render
+// (dock hover list, Window menu) and must re-render when any window patches.
+export function useWindowsMap(): Record<WinId, WindowState> {
+  return useSyncExternalStore(
+    shellStore.subscribe,
+    shellStore.getWindows,
+    shellStore.getWindows,
+  );
+}
+
 export function useFocused(): WinId | null {
   return useSyncExternalStore(
     shellStore.subscribe,

@@ -67,7 +67,7 @@ function DashboardShell() {
   };
 
   return (
-    <div className="absolute inset-0 z-[10] flex bg-background">
+    <div className="absolute inset-0 z-[10] flex bg-background/85 backdrop-blur-xl">
       <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card/50">
         <div className="flex h-14 shrink-0 items-center gap-2 px-4 text-sm font-semibold">
           <LayoutDashboard className="size-4 text-primary" /> Topside

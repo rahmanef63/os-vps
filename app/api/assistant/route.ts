@@ -79,30 +79,57 @@ export async function POST(req: Request) {
     encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   const tools = Array.isArray(body.tools) && body.tools.length ? body.tools : undefined;
 
+  // One upstream Anthropic stream per request. Hoisted so the stream's cancel()
+  // (fired when the client aborts / the window closes) can abort the upstream
+  // generation — otherwise tokens keep billing after the SSE socket is gone.
+  let ai: ReturnType<typeof anthropic.messages.stream> | null = null;
+  let closed = false; // guard: never enqueue/close on an already-closed controller
+
   const stream = new ReadableStream({
     async start(controller) {
+      const safeEnqueue = (chunk: Uint8Array) => {
+        if (!closed && !req.signal.aborted) controller.enqueue(chunk);
+      };
       try {
-        const ai = anthropic.messages.stream({
-          model: model || "claude-opus-4-8",
-          max_tokens: 4096,
-          system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-          messages,
-          ...(tools ? { tools: tools as Anthropic.Tool[] } : {}),
-        });
+        ai = anthropic.messages.stream(
+          {
+            model: model || "claude-opus-4-8",
+            max_tokens: 4096,
+            system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+            messages,
+            ...(tools ? { tools: tools as Anthropic.Tool[] } : {}),
+          },
+          { signal: req.signal },
+        );
         for await (const ev of ai) {
+          if (req.signal.aborted) break;
           if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
-            controller.enqueue(sse("delta", ev.delta.text));
+            safeEnqueue(sse("delta", ev.delta.text));
           }
         }
-        const final = await ai.finalMessage();
-        const uses = final.content.filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
-        for (const u of uses) controller.enqueue(sse("tool_use", { id: u.id, name: u.name, input: u.input }));
-        controller.enqueue(sse("done", { stopReason: final.stop_reason }));
+        if (!req.signal.aborted) {
+          const final = await ai.finalMessage();
+          const uses = final.content.filter(
+            (b: Anthropic.ContentBlock): b is Anthropic.ToolUseBlock => b.type === "tool_use",
+          );
+          for (const u of uses) safeEnqueue(sse("tool_use", { id: u.id, name: u.name, input: u.input }));
+          safeEnqueue(sse("done", { stopReason: final.stop_reason }));
+        }
       } catch (err) {
-        controller.enqueue(sse("error", err instanceof Error ? err.message : "stream_error"));
+        // Abort isn't an error to report — the consumer is already gone.
+        if (!req.signal.aborted)
+          safeEnqueue(sse("error", err instanceof Error ? err.message : "stream_error"));
       } finally {
-        controller.close();
+        if (!closed) {
+          closed = true;
+          try { controller.close(); } catch { /* already closed/errored */ }
+        }
       }
+    },
+    cancel() {
+      // Client closed the window / aborted: stop billing the upstream tokens.
+      closed = true;
+      ai?.abort();
     },
   });
 
@@ -110,6 +137,7 @@ export async function POST(req: Request) {
     headers: {
       "content-type": "text/event-stream; charset=utf-8",
       "cache-control": "no-store, no-transform",
+      "x-accel-buffering": "no",
       connection: "keep-alive",
     },
   });

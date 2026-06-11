@@ -102,6 +102,12 @@ export function useFileOps(opts: {
   );
   const paste = useCallback(() => {
     if (!clip) return;
+    // Cutting then pasting back into the SAME folder is a no-op — moving each
+    // file onto itself would (via uniqueName) rename it to "name copy". Bail.
+    if (clip.mode === "cut" && clip.from === path) {
+      setClip(null);
+      return;
+    }
     const op = clip.mode === "cut" ? api.fs.move : api.fs.copy;
     return guard(async () => {
       for (const name of clip.names) {
