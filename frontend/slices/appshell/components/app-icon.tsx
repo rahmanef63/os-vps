@@ -16,7 +16,7 @@ export function AppIcon({
   return (
     <span
       className={cn(
-        "relative grid size-full place-items-center overflow-hidden rounded-[var(--radius-icon)] text-white",
+        "relative grid size-full place-items-center overflow-hidden rounded-[var(--shell-icon-radius)] text-white",
         "shadow-[0_1px_2px_rgba(0,0,0,0.2),0_4px_10px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-2px_4px_rgba(0,0,0,0.12)]",
         className,
       )}

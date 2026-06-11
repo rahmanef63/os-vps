@@ -121,7 +121,7 @@ export function MobileShell() {
       {/* APP fullscreen */}
       {showApp && activeApp && (
         <div
-          className="absolute inset-0 z-[10] flex flex-col [animation:appOpen_.28s_cubic-bezier(.2,.8,.2,1)] [transform-origin:center_bottom]"
+          className="absolute inset-0 z-[10] flex flex-col [animation:appOpen_var(--shell-dur-slow)_var(--shell-ease)] [transform-origin:center_bottom]"
           style={{ background: "var(--surface)" }}
         >
           <header

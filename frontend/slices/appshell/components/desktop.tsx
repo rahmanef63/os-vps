@@ -61,7 +61,7 @@ function Surface() {
   const framed = surface === "mobile" && r.vw >= 768;
 
   return (
-    <div className="relative h-dvh w-screen overflow-hidden">
+    <div data-shell={desc.id} className="relative h-dvh w-screen overflow-hidden">
       <Wallpaper shellDefault={desc.wallpaper} />
       {framed ? <PhoneFrame Comp={Comp} /> : <Comp />}
       <Slot region="overlay" />

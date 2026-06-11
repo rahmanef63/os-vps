@@ -28,6 +28,7 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
       if (!win) return;
       focusWindow(id);
       if (win.maximized) toggleMaximize(id);
+      if (ref.current) ref.current.style.transition = "none"; // no geo-glide lag mid-drag
       const sx = e.clientX, sy = e.clientY;
       const ox = win.x, oy = win.y;
       let cx = sx, cy = sy, z: SnapZone | null = null;
@@ -49,6 +50,7 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
       const up = () => {
         cancelAnimationFrame(raf.current); raf.current = 0;
         setZone(null);
+        if (ref.current) ref.current.style.transition = ""; // restore the .win-geo glide
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
         if (z) snapWindow(id, z);
@@ -72,6 +74,7 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
       const win = shellStore.getWindow(id);
       if (!win) return;
       focusWindow(id);
+      if (ref.current) ref.current.style.transition = "none"; // no geo-glide lag mid-resize
       const sx = e.clientX, sy = e.clientY;
       const ow = win.w, oh = win.h, ox = win.x;
       let cx = sx, cy = sy;
@@ -93,6 +96,7 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
         const el = ref.current;
+        if (el) el.style.transition = ""; // restore the .win-geo glide
         if (el) {
           // offset* are relative to the desktop surface (the offset parent) —
           // the same space win.x/win.y live in. getBoundingClientRect is

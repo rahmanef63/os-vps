@@ -30,7 +30,7 @@ export function MenuBar() {
 
   return (
     <header
-      className="glass absolute inset-x-0 top-0 z-[900] flex h-[30px] items-center gap-0.5 border-b border-border px-2.5 text-[13px] font-medium"
+      className="glass absolute inset-x-0 top-0 z-[900] flex h-[30px] items-center gap-0.5 border-b border-border px-2.5 text-[13px] font-medium font-[family-name:var(--shell-font)]"
       style={{ background: "var(--glass-bar)" }}
     >
       <span className="grid size-4 place-items-center rounded-[5px] bg-primary text-[10px] font-extrabold text-primary-foreground">

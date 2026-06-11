@@ -60,6 +60,11 @@ export function setCloseGuard(id: WinId, guard: (() => boolean) | null) {
   if (guard) closeGuards.set(id, guard);
   else closeGuards.delete(id);
 }
+/** Whether a window has a close guard — the chrome skips its close ANIMATION for
+ *  guarded windows so the confirm dialog isn't shown over a faded-out frame. */
+export function hasCloseGuard(id: WinId): boolean {
+  return closeGuards.has(id);
+}
 
 export function closeWindow(id: WinId) {
   if (!M.state.windows[id]) return;

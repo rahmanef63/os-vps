@@ -192,6 +192,57 @@ body {
 /* "auto" swatch in pickers — a hue ring that reads as "follows the OS". */
 .wp-auto     { background: conic-gradient(from 220deg at 50% 50%, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #10b981, #3b82f6); }
 
+/* ── Per-shell design tokens ──────────────────────────────────────────────
+   `data-shell` on the Surface root lets each OS skin diverge (font, corner
+   radius, icon mask, motion curve + durations) WITHOUT forking the shared
+   chrome — components read the --shell-* vars. Base = framework defaults; each
+   shell overrides only what differs. Font is scoped to chrome (menu bar /
+   taskbar / window title) so app content keeps the theme preset's typeface. */
+[data-shell] {
+  --shell-font: var(--font-ui);
+  --shell-radius-win: var(--radius-win);
+  --shell-radius-ui: var(--radius);
+  --shell-icon-radius: 22%;
+  --shell-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shell-dur-fast: 150ms;
+  --shell-dur: 250ms;
+  --shell-dur-slow: 340ms;
+}
+[data-shell="macos"], [data-shell="ios"] {
+  --shell-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", var(--font-ui);
+  --shell-radius-win: 10px;
+  --shell-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-shell="windows"] {
+  --shell-font: "Segoe UI Variable Text", "Segoe UI", system-ui, var(--font-ui);
+  --shell-radius-win: 8px;
+  --shell-radius-ui: 4px;
+  --shell-ease: cubic-bezier(0, 0, 0, 1);
+  --shell-dur: 230ms;
+}
+[data-shell="android"] {
+  --shell-font: Roboto, "Google Sans Text", system-ui, var(--font-ui);
+  --shell-ease: cubic-bezier(0.2, 0, 0, 1);
+  --shell-dur: 300ms;
+  --shell-dur-slow: 400ms;
+  --shell-icon-radius: 50%;
+}
+/* OS reduced-motion: collapse durations to ~instant. 1ms (not 0) so animationend
+   still fires — the window close/minimize finalize on that event. */
+@media (prefers-reduced-motion: reduce) {
+  [data-shell] { --shell-dur-fast: 1ms; --shell-dur: 1ms; --shell-dur-slow: 1ms; }
+}
+
+/* Window lifecycle motion (macOS + Windows). Open on mount; close/minimize via a
+   component-local phase that finalizes the store action on animationend. */
+@keyframes winOpen { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes winClose { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.95); } }
+@keyframes winMin { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.5) translateY(46%); } }
+/* Geometry glide for maximize/snap/restore. The drag + resize hooks set
+   `transition:none` inline during a gesture, so per-frame drags never lag — only
+   the jump moves (maximize/un-maximize/snap) animate. */
+.win-geo { transition: left var(--shell-dur) var(--shell-ease), top var(--shell-dur) var(--shell-ease), width var(--shell-dur) var(--shell-ease), height var(--shell-dur) var(--shell-ease); }
+
 @keyframes appOpen { from { transform: translateY(14px) scale(0.985); } to { transform: none; } }
 /* Live-wallpaper blob drift (transform-only — compositor-friendly). */
 @keyframes wpFloatA { 0%, 100% { transform: translate(-10%, -6%) scale(1); } 50% { transform: translate(12%, 8%) scale(1.18); } }

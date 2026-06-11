@@ -140,7 +140,7 @@ function AndroidShell() {
 
         {/* fullscreen app */}
         {showApp && activeApp && top && (
-          <div className="absolute inset-0 z-[20] flex flex-col bg-background [animation:appOpen_.24s_cubic-bezier(.2,.8,.2,1)] [transform-origin:center_bottom]">
+          <div className="absolute inset-0 z-[20] flex flex-col bg-background [animation:appOpen_var(--shell-dur)_var(--shell-ease)] [transform-origin:center_bottom]">
             <header
               className="flex shrink-0 items-center gap-3 px-3 text-white"
               style={{ background: activeApp.gradient, height: "calc(3rem + var(--sai-top, 0px))", paddingTop: "var(--sai-top, 0px)" }}

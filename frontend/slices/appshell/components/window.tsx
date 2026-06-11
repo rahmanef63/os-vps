@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { memo, useRef } from "react";
+import { memo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useWindow, useFocused } from "../hooks/use-shell";
 import { useWindowDrag } from "../hooks/use-window-drag";
@@ -10,6 +10,7 @@ import {
   minimizeWindow,
   toggleMaximize,
   focusWindow,
+  hasCloseGuard,
   snapRect,
 } from "../lib/store";
 import { deliverDrop, dragCarriesPayload, readDragData } from "../lib/dnd";
@@ -31,12 +32,25 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
   const groupTopId = useGroupTop(win?.groupId);
   const ref = useRef<HTMLDivElement>(null);
   const { startDrag, startResize, zone } = useWindowDrag(id, ref);
+  // Component-local exit phase: the store close/minimize stay SYNCHRONOUS (tests
+  // + bulk ops rely on it); the per-window button animates first, then finalizes
+  // the store action on animationend. A guarded window (unsaved editor) skips the
+  // animation so its confirm dialog isn't shown over a faded-out frame.
+  const [phase, setPhase] = useState<"in" | "closing" | "minimizing">("in");
+  const beginClose = () => (hasCloseGuard(id) ? closeWindow(id) : setPhase("closing"));
+  const beginMinimize = () => setPhase("minimizing");
 
   if (!win || win.minimized) return null;
   if (spaceOf(win) !== activeSpace) return null; // lives on another Space
   if (win.groupId && groupTopId !== id) return null; // a tab behind the group's active frame
   const preview = zone ? snapRect(zone) : null;
   const isWin = variant === "windows";
+  const anim =
+    phase === "closing"
+      ? "[animation:winClose_var(--shell-dur-fast)_var(--shell-ease)_forwards]"
+      : phase === "minimizing"
+        ? "[animation:winMin_var(--shell-dur)_var(--shell-ease)_forwards]"
+        : "[animation:winOpen_var(--shell-dur-fast)_var(--shell-ease)]";
 
   return (
     <>
@@ -51,17 +65,23 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
       <div
         ref={ref}
         className={cn(
-          "absolute flex flex-col overflow-hidden border border-border bg-card shadow-[var(--shadow-win)]",
-          isWin ? "rounded-md" : "rounded-[var(--radius-win)]",
+          "win-geo absolute flex flex-col overflow-hidden border border-border bg-card shadow-[var(--shadow-win)]",
+          "rounded-[var(--shell-radius-win)]",
+          anim,
           // pinned (always-on-top) windows beat even the focused regular window
           win.pinned ? (focused ? "z-[70]" : "z-[60]") : focused ? "z-50" : "z-10",
         )}
         style={{ left: win.x, top: win.y, width: win.w, height: win.h }}
         onMouseDown={() => focusWindow(id)}
+        onAnimationEnd={(e) => {
+          // Finalize the deferred store action once the exit animation ends.
+          if (e.animationName === "winClose") closeWindow(id);
+          else if (e.animationName === "winMin") minimizeWindow(id);
+        }}
       >
         {isWin ? (
           <div
-            className="flex h-[34px] shrink-0 cursor-grab items-center border-b border-border bg-card active:cursor-grabbing"
+            className="flex h-[34px] shrink-0 cursor-grab items-center border-b border-border bg-card font-[family-name:var(--shell-font)] active:cursor-grabbing"
             onPointerDown={startDrag}
             onDoubleClick={() => toggleMaximize(id)}
           >
@@ -70,21 +90,21 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
             </div>
             <WinCaption
               maximized={win.maximized}
-              onMinimize={() => minimizeWindow(id)}
+              onMinimize={beginMinimize}
               onMaximize={() => toggleMaximize(id)}
-              onClose={() => closeWindow(id)}
+              onClose={beginClose}
             />
           </div>
         ) : (
           <div
-            className="glass flex h-[38px] shrink-0 cursor-grab items-center gap-2 border-b border-border px-3 active:cursor-grabbing"
+            className="glass flex h-[38px] shrink-0 cursor-grab items-center gap-2 border-b border-border px-3 font-[family-name:var(--shell-font)] active:cursor-grabbing"
             style={{ background: "var(--window-head)" }}
             onPointerDown={startDrag}
             onDoubleClick={() => toggleMaximize(id)}
           >
             <TrafficLights
-              onClose={() => closeWindow(id)}
-              onMinimize={() => minimizeWindow(id)}
+              onClose={beginClose}
+              onMinimize={beginMinimize}
               onMaximize={() => toggleMaximize(id)}
             />
             <div className="pointer-events-none flex-1 truncate text-center text-[13px] font-semibold text-muted-foreground">

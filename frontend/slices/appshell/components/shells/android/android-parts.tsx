@@ -117,7 +117,7 @@ export function AppDrawer({ apps, onLaunch, onClose }: { apps: AppDescriptor[]; 
   const [q, setQ] = useState("");
   const list = useMemo(() => apps.filter((a) => a.title.toLowerCase().includes(q.toLowerCase())), [apps, q]);
   return (
-    <div className="absolute inset-0 z-[30] flex flex-col bg-background/95 backdrop-blur-xl [animation:appOpen_.2s_ease]">
+    <div className="absolute inset-0 z-[30] flex flex-col bg-background/95 backdrop-blur-xl [animation:appOpen_var(--shell-dur)_var(--shell-ease)]">
       {/* Visually a thin pull handle, but a ≥36px hit area (same treatment as
           the iOS home indicator) so it's actually closable by thumb. */}
       <Button
