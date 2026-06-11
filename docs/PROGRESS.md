@@ -7,6 +7,29 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## Where things stand (2026-06-11) — recovery anchor
+
+Four rounds shipped to `main` today, all green (typecheck + lint + vitest 162 +
+build), prod + demo redeployed. Details in the dated entries below.
+
+- **R1** `818a8ca` — full 6-pass audit → `docs/AUDIT-2026-06-11.md` +
+  `docs/SHELL-FIDELITY-PLAN.md` (the roadmap the fidelity work follows).
+- **R2** `89f4210` — audit fix wave 1–4: 5 app P0s + the P1 tail + hygiene
+  (deleted media-studio's ~1,870-line orphan, tailwind-merge→3, global-error) +
+  security hardening (sensitive denylist, audit redaction, child-env scrub).
+- **R3** `82aeaaa` — dynamic per-shell context menu (`appshell/lib/context-menu.ts`
+  registry, all 5 shells) + live/interactive wallpaper (TSX registry + sandboxed
+  HTML iframe, `liveWallpaper` capability).
+- **R4** `f31b893` — fidelity Phase A+B: per-shell `data-shell` tokens
+  (font/radius/icon/ease/dur) + window open/close/minimize motion + geo glide.
+
+**Next move (not started):** SHELL-FIDELITY-PLAN **Phase C** — one
+`<WindowPreview>` primitive feeding Mission Control / Windows taskbar hover /
+Android recents / iOS switcher; it also fixes the audited switcher
+double-session bug (iOS mounts live `WindowContent` per card today). Then
+Phase D per-shell signature behaviours. Deferred from the audit (documented):
+the UX error-doctrine sweep, confirm/undo pass, focused-window hotkey capability.
+
 ---
 
 ## 2026-06-11 (round 4) — Shell fidelity Phase A+B: per-shell tokens + window motion (DONE)
