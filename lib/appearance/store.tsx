@@ -12,7 +12,7 @@ import {
 import { parseImage, imageStyle, isCssImage, type ImageValue } from "@/features/image-picker";
 import { usePrefsSync } from "@/lib/prefs/use-prefs-sync";
 import { TWEAK_DEFAULTS, type Tweaks, type ServerConfig } from "./types";
-import { normalizeWallpaper } from "./wallpapers";
+import { normalizeLiveWallpaper, normalizeWallpaper } from "./wallpapers";
 import { ensureServerTargets } from "./server-targets";
 import { applyPreset, clearPreset } from "./presets/apply";
 
@@ -84,6 +84,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
           // Removed legacy presets (dusk/mist/noir/…) coerce to "auto".
           wallpaper: normalizeWallpaper(parsed.wallpaper),
           wallpaperImage,
+          liveWallpaper: normalizeLiveWallpaper(parsed.liveWallpaper),
           server: ensureServerTargets(server),
         }));
       }
@@ -129,6 +130,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       ...t,
       wallpaper: normalizeWallpaper(t.wallpaper),
       wallpaperImage: parseImage(t.wallpaperImage ?? null),
+      liveWallpaper: normalizeLiveWallpaper(t.liveWallpaper),
       server: ensureServerTargets({ ...TWEAK_DEFAULTS.server, ...t.server }),
     }));
   }, []);

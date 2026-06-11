@@ -18,8 +18,10 @@ import { toggleSpotlight, toggleInspector, snapWindow, toggleMaximize, minimizeW
 import { WindowOverview } from "./shells/window-overview";
 import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
-import { ContextMenu, useContextMenu } from "./shells/context-menu";
+import { ShellContextMenu, useShellContextMenu, type MenuItem } from "./shells/context-menu";
 import { registerShell, resolveShell, useShellPrefs } from "../registry/shells";
+import { useShellAppearance } from "../registry/capabilities";
+import { cn } from "@/lib/utils";
 // side-effects: shell + palette-command registrations
 import "./shells/windows/windows-shell";
 import "./shells/android/android-shell";
@@ -150,17 +152,29 @@ function DesktopChrome() {
   // tiebreak. winMap re-identifies on any window patch (incl. focus z bump).
   const stacked = useMemo(() => stackByZ(order, winMap), [order, winMap]);
   const [overview, setOverview] = useState(false);
-  const menu = useContextMenu();
+  const menu = useShellContextMenu("macos");
+  // An interactive live wallpaper needs empty-desktop clicks to reach it: the
+  // window layer goes transparent to hit-testing, its windows stay clickable.
+  const interactive = !!useShellAppearance().liveWallpaper?.interactive;
   useOverviewKey(() => setOverview(true));
+  // Built-in items — passed at open time so they read current state. Registry
+  // items (consumer/app, dynamic per shell) merge after these.
+  const baseItems: MenuItem[] = [
+    { label: "Mission Control", icon: Grid3x3, onClick: () => setOverview(true) },
+    { type: "sep" },
+    { label: "Show all windows", icon: Maximize2, disabled: order.length === 0, onClick: () => order.forEach((id) => shellStore.getWindow(id)?.minimized && restoreWindow(id)) },
+    { label: "Minimize all", icon: Minimize2, disabled: order.length === 0, onClick: () => minimizeAll() },
+    { label: "Close all", icon: X, disabled: order.length === 0, onClick: () => closeAll() },
+  ];
   return (
     <>
       <MenuBar />
       <Slot region="desktopWidgets" />
       <section
-        className="absolute inset-x-0 bottom-0 top-[30px] z-[10]"
+        className={cn("absolute inset-x-0 bottom-0 top-[30px] z-[10]", interactive && "pointer-events-none [&>*]:pointer-events-auto")}
         // Only the empty desktop opens the menu — clicks inside an app window
         // (which sit in child layers) keep their native right-click.
-        onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e); }}
+        onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e, baseItems); }}
       >
         {stacked.map((id) => (
           <Window key={id} id={id} />
@@ -172,17 +186,7 @@ function DesktopChrome() {
       <AppLauncher />
       <Dock onMissionControl={() => setOverview(true)} />
       {overview && <WindowOverview onClose={() => setOverview(false)} label="Mission Control" />}
-      <ContextMenu
-        pos={menu.pos}
-        onClose={menu.close}
-        items={[
-          { label: "Mission Control", icon: Grid3x3, onClick: () => setOverview(true) },
-          { type: "sep" },
-          { label: "Show all windows", icon: Maximize2, disabled: order.length === 0, onClick: () => order.forEach((id) => shellStore.getWindow(id)?.minimized && restoreWindow(id)) },
-          { label: "Minimize all", icon: Minimize2, disabled: order.length === 0, onClick: () => minimizeAll() },
-          { label: "Close all", icon: X, disabled: order.length === 0, onClick: () => closeAll() },
-        ]}
-      />
+      <ShellContextMenu state={menu.state} onClose={menu.close} />
     </>
   );
 }

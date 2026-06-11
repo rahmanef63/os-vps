@@ -14,6 +14,7 @@ export {
   type ServerConfig,
   type Theme,
   type Wallpaper,
+  type LiveWallpaper,
   type Device,
   type ServerMode,
   type ServerTarget,
@@ -26,5 +27,5 @@ export {
   FONT_SCALE_OPTIONS,
   THEME_MODE_OPTIONS,
 } from "./options";
-export { normalizeWallpaper, wallpaperClass, wallpaperLabel } from "./wallpapers";
+export { normalizeWallpaper, normalizeLiveWallpaper, wallpaperClass, wallpaperLabel, LIVE_WALLPAPER_HTML_MAX } from "./wallpapers";
 export { uploadWallpaper, WALLPAPER_DIR } from "./wallpaper-upload";

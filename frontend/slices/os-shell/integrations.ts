@@ -5,11 +5,14 @@
 // once from os-root INSIDE the auth boundary — registries are module-level, so
 // this runs exactly once per page.
 import { createElement } from "react";
+import { Activity, FolderPlus, Lock, Wallpaper as WallpaperIcon } from "lucide-react";
 import {
+  lock,
   openQuickLook,
   openWindow,
   recordClip,
   registerCommands,
+  registerContextMenu,
   registerDropHandler,
   registerPreviewer,
   setUnlockGuard,
@@ -18,6 +21,7 @@ import {
   share,
   toast,
   AppHost,
+  type MenuItem,
 } from "@/features/appshell";
 
 // Unlock = the signed session cookie is still valid. A dead session falls
@@ -38,6 +42,31 @@ registerPreviewer({
     !!t && typeof t === "object" && typeof (t as { path?: unknown }).path === "string",
   render: (t) => createElement(AppHost, { app: "media-viewer", payload: t }),
 });
+
+// Topside's dynamic right-click items — merged AFTER each shell's built-ins by
+// the context-menu registry. One provider for every shell ("*", surface-aware)
+// plus a dashboard-specific group; providers run at open time so disabled
+// states / labels can read live data.
+registerContextMenu("*", (ctx) => {
+  const items: MenuItem[] = [];
+  if (ctx.surface === "desktop") {
+    items.push({
+      label: "New Files window",
+      icon: FolderPlus,
+      onClick: () => openWindow("files-manager", "Files", undefined, { path: "~" }, { multi: true }),
+    });
+  }
+  items.push({
+    label: "Change wallpaper…",
+    icon: WallpaperIcon,
+    onClick: () => openWindow("os-settings", "Settings"),
+  });
+  if (ctx.surface === "mobile") items.push({ label: "Lock screen", icon: Lock, onClick: lock });
+  return items;
+});
+registerContextMenu("dashboard", () => [
+  { label: "Open System Monitor", icon: Activity, onClick: () => openWindow("system-monitor", "System Monitor") },
+]);
 
 // Cross-app DnD: a `{ kind: "path" }` payload dropped on Files opens an
 // explorer window at that path (files-manager already honors the payload).

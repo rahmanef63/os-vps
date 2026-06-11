@@ -15,6 +15,7 @@ import {
 import { ImagePickerButton, imageStyle, type ImageValue } from "@/features/image-picker";
 import { setShell, shellsForSurface, useShellPrefs, type ShellId } from "@/features/os-shell";
 import { SettingsRow as Row, SettingsSection as Section } from "@/features/shell-settings";
+import { LiveWallpaperRows } from "./live-wallpaper-rows";
 
 function ChoiceCard({
   active,
@@ -96,6 +97,7 @@ export function AppearanceSection() {
             </Button>
           )}
         </div>
+        <LiveWallpaperRows />
       </Section>
 
       <Section icon={<Monitor />} title="Shell & display">

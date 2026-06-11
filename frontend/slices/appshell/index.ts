@@ -75,6 +75,13 @@ export * from "./lib/shortcuts";
 export * from "./lib/focus-mode";
 export * from "./lib/dnd";
 export * from "./lib/quick-look";
+// Dynamic per-shell context menu + live-wallpaper registries (the consumer/apps
+// register dynamic right-click items + code-defined live wallpapers here).
+export { registerContextMenu, getContextMenuItems } from "./lib/context-menu";
+export type { MenuItem, ContextMenuCtx, ContextMenuProvider } from "./lib/context-menu";
+export { ContextMenu, ShellContextMenu, useContextMenu, useShellContextMenu } from "./components/shells/context-menu";
+export { registerWallpaper, getWallpaper, listWallpapers, useWallpapers } from "./lib/wallpaper-registry";
+export type { WallpaperDescriptor, WallpaperProps } from "./lib/wallpaper-registry";
 export {
   usePublishInspector,
   publishInspector,

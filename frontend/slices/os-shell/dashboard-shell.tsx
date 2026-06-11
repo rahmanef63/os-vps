@@ -14,6 +14,7 @@ import {
   registerShell, AppHost, AppIcon, useApps, useShellConfig,
   useWindowOrder, useFocused, useWindow, shellStore,
   openWindow, minimizeWindow, restoreWindow,
+  ShellContextMenu, useShellContextMenu,
   type AppDescriptor,
 } from "@/features/appshell";
 import { DashboardHome, NavItem, RunningRow, SidebarLabel } from "./dashboard-parts";
@@ -22,6 +23,7 @@ function DashboardShell() {
   const allApps = useApps();
   const apps = allApps.filter((a) => !a.noDock);
   const [q, setQ] = useState("");
+  const menu = useShellContextMenu("dashboard");
   const filtered = useMemo(
     () => apps.filter((a) => a.title.toLowerCase().includes(q.toLowerCase())),
     [apps, q],
@@ -126,8 +128,13 @@ function DashboardShell() {
             </>
           )}
         </header>
-        {/* container context is REQUIRED: app @container styles never match without it */}
-        <main className="min-h-0 flex-1 overflow-hidden [container-type:inline-size]">
+        {/* container context is REQUIRED: app @container styles never match without it.
+            Right-click the Home view opens the (registry-driven) dashboard menu;
+            inside an open app the native right-click is left alone. */}
+        <main
+          className="min-h-0 flex-1 overflow-hidden [container-type:inline-size]"
+          onContextMenu={(e) => { if (!pane) menu.open(e); }}
+        >
           {pane ? (
             <AppHost key={pane.id} app={pane.app} payload={pane.payload} winId={pane.id} />
           ) : (
@@ -135,6 +142,7 @@ function DashboardShell() {
           )}
         </main>
       </div>
+      <ShellContextMenu state={menu.state} onClose={menu.close} />
     </div>
   );
 }

@@ -6,11 +6,35 @@
    feature via the controlCenter slot (working toggles, single source). */
 import { Button } from "@/components/ui/button";
 import { useMemo, useState, useRef } from "react";
-import { Search, X } from "lucide-react";
+import { ChevronLeft, Search, X } from "lucide-react";
 import { shellStore, closeWindow, closeAll } from "../../../lib/store";
 import { useSwipeUpClose } from "../../../hooks/use-swipe-close";
 import { AppIcon } from "../../app-icon";
 import type { AppDescriptor, WindowState } from "../../../lib/types";
+
+// 3-button gesture/nav row. 48px button row (--android-nav) + the device
+// safe-area below it — the same calc(var(--android-nav) + var(--sai-bottom))
+// total every overlay pads for. `inactive` = covered by the app layer's copy.
+export function NavBar({ inactive = false, onBack, onHome, onRecents }: { inactive?: boolean; onBack: () => void; onHome: () => void; onRecents: () => void }) {
+  return (
+    <div
+      className="flex shrink-0 items-center justify-around"
+      style={{ height: "calc(var(--android-nav) + var(--sai-bottom))", paddingBottom: "var(--sai-bottom)" }}
+      inert={inactive}
+      aria-hidden={inactive}
+    >
+      <Button type="button" variant="ghost" onClick={onBack} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
+        <ChevronLeft className="size-5" />
+      </Button>
+      <Button type="button" variant="ghost" onClick={onHome} aria-label="Home" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
+        <span className="size-4 rounded-full border-2 border-foreground/70" />
+      </Button>
+      <Button type="button" variant="ghost" onClick={onRecents} aria-label="Recents" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
+        <span className="size-3.5 rounded-[3px] border-2 border-foreground/70" />
+      </Button>
+    </div>
+  );
+}
 
 export function Recents({ order, apps, onResume, onHome }: { order: string[]; apps: AppDescriptor[]; onResume: (id: string) => void; onHome: () => void }) {
   const wins = order.map((id) => shellStore.getWindow(id)).filter(Boolean) as WindowState[];

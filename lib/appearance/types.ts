@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react";
 import type { ImageValue } from "@/features/image-picker";
-import type { Wallpaper } from "./wallpapers";
+import type { LiveWallpaper, Wallpaper } from "./wallpapers";
 
 export type Theme = "light" | "dark";
 // Wallpaper keys + the .wp-* classes are the wallpapers.ts registry (SSOT).
-export type { Wallpaper } from "./wallpapers";
+export type { LiveWallpaper, Wallpaper } from "./wallpapers";
 export type Device = "auto" | "desktop" | "phone";
 export type ServerMode = "mock" | "live";
 export type ServerTargetKind = "mock" | "local" | "ssh";
@@ -48,6 +48,9 @@ export type Appearance = {
   wallpaper: Wallpaper;
   wallpaperImage: ImageValue | null;
   wallpaperStyle?: CSSProperties;
+  /** Live/interactive wallpaper (TSX component id or sandboxed HTML). Wins over
+   *  both the custom image and the preset when set. */
+  liveWallpaper: LiveWallpaper | null;
   reduceGlass: boolean;
   device: Device;
   /** Root font-size multiplier (a11y) — one of FONT_SCALES. (Size only — the
@@ -77,6 +80,7 @@ export const TWEAK_DEFAULTS: Tweaks = {
   preset: null,
   wallpaper: "auto",
   wallpaperImage: null,
+  liveWallpaper: null,
   reduceGlass: false,
   device: "auto",
   fontScale: 1,

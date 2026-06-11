@@ -5,6 +5,15 @@ import type { DeviceMode } from "../responsive/use-responsive";
 
 export type ThemeMode = "light" | "dark";
 
+// A live (interactive) wallpaper selection. `component` = a code-registered TSX
+// wallpaper (looked up by id in the wallpaper registry); `html` = user-supplied
+// HTML rendered in a SANDBOXED iframe (see components/wallpaper.tsx). When set,
+// it wins over the image/preset. `interactive` lets it receive pointer events
+// (the shell turns the empty desktop click-through so the wallpaper gets them).
+export type LiveWallpaperValue =
+  | { kind: "component"; id: string; interactive?: boolean }
+  | { kind: "html"; html: string; interactive?: boolean };
+
 // Appearance the shell needs to render (theme/device/wallpaper). The consumer
 // adapts its own store to this shape so appshell never imports it.
 export type ShellAppearance = {
@@ -16,6 +25,9 @@ export type ShellAppearance = {
    *  the named `wallpaper` preset. A plain CSS-properties bag so the shell never
    *  imports the host's image-picker. */
   wallpaperStyle?: CSSProperties;
+  /** A live/interactive wallpaper (code component or sandboxed HTML). Highest
+   *  priority — wins over both the image and the preset. */
+  liveWallpaper?: LiveWallpaperValue | null;
 };
 
 // A ready-to-run search result (shell-search / Spotlight). The consumer builds

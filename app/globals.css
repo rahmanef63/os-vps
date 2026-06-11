@@ -193,5 +193,8 @@ body {
 .wp-auto     { background: conic-gradient(from 220deg at 50% 50%, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #10b981, #3b82f6); }
 
 @keyframes appOpen { from { transform: translateY(14px) scale(0.985); } to { transform: none; } }
+/* Live-wallpaper blob drift (transform-only — compositor-friendly). */
+@keyframes wpFloatA { 0%, 100% { transform: translate(-10%, -6%) scale(1); } 50% { transform: translate(12%, 8%) scale(1.18); } }
+@keyframes wpFloatB { 0%, 100% { transform: translate(8%, 10%) scale(1.1); } 50% { transform: translate(-10%, -8%) scale(0.92); } }
 @keyframes bootPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: 0.85; } }
 @keyframes toastIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }

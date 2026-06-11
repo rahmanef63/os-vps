@@ -19,3 +19,6 @@ export { topsideCapabilities } from "./capabilities";
 // the framework itself.
 import "./dashboard-shell";
 export { DashboardShell } from "./dashboard-shell";
+// Built-in live wallpapers (Drift / Starfield) — register into the appshell
+// wallpaper registry on import; Settings lists them via useWallpapers().
+import "./live-wallpapers";

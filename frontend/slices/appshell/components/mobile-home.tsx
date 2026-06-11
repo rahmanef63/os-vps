@@ -9,6 +9,7 @@ import { Clock } from "./clock";
 import { Slot } from "../registry/feature-registry";
 import { MobileAppLibrary } from "./mobile-app-library";
 import { AppActionSheet, AppsGrid } from "./mobile-home-parts";
+import { ShellContextMenu, useShellContextMenu } from "./shells/context-menu";
 
 // Paged iPhone home: [Today widgets] · [App grid] · [App Library]. The status
 // clock, dock, page dots and home-indicator persist across pages.
@@ -34,6 +35,7 @@ export function MobileHome({
   const pagerRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1); // 0 widgets · 1 apps · 2 library
   const [ctxApp, setCtxApp] = useState<AppDescriptor | null>(null); // long-press sheet
+  const menu = useShellContextMenu("ios", "mobile"); // home background long-press menu
 
   // Open on the app grid (the middle page), like iPhone's default home.
   useLayoutEffect(() => {
@@ -69,8 +71,16 @@ export function MobileHome({
     window.addEventListener("pointerup", cleanup);
   };
 
+  // Home-background long-press / right-click → the registry menu for this
+  // shell. Native long-press fires contextmenu on touch; app icons keep their
+  // own long-press sheet (the closest() guard skips presses on controls).
+  const onHomeContext = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button,a,input")) return;
+    menu.open(e);
+  };
+
   return (
-    <div className="absolute inset-0 flex flex-col" inert={inactive} aria-hidden={inactive}>
+    <div className="absolute inset-0 flex flex-col" inert={inactive} aria-hidden={inactive} onContextMenu={onHomeContext}>
       {/* top safe area: status clock + Dynamic Island live here; swipe down →
           NC (left) / CC (right). Height = base bar + the device notch inset. */}
       <div
@@ -125,6 +135,8 @@ export function MobileHome({
           onClose={() => setCtxApp(null)}
         />
       )}
+
+      <ShellContextMenu state={menu.state} onClose={menu.close} />
     </div>
   );
 }

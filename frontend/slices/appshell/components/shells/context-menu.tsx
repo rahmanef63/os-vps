@@ -1,27 +1,57 @@
 "use client";
-/* ContextMenu — a tiny right-click menu shared by the desktop shells (macOS +
-   Windows desktop background, Windows taskbar buttons). Open it from an
-   onContextMenu handler via useContextMenu(); it positions at the cursor, closes
-   on outside-click / Esc / scroll, and clamps to the viewport. No portal — it
-   renders a fixed-position layer at z-[200] above all chrome. */
+/* ContextMenu — a tiny right-click menu shared by every shell (desktop
+   background, taskbar/dock buttons). Open it from an onContextMenu handler via
+   useContextMenu() (static items, e.g. a dock icon) or useShellContextMenu()
+   (the desktop background — merges the shell's built-ins with registry items).
+   It positions at the cursor, closes on outside-click / Esc / scroll, and clamps
+   to the viewport. No portal — a fixed layer above all chrome. */
 import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
-import type { LucideIcon } from "lucide-react";
+import { getContextMenuItems, joinGroups, type MenuItem } from "../../lib/context-menu";
+import type { ShellId, ShellSurface } from "../../registry/shells";
 
-export type MenuItem =
-  | { type?: "item"; label: string; icon?: LucideIcon; onClick: () => void; disabled?: boolean }
-  | { type: "sep" };
+export type { MenuItem };
 
 type Pos = { x: number; y: number } | null;
+type ClickLike = { preventDefault: () => void; clientX: number; clientY: number };
 
 export function useContextMenu() {
   const [pos, setPos] = useState<Pos>(null);
-  const open = useCallback((e: { preventDefault: () => void; clientX: number; clientY: number }) => {
+  const open = useCallback((e: ClickLike) => {
     e.preventDefault();
     setPos({ x: e.clientX, y: e.clientY });
   }, []);
   const close = useCallback(() => setPos(null), []);
   return { pos, open, close };
+}
+
+// Desktop-background menu: merges the shell's own built-in items (passed at open
+// time, so they read current state) with everything registered for this shell.
+export function useShellContextMenu(shell: ShellId, surface: ShellSurface = "desktop") {
+  const [state, setState] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
+  const open = useCallback(
+    (e: ClickLike, base: MenuItem[] = []) => {
+      e.preventDefault();
+      const dynamic = getContextMenuItems({ shell, surface, x: e.clientX, y: e.clientY });
+      const items = joinGroups([base, dynamic]);
+      if (!items.length) return;
+      setState({ x: e.clientX, y: e.clientY, items });
+    },
+    [shell, surface],
+  );
+  const close = useCallback(() => setState(null), []);
+  return { state, open, close };
+}
+
+// Renders the merged menu from useShellContextMenu state.
+export function ShellContextMenu({
+  state,
+  onClose,
+}: {
+  state: { x: number; y: number; items: MenuItem[] } | null;
+  onClose: () => void;
+}) {
+  return <ContextMenu pos={state ? { x: state.x, y: state.y } : null} items={state?.items ?? []} onClose={onClose} />;
 }
 
 export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem[]; onClose: () => void }) {

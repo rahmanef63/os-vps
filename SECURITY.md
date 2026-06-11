@@ -34,6 +34,12 @@ the issue violates. Expect a reply within a week (solo maintainer).
   defense-in-depth, **not** a boundary: a same-UID process can still read
   `/proc/<pid>/environ` of the os-vps process itself. The real boundary is the
   OS user the app runs as — keep it unprivileged and dedicated.
+- User-pasted **live wallpaper HTML** (Settings → Wallpaper → Custom HTML) runs
+  in an iframe sandboxed with `allow-scripts` ONLY — no `allow-same-origin`, so
+  it executes in an opaque origin: it cannot read the OS cookies/localStorage,
+  reach the parent DOM, or call `/api/*` as the signed-in user. It is never
+  injected into the OS DOM. The value is size-capped and shape-validated on
+  every hydrate/sync path (`lib/appearance/wallpapers.ts`).
 - Deployments that ignore the minimum security checklist (no TLS/VPN, `/` as a
   read root on a public box, weak `OS_SESSION_SECRET`).
 

@@ -9,6 +9,39 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-11 (round 3) — Dynamic per-shell context menu + live/interactive wallpaper (DONE)
+
+Two requested features, both on new brand-free appshell registries (rr-liftable).
+
+- **Dynamic per-shell context menu** — `appshell/lib/context-menu.ts`:
+  `registerContextMenu(ShellId | "*", provider)` → `getContextMenuItems(ctx)`;
+  providers run at OPEN time with `{shell, surface, x, y}` so items are fully
+  dynamic. `useShellContextMenu(shell)` + `<ShellContextMenu>` merge each shell's
+  built-ins with the registry. Wired into ALL FIVE shells: macOS + Windows
+  (built-ins → registry), Dashboard (Home-view right-click), iOS + Android home
+  (long-press / contextmenu, skips controls). os-shell injects dynamic items in
+  `integrations.ts` ("New Files window" desktop-only, "Change wallpaper…",
+  "Lock screen" mobile, "Open System Monitor" on dashboard). Fixed a latent bug:
+  the Windows desktop menu hung off a div shadowed by the window section — moved
+  to the section with the currentTarget guard (macOS pattern).
+- **Live / interactive wallpaper** — one capability field
+  (`ShellAppearance.liveWallpaper`, wins over image + preset), two sources:
+  (1) **from code (TSX)** via `appshell/lib/wallpaper-registry.ts`
+  `registerWallpaper({id,label,render,interactive?})` — os-shell ships Drift
+  (token-colored CSS blobs) + Starfield (rAF canvas, pauses when hidden,
+  pointer-attracts when interactive); (2) **from the frontend (HTML)** — user
+  pastes a page in Settings, rendered by the shell in a **sandboxed iframe**
+  (`sandbox="allow-scripts"` only — opaque origin, no cookies/parent DOM/authed
+  `/api`), size-capped + shape-validated (`normalizeLiveWallpaper`). A "receives
+  clicks" toggle turns the desktop window layer `pointer-events-none
+  [&>*]:pointer-events-auto` so empty-desktop clicks reach the wallpaper (it works
+  as a live website); windows/dock/menus stay on top. UI:
+  `os-settings/components/live-wallpaper-rows.tsx`; SECURITY.md documents the
+  sandbox model.
+- Gates: typecheck + lint + build green, vitest 154 → 162 (context-menu registry
+  + wallpaper-normalizer tests). New files ≤200 LOC; appshell stayed brand-free.
+  Prod rebuilt + restarted.
+
 ## 2026-06-11 (round 2) — Audit fix wave 1–4: P0/P1 bugs + hygiene + security hardening (DONE)
 
 Acted on `AUDIT-2026-06-11.md`. 73 files, +973/−300; typecheck + lint + build

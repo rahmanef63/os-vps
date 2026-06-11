@@ -41,6 +41,9 @@ export const topsideCapabilities: ShellCapabilities = {
       device: tweaks.device,
       wallpaper: tweaks.wallpaper,
       wallpaperStyle: tweaks.wallpaperStyle,
+      // Live wallpaper (TSX id or sandboxed HTML) — structurally identical to
+      // the shell's LiveWallpaperValue, passes straight through.
+      liveWallpaper: tweaks.liveWallpaper,
     };
   },
   useCpuPercent: () => {

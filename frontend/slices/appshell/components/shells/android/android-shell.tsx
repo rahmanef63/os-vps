@@ -23,7 +23,8 @@ import { Slot } from "../../../registry/feature-registry";
 import { useShellConfig } from "../../../registry/shell-config";
 import { ShellUIProvider, type ShellUI } from "../../../registry/shell-ui";
 import { Clock } from "../../clock";
-import { AppCell, AppDrawer, Recents } from "./android-parts";
+import { AppCell, AppDrawer, NavBar, Recents } from "./android-parts";
+import { ShellContextMenu, useShellContextMenu } from "../context-menu";
 import type { AppDescriptor } from "../../../lib/types";
 
 function AndroidShell() {
@@ -83,6 +84,13 @@ function AndroidShell() {
   // Pull-DOWN anywhere on home opens the Control Center (no status-bar row).
   // The app grid keeps scrolling: the pull only arms while the grid is at top.
   const pullDown = usePullDown(() => setCc(true), gridRef);
+  // Home-background long-press / right-click → this shell's registry menu
+  // (native long-press fires contextmenu; controls are skipped).
+  const menu = useShellContextMenu("android", "mobile");
+  const onHomeContext = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button,a,input")) return;
+    menu.open(e);
+  };
 
   const shellUI: ShellUI = {
     controlCenterOpen: cc,
@@ -101,7 +109,7 @@ function AndroidShell() {
         {/* HOME (always mounted; app overlays it — inert while covered so its
             grid + NavBar drop out of tab/AT order under the z-20 app layer).
             Pull down → Control Center; clock+date live on the wallpaper. */}
-        <div className="flex min-h-0 flex-1 flex-col px-5 pb-1" inert={showApp} aria-hidden={showApp} onPointerDown={pullDown} style={{ paddingTop: "var(--sai-top, 0px)" }}>
+        <div className="flex min-h-0 flex-1 flex-col px-5 pb-1" inert={showApp} aria-hidden={showApp} onPointerDown={pullDown} onContextMenu={onHomeContext} style={{ paddingTop: "var(--sai-top, 0px)" }}>
           <div className="mt-6 shrink-0">
             <Clock mode="big" />
             <Clock mode="date" />
@@ -150,32 +158,9 @@ function AndroidShell() {
         {drawer && <AppDrawer apps={dockable} onLaunch={launch} onClose={() => setDrawer(false)} />}
         {recents && <Recents order={order} apps={apps} onResume={resume} onHome={goHome} />}
         <Slot region="controlCenter" />
+        <ShellContextMenu state={menu.state} onClose={menu.close} />
       </div>
     </ShellUIProvider>
-  );
-}
-
-function NavBar({ inactive = false, onBack, onHome, onRecents }: { inactive?: boolean; onBack: () => void; onHome: () => void; onRecents: () => void }) {
-  // 48px button row (--android-nav) + the device safe-area below it — the same
-  // calc(var(--android-nav) + var(--sai-bottom)) total every overlay pads for.
-  // `inactive` = this bar is covered by the app layer's own NavBar copy.
-  return (
-    <div
-      className="flex shrink-0 items-center justify-around"
-      style={{ height: "calc(var(--android-nav) + var(--sai-bottom))", paddingBottom: "var(--sai-bottom)" }}
-      inert={inactive}
-      aria-hidden={inactive}
-    >
-      <Button type="button" variant="ghost" onClick={onBack} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
-        <ChevronLeft className="size-5" />
-      </Button>
-      <Button type="button" variant="ghost" onClick={onHome} aria-label="Home" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
-        <span className="size-4 rounded-full border-2 border-foreground/70" />
-      </Button>
-      <Button type="button" variant="ghost" onClick={onRecents} aria-label="Recents" className="h-auto p-0 font-normal hover:bg-transparent grid size-10 place-items-center">
-        <span className="size-3.5 rounded-[3px] border-2 border-foreground/70" />
-      </Button>
-    </div>
   );
 }
 
