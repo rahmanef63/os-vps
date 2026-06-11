@@ -9,6 +9,36 @@ Running log of what shipped each phase. Newest at top.
 
 ---
 
+## 2026-06-11 (round 4) — Shell fidelity Phase A+B: per-shell tokens + window motion (DONE)
+
+First two phases of `SHELL-FIDELITY-PLAN.md`. CSS-first, zero new deps.
+
+- **Phase A — per-shell design tokens.** `data-shell={id}` on the Surface root;
+  globals.css defines `--shell-font / -radius-win / -radius-ui / -icon-radius /
+  -ease / -dur-fast|dur|dur-slow` with per-OS overrides: macOS/iOS 10px + SF
+  stack + `cubic-bezier(.32,.72,0,1)`; Windows 8px/4px + Segoe + decelerate
+  curve; Android 300ms + Roboto + **circular** icon mask (50%). The window
+  radius fork (`rounded-md` vs `rounded-[var(--radius-win)]`) collapsed to
+  `--shell-radius-win`; app icons use `--shell-icon-radius`; menu bar / taskbar /
+  window titles use `--shell-font` (CHROME only — app content keeps the theme
+  preset's typeface, so the recent preset-font work is not regressed).
+- **Phase B — window lifecycle motion.** `winOpen` on mount; `winClose` /
+  `winMin` via a component-LOCAL phase that finalizes the SYNCHRONOUS store
+  action on `animationend` (store contract unchanged — `closeAll`/tests stay
+  sync; guarded editors skip the animation so the confirm dialog isn't over a
+  faded frame). `.win-geo` glides maximize/snap/restore; the drag + resize hooks
+  set `transition:none` mid-gesture so per-frame moves never lag. Mobile
+  `appOpen` durations tokenized. `prefers-reduced-motion` collapses to ~1ms.
+- Verified on demo (Playwright, computed styles + screenshots): macOS window
+  10px + SF titlebar, Windows 8px + Segoe + caption buttons, Android icons 50%,
+  geo-transition + open animation live, zero page errors. Gates green, 162 tests.
+  Prod + demo rebuilt.
+- Next in the plan: Phase C (one `<WindowPreview>` primitive → Mission Control /
+  taskbar hover / recents / iOS switcher; also kills the switcher double-session
+  bug), then per-shell signature behaviours (Win taskbar grouping + Alt-Tab +
+  snap-layouts; iOS zoom-from-icon + status bar; Android notification shade +
+  ripple).
+
 ## 2026-06-11 (round 3) — Dynamic per-shell context menu + live/interactive wallpaper (DONE)
 
 Two requested features, both on new brand-free appshell registries (rr-liftable).
