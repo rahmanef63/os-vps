@@ -32,6 +32,10 @@ export function useEditor() {
         .read(path)
         .then((content) => {
           if (typeof content !== "string" || !content.length) return;
+          // The mock adapter's read is a constant placeholder stub — never let it
+          // clobber a seeded buffer (it'd replace real seed code, e.g. the live
+          // Preview showcase, with "// mock file contents"). Live reads proceed.
+          if (api.mode === "mock") return;
           // Adopt the fresh host content as the new disk baseline. Only keep the
           // working buffer if it had UNSAVED edits (buffer !== old disk);
           // otherwise a clean/reopened buffer must follow the file, or it shows
@@ -59,6 +63,7 @@ export function useEditor() {
         .read(path)
         .then((content) => {
           if (typeof content !== "string") return;
+          if (api.mode === "mock") return; // placeholder stub — keep the seed
           // The read may resolve after keystrokes landed in the buffer. Only
           // overwrite the buffer if it's still clean (unchanged vs the disk
           // baseline at read time) or absent; otherwise keep the user's edits
