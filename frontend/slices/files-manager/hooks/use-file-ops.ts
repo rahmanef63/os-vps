@@ -2,13 +2,24 @@
 
 import { useCallback } from "react";
 import type { OsApi, UploadFile } from "@/lib/os-api";
-import { toast } from "@/features/os-shell";
+import { toast, setActivity, clearActivity } from "@/features/os-shell";
 import { joinPath, uniqueName } from "../lib/format";
 import type { Clipboard } from "../lib/types";
 
 // Home-relative so it expands to ~/.Trash on the live host (inside the write
 // roots) and to /.Trash in the mock (whose home IS the root).
 export const TRASH_PATH = "~/.Trash";
+
+// Live-activity key for the upload (drives the Dynamic Island ring + the Files
+// in-app progress bar, which both read this id from useActivities()).
+export const UPLOAD_ACTIVITY_ID = "files:upload";
+const FILES_APP_ID = "files-manager";
+
+// Compress a failed-list into a toast-friendly reason: "a.zip (too large) +2 more".
+function summarizeFailed(failed: string[]): string {
+  const head = failed.slice(0, 2).join(", ");
+  return failed.length > 2 ? `${head} +${failed.length - 2} more` : head;
+}
 
 type Guard = (run: () => Promise<unknown>) => Promise<void>;
 
@@ -41,11 +52,35 @@ export function useFileOps(opts: {
     (files: UploadFile[], dest: string = path) => {
       if (!files.length) return;
       const label = `${files.length} item${files.length > 1 ? "s" : ""}`;
-      toast(`Uploading ${label}…`);
+      const post = (a: { label: string; progress?: number | null; tone: "active" | "done" | "error" }) =>
+        setActivity(UPLOAD_ACTIVITY_ID, { appId: FILES_APP_ID, ...a });
+      post({ label: `Uploading ${label}`, progress: 0, tone: "active" });
       return guard(async () => {
-        const res = await api.fs.upload(dest, files);
-        const n = res && typeof res.written === "number" ? res.written : files.length;
-        toast(`Uploaded ${n} item${n === 1 ? "" : "s"}`, { tone: "success" });
+        try {
+          const res = await api.fs.upload(dest, files, ({ loaded, total }) =>
+            post({
+              label: `Uploading ${label}`,
+              progress: total ? Math.round((loaded / total) * 100) : null,
+              tone: "active",
+            }),
+          );
+          const n = res && typeof res.written === "number" ? res.written : files.length;
+          const failed = res?.failed ?? [];
+          // Honest reporting: a partial drop (too-large / bad path / write error)
+          // used to vanish — the toast always claimed full success. Surface it.
+          if (failed.length) {
+            post({ label: `Uploaded ${n}, ${failed.length} failed`, progress: 100, tone: "error" });
+            toast(`${failed.length} item${failed.length === 1 ? "" : "s"} failed: ${summarizeFailed(failed)}`, { tone: "error" });
+          } else {
+            post({ label: `Uploaded ${n} item${n === 1 ? "" : "s"}`, progress: 100, tone: "done" });
+            toast(`Uploaded ${n} item${n === 1 ? "" : "s"}`, { tone: "success" });
+          }
+        } catch (e) {
+          post({ label: "Upload failed", tone: "error" });
+          throw e; // let guard surface the inline error bar with the real cause
+        } finally {
+          window.setTimeout(() => clearActivity(UPLOAD_ACTIVITY_ID), 2600);
+        }
       });
     },
     [api, guard, path],

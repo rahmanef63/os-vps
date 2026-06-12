@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, type KeyboardEvent, type MouseEvent } from "react";
-import { openWindow } from "@/features/os-shell";
+import { openWindow, toast } from "@/features/os-shell";
 import { rawUrl, type FsEntry } from "@/lib/os-api";
 import { appForFile, mediaKind } from "../lib/icons";
 import { joinPath, parentPath } from "../lib/format";
@@ -71,12 +71,19 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
   const cut = useCallback((names: string[]) => fs.setClip({ mode: "cut", names, from: fs.path }), [fs]);
   const copy = useCallback((names: string[]) => fs.setClip({ mode: "copy", names, from: fs.path }), [fs]);
 
-  // Download a file's raw bytes via a hidden <a download>. Dirs aren't
-  // downloadable (no archive endpoint), so skip them. The raw route is
-  // cookie-authed same-origin; the demo serves /demo-media/* statically.
+  // Download a file's raw bytes via a hidden <a download> — the browser's native
+  // download manager handles progress (streaming a big file through JS just to
+  // draw a bar would buffer it all in RAM). Dirs aren't downloadable (no archive
+  // endpoint). The raw route is cookie-authed same-origin; demo serves
+  // /demo-media/* statically. A toast acknowledges the start (the click is
+  // fire-and-forget — there's no completion event from <a download>).
   const download = useCallback(
     (entry: FsEntry | null) => {
-      if (!entry || entry.kind !== "file") return;
+      if (!entry) return;
+      if (entry.kind !== "file") {
+        toast("Folders can't be downloaded yet", { tone: "error" });
+        return;
+      }
       const a = document.createElement("a");
       a.href = rawUrl(joinPath(fs.path, entry.name));
       a.download = entry.name;
@@ -84,6 +91,7 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
       document.body.appendChild(a);
       a.click();
       a.remove();
+      toast(`Downloading ${entry.name}…`);
     },
     [fs.path],
   );

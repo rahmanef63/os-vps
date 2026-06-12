@@ -1,7 +1,7 @@
 "use client";
 // audit-allow-hex: VS-Code-dark editor chrome palette is the slice's design, not themable tokens.
 
-import { PanelLeft, Save } from "lucide-react";
+import { Eye, PanelLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -11,13 +11,19 @@ export function EditorToolbar({
   lang,
   dirty,
   canSave,
+  canPreview,
+  previewing,
   onOpenExplorer,
+  onTogglePreview,
   onSave,
 }: {
   lang: Lang;
   dirty: boolean;
   canSave: boolean;
+  canPreview: boolean;
+  previewing: boolean;
   onOpenExplorer: () => void;
+  onTogglePreview: () => void;
   onSave: () => void;
 }) {
   return (
@@ -40,6 +46,19 @@ export function EditorToolbar({
         <Badge variant="secondary" className="font-mono text-[10px] uppercase">
           {lang}
         </Badge>
+        {canPreview && (
+          <Button
+            type="button"
+            variant={previewing ? "default" : "secondary"}
+            size="sm"
+            onClick={onTogglePreview}
+            title="Toggle live preview (CDN deps)"
+            aria-pressed={previewing}
+          >
+            <Eye />
+            Preview
+          </Button>
+        )}
         <Button size="sm" onClick={onSave} disabled={!canSave || !dirty}>
           <Save />
           Save

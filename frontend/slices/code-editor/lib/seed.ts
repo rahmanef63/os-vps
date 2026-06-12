@@ -18,6 +18,23 @@ export const SEED_FILES: Record<string, string> = {
     "  const msg = greet(user.name); // friendly hello\n" +
     "  return `${msg} (#${user.id})`;\n}\n\n" +
     'welcome({ id: 1, name: "ada" });\n',
+  // Self-contained React showcase for the live Preview — deps resolve from
+  // esm.sh (no install). Hit "Preview" in the toolbar to run it.
+  "/Projects/counter.tsx":
+    'import { useState } from "react";\n' +
+    'import { createRoot } from "react-dom/client";\n\n' +
+    "function Counter() {\n" +
+    "  const [n, setN] = useState(0);\n" +
+    "  return (\n" +
+    '    <div style={{ fontFamily: "system-ui", padding: 24 }}>\n' +
+    "      <h1>Hello from esm.sh 👋</h1>\n" +
+    "      <p>Imports load straight from the CDN — no install, no node_modules.</p>\n" +
+    '      <button onClick={() => setN((c) => c + 1)} style={{ fontSize: 18, padding: "8px 16px" }}>\n' +
+    "        Clicked {n} times\n" +
+    "      </button>\n" +
+    "    </div>\n" +
+    "  );\n}\n\n" +
+    'createRoot(document.getElementById("root")!).render(<Counter />);\n',
   "/Projects/styles.css":
     "/* card surface */\n.card {\n  background: #1e1e22;\n" +
     "  border-radius: 12px;\n  padding: 16px;\n}\n",

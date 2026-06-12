@@ -222,7 +222,13 @@ export function MockAdapter(): OsApi {
         return delay({ ok: true });
       },
       // Simulate an upload by materialising the relPath tree under `dest`.
-      upload: async (dest, files) => {
+      upload: async (dest, files, onProgress) => {
+        // Fake a few progress ticks so the demo exercises the real progress bar.
+        const total = files.reduce((n, f) => n + (f.file?.size || 0), 0) || files.length;
+        for (let i = 1; i <= 4 && onProgress; i++) {
+          await new Promise((r) => setTimeout(r, 110));
+          onProgress({ loaded: Math.round((total * i) / 4), total });
+        }
         for (const { relPath } of files) {
           const segs = relPath.split("/").filter(Boolean);
           let cur = norm(dest);
@@ -234,7 +240,7 @@ export function MockAdapter(): OsApi {
           });
         }
         persist();
-        return delay({ written: files.length });
+        return delay({ written: files.length, failed: [] });
       },
       // Search mock dirs by name under /Projects (matches the live ~/projects scope).
       search: async (query) => {

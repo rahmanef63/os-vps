@@ -1,4 +1,5 @@
 import { API_VERSION, type OsApi, type SysStats } from "./types";
+import { uploadChunked } from "./upload";
 
 // /api/v1 routes return `{ error: "..." }` (lib/host/api-error). Surface that
 // message instead of `${status} ${statusText}` — HTTP/2 has no statusText, so a
@@ -72,16 +73,10 @@ export function HttpAdapter(cfg: { url?: string }): OsApi {
       remove: (path) => req("DELETE", "/fs/delete", { body: { path } }),
       move: (from, to) => req("POST", "/fs/move", { body: { from, to } }),
       copy: (from, to) => req("POST", "/fs/copy", { body: { from, to } }),
-      upload: async (dest, files) => {
-        if (!files.length) return { written: 0 };
-        // multipart — the browser sets the boundary; relPath rides as the filename.
-        const fd = new FormData();
-        fd.append("dest", dest);
-        for (const f of files) fd.append("file", f.file, f.relPath);
-        const res = await fetch(root + "/fs/upload", { method: "POST", body: fd });
-        if (!res.ok) throw await errorFromResponse(res);
-        return res.json();
-      },
+      // Chunked over XHR (see lib/os-api/upload.ts): real progress + reliable past
+      // proxy body limits. relPath rides as each part's filename (folders kept).
+      upload: (dest, files, onProgress) =>
+        uploadChunked(root + "/fs/upload", dest, files, onProgress),
       search: (query) => req("GET", "/fs/search", { query: { q: query } }),
       usage: () => req("GET", "/fs/usage"),
     },

@@ -40,6 +40,8 @@ export type FsHit = { name: string; path: string; kind: "dir" | "file" };
 export type UploadFile = { relPath: string; file: File };
 /** Per-request upload outcome: how many landed, and which relPaths were skipped. */
 export type UploadResult = { written: number; failed?: string[] };
+/** Upload progress tick — bytes sent so far / total bytes across the whole batch. */
+export type UploadProgress = { loaded: number; total: number };
 
 /** One-shot command result: full stdout/stderr + exit code (no streaming/pty). */
 export type ExecResult = { stdout: string; stderr: string; code: number };
@@ -70,8 +72,13 @@ export type OsApi = {
     move: (from: string, to: string) => Promise<{ ok: boolean }>;
     /** Recursive copy of a file or dir to a full destination path. */
     copy: (from: string, to: string) => Promise<{ ok: boolean }>;
-    /** Binary-safe upload of files (and folders, via relPath) into `dest`. */
-    upload: (dest: string, files: UploadFile[]) => Promise<UploadResult>;
+    /** Binary-safe upload of files (and folders, via relPath) into `dest`.
+     * `onProgress` fires as bytes go out (chunked under the hood for reliability). */
+    upload: (
+      dest: string,
+      files: UploadFile[],
+      onProgress?: (p: UploadProgress) => void,
+    ) => Promise<UploadResult>;
     /** Find folders by name under a root (default ~/projects). Read-only. */
     search: (query: string) => Promise<FsHit[]>;
     usage: () => Promise<FsUsage>;

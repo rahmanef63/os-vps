@@ -12,6 +12,7 @@ import { FileView } from "./components/file-view";
 import { FileContextMenu } from "./components/file-context-menu";
 import { FileDetails } from "./components/file-details";
 import { UploadInput } from "./components/upload-input";
+import { UploadBar } from "./components/upload-bar";
 import { useFiles } from "./hooks/use-files";
 import { useFilesInspector } from "./hooks/use-files-inspector";
 import { useFileSelection } from "./hooks/use-file-selection";
@@ -45,9 +46,7 @@ export default function FilesManager({ payload }: AppProps) {
     [fs.entries, sort],
   );
   const cutNames =
-    fs.clip?.mode === "cut" && fs.clip.from === fs.path
-      ? new Set(fs.clip.names)
-      : new Set<string>();
+    fs.clip?.mode === "cut" && fs.clip.from === fs.path ? new Set(fs.clip.names) : new Set<string>();
   const selectedEntry =
     sel.selected.size === 1
       ? (fs.entries?.find((e) => sel.selected.has(e.name)) ?? null)
@@ -117,6 +116,7 @@ export default function FilesManager({ payload }: AppProps) {
               onCrumbDragLeave={dnd.onDragLeave}
               onCrumbDrop={dnd.onDrop}
             />
+            <UploadBar />
             {fs.error && (
               <div className="border-t border-destructive/30 bg-destructive/10 px-3 py-1 text-[11px] text-destructive">
                 {fs.error}

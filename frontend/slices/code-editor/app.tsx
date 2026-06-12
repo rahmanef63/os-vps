@@ -10,12 +10,14 @@ import { AppSidebar } from "./components/host-sidebar";
 import { FileTree } from "./components/file-tree";
 import { EditorToolbar } from "./components/editor-toolbar";
 import { EditorSurface } from "./components/editor-surface";
+import { PreviewPane } from "./components/preview-pane";
 import { TabStrip } from "./components/tab-strip";
 import { StatusBar } from "./components/status-bar";
 import { NewFileModal } from "./components/new-file-modal";
 import { CloseGuardDialog } from "./components/close-guard-dialog";
 import { useEditor } from "./lib/use-editor";
 import { useCloseGuard } from "./lib/use-close-guard";
+import { isPreviewable } from "./lib/build-preview";
 import { baseName, langOf } from "./lib/util";
 
 const TAB_SIZE = 2;
@@ -35,6 +37,7 @@ export default function CodeEditor({ payload, winId }: AppProps) {
   const [explorerOpen, setExplorerOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [pos, setPos] = useState({ ln: 1, col: 1 });
+  const [preview, setPreview] = useState(false);
 
   // Save-on-shortcut + dirty-window close guard. `saveRef` always points at the
   // current save (no stale closures in the global listener / Inspector action).
@@ -47,12 +50,14 @@ export default function CodeEditor({ payload, winId }: AppProps) {
   const path = payloadPath(payload);
   useEffect(() => {
     if (path) ed.openPath(path);
-    else ed.open("/Projects/hello.ts");
+    else ed.open("/Projects/counter.tsx");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path]);
 
   const lang = ed.active ? langOf(ed.active) : "txt";
   const lineCount = ed.active != null ? ed.value.split("\n").length : 0;
+  const canPreview = ed.active != null && isPreviewable(ed.active);
+  const showPreview = preview && canPreview;
 
   // Surface editor state + actions to the shell AI Inspector. Re-publishes when
   // the open file, language, length, or dirty flag changes.
@@ -108,41 +113,55 @@ export default function CodeEditor({ payload, winId }: AppProps) {
           lang={lang}
           dirty={ed.dirty}
           canSave={ed.active != null}
+          canPreview={canPreview}
+          previewing={showPreview}
           onOpenExplorer={() => setExplorerOpen(true)}
+          onTogglePreview={() => setPreview((p) => !p)}
           onSave={save}
         />
 
-        {ed.active != null ? (
-          <EditorSurface
-            value={ed.value}
-            onChange={ed.edit}
-            lang={lang}
-            onCursor={setPos}
-            onSave={save}
-          />
-        ) : (
-          <div className="grid flex-1 place-items-center text-[#7d8590]">
-            <div className="text-center">
-              <div
-                className="mx-auto mb-3.5 grid size-14 place-items-center rounded-2xl text-white"
-                style={{ background: "linear-gradient(160deg,#3aa0ff,#1f6dff)" }}
-              >
-                <Code2 className="size-7" />
+        {/* Editor + optional live preview: side-by-side on a wide window, stacked
+            on a narrow one (container query against the window width). */}
+        <div className="flex min-h-0 flex-1 flex-col @[760px]:flex-row">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            {ed.active != null ? (
+              <EditorSurface
+                value={ed.value}
+                onChange={ed.edit}
+                lang={lang}
+                onCursor={setPos}
+                onSave={save}
+              />
+            ) : (
+              <div className="grid flex-1 place-items-center text-[#7d8590]">
+                <div className="text-center">
+                  <div
+                    className="mx-auto mb-3.5 grid size-14 place-items-center rounded-2xl text-white"
+                    style={{ background: "linear-gradient(160deg,#3aa0ff,#1f6dff)" }}
+                  >
+                    <Code2 className="size-7" />
+                  </div>
+                  <div className="text-[15px] font-bold text-[#c7ccd4]">
+                    No file open
+                  </div>
+                  <p className="mx-auto mt-1.5 max-w-[320px] text-[12.5px] leading-relaxed">
+                    Open a file from the Explorer or start something new.
+                  </p>
+                  <div className="mt-3.5">
+                    <Button size="sm" onClick={() => setNewOpen(true)}>
+                      New file
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="text-[15px] font-bold text-[#c7ccd4]">
-                No file open
-              </div>
-              <p className="mx-auto mt-1.5 max-w-[320px] text-[12.5px] leading-relaxed">
-                Open a file from the Explorer or start something new.
-              </p>
-              <div className="mt-3.5">
-                <Button size="sm" onClick={() => setNewOpen(true)}>
-                  New file
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
-        )}
+          {showPreview && ed.active != null && (
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col border-t border-[#2a2a30] @[760px]:border-l @[760px]:border-t-0">
+              <PreviewPane path={ed.active} code={ed.value} />
+            </div>
+          )}
+        </div>
 
         <StatusBar
           path={ed.active}
