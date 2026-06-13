@@ -4,7 +4,7 @@ import { createElement, type DragEvent, type MouseEvent, useState } from "react"
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { rawUrl, type FsEntry } from "@/lib/os-api";
+import { rawUrl, type FsEntry } from "../lib/host";
 import { iconFor, colorFor, isImage } from "../lib/icons";
 import { fmtSize, joinPath } from "../lib/format";
 import type { ViewMode } from "../lib/types";

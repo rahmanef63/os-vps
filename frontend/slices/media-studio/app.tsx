@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ImageEditor, type EditorApi } from "@/features/image-editor";
-import { rawUrl } from "@/lib/os-api";
+import { rawUrl } from "./lib/host";
 import { closeWindow, setCloseGuard, toast, useContainer, useIsMobile } from "@/features/os-shell";
 import type { AppProps } from "@/features/os-shell";
 import {

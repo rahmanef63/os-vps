@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, type DragEvent } from "react";
-import type { FsEntry, UploadFile } from "@/lib/os-api";
+import type { FsEntry, UploadFile } from "../lib/host";
 import { readDropEntries } from "../lib/read-drop";
 
 // Drag-and-drop with two modes, distinguished at drop time:

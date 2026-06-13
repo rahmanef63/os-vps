@@ -2,7 +2,7 @@ import {
   Folder, FileText, Image, Code2, FileVideo, Music, FileArchive,
   FileJson, FileSpreadsheet, Terminal, Globe, type LucideIcon,
 } from "lucide-react";
-import type { FsEntry } from "@/lib/os-api";
+import type { FsEntry } from "./host";
 
 const IMAGE = new Set(["png", "jpg", "jpeg", "gif", "webp", "svg", "avif"]);
 const VIDEO = new Set(["mp4", "mov", "webm", "avi", "mkv"]);

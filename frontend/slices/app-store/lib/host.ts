@@ -7,4 +7,4 @@
 
 export type { AppProps, AppDescriptor } from "@/features/os-shell";
 export { usePublishInspector } from "@/features/os-shell";
-export { useOsApi } from "@/lib/os-api";
+export { useOsApi } from "@/features/os-shell";

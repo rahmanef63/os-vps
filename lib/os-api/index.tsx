@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { HostApiProvider } from "@/features/appshell";
 import { useAppearance } from "@/lib/appearance";
 import { IS_DEMO } from "@/lib/demo";
 import { MockAdapter } from "./mock-adapter";
@@ -20,29 +21,24 @@ export function rawUrl(path: string): string {
   return "/api/v1/fs/raw?path=" + encodeURIComponent(path);
 }
 
-const OsApiContext = createContext<OsApi | null>(null);
-
-// mock (default) ↔ live. Live talks to SAME-ORIGIN `/api/v1` route handlers
-// (base url ""); the signed session cookie rides along automatically, the route
-// handlers verify it, then proxy to the host agent with the gateway secret
-// (server-side only). The agent URL/secret are env, never in the client.
+// os-vps adapter injection: pick mock (default) ↔ live, then hand the concrete
+// api to the framework's HostApiProvider (which owns the context useOsApi reads).
+// Live talks to SAME-ORIGIN `/api/v1` route handlers (base url ""); the signed
+// session cookie rides along, the routes verify it, then proxy to the host agent
+// with the gateway secret (server-side only). Demo never touches the host.
 export function OsApiProvider({ children }: { children: ReactNode }) {
   const { tweaks } = useAppearance();
-  // Demo never touches the host — force mock regardless of the saved setting.
   const mode = IS_DEMO ? "mock" : tweaks.server.mode;
   const api = useMemo(
     () => (mode === "live" ? HttpAdapter({ url: "" }) : MockAdapter()),
     [mode],
   );
-  return <OsApiContext.Provider value={api}>{children}</OsApiContext.Provider>;
+  return <HostApiProvider api={api}>{children}</HostApiProvider>;
 }
 
-export function useOsApi(): OsApi {
-  const api = useContext(OsApiContext);
-  if (!api) throw new Error("useOsApi must be used within OsApiProvider");
-  return api;
-}
-
+// The port hook + types live in the framework now; re-export so existing
+// `@/lib/os-api` importers keep resolving during the migration to the barrel.
+export { useOsApi } from "@/features/appshell";
 export type {
   OsApi,
   SysStats,

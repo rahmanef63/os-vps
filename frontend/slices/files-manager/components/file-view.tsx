@@ -1,5 +1,5 @@
 import { type DragEvent, type MouseEvent } from "react";
-import type { FsEntry } from "@/lib/os-api";
+import type { FsEntry } from "../lib/host";
 import { FileItem } from "./file-item";
 import { joinPath } from "../lib/format";
 import type { ViewMode } from "../lib/types";

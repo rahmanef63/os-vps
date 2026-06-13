@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, type MouseEvent } from "react";
-import type { FsEntry } from "@/lib/os-api";
+import type { FsEntry } from "../lib/host";
 
 // Multi-select with cmd/ctrl-toggle and shift-range, plus select-all. Names are
 // the identity (a dir has no id in the fs contract). Resets when the dir changes.

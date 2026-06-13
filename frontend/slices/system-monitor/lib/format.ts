@@ -1,6 +1,6 @@
-// Telemetry formatters — now shared at the os-api contract layer so About,
+// Telemetry formatters — shared via the shell barrel (a legal alias) so About,
 // neofetch and the monitor all show the same numbers. Re-exported here to keep
-// the slice's internal import paths stable.
+// the slice's internal import paths stable; this file is the slice's only seam.
 export {
   fmtGiB,
   toGiB,
@@ -9,4 +9,4 @@ export {
   fmtMBs,
   clampPct,
   fmtUptime,
-} from "@/lib/os-api/format";
+} from "@/features/os-shell";

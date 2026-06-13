@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, type ChangeEvent } from "react";
-import type { UploadFile } from "@/lib/os-api";
+import type { UploadFile } from "../lib/host";
 
 // Hidden file picker → binary-safe {relPath, file} batch. `directory` renders a
 // folder picker (webkitdirectory), where relPath = the file's path within the

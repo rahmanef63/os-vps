@@ -14,7 +14,7 @@ export {
   type AppDescriptor,
 } from "@/features/os-shell";
 
-export { useOsApi, rawUrl, type FsEntry, type FsList } from "@/lib/os-api";
+export { useOsApi, rawUrl, type FsEntry, type FsList } from "@/features/os-shell";
 
 export { useIsMobile } from "@/hooks/use-mobile";
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { openWindow, toast } from "@/features/os-shell";
-import { rawUrl, type FsEntry } from "@/lib/os-api";
+import { rawUrl, type FsEntry } from "../lib/host";
 import { appForFile, mediaKind } from "../lib/icons";
 import { joinPath, parentPath } from "../lib/format";
 import { TRASH_PATH, type UseFiles } from "./use-files";

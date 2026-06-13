@@ -5,7 +5,7 @@ import { ImageIcon, FileText, Film, Music, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AppFrame, openWindow, usePublishInspector } from "@/features/os-shell";
-import { rawUrl } from "@/lib/os-api";
+import { rawUrl } from "../lib/host";
 import { cn } from "@/lib/utils";
 import { editorFor } from "../lib/media";
 

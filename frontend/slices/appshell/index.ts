@@ -56,6 +56,14 @@ export {
 export type { NotificationItem } from "./lib/toast";
 export { setActivity, clearActivity, useActivities } from "./lib/activity";
 export type { Activity } from "./lib/activity";
+// Host-I/O PORT — the generic backend seam. Apps read host data via useOsApi();
+// the consumer injects a concrete adapter through HostApiProvider (os-vps wraps
+// it in its own OsApiProvider). The OsApi type IS the portability contract.
+export { HostApiProvider, useOsApi } from "./lib/host-api";
+export type {
+  OsApi, Unsub, SysStats, FsEntry, FsRoot, FsList, FsUsage, FsHit,
+  UploadFile, UploadResult, UploadProgress, ExecResult, Process, AppManifest,
+} from "./lib/host-api";
 // F1–F20 window-manager + productivity libs (each module exports its own
 // public surface — commands/badges/layouts/recents/window-commands/window-title/
 // spaces/window-tabs/clipboard/share/lock/profiles/shortcuts/focus-mode/dnd/quick-look).

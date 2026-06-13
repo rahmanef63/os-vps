@@ -1,4 +1,4 @@
-import type { FsEntry } from "@/lib/os-api";
+import type { FsEntry } from "./host";
 
 export type ViewMode = "grid" | "list";
 export type SortKey = "name" | "size" | "kind";

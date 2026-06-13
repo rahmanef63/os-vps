@@ -1,4 +1,4 @@
-import type { UploadFile } from "@/lib/os-api";
+import type { UploadFile } from "./host";
 
 // Walk a drop's DataTransfer into a flat {relPath, file} list, preserving folder
 // structure via the webkit Entry API. Falls back to the flat `files` list when

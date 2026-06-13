@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import type { OsApi, UploadFile } from "@/lib/os-api";
+import type { OsApi, UploadFile } from "../lib/host";
 import { toast, setActivity, clearActivity } from "@/features/os-shell";
 import { joinPath, uniqueName } from "../lib/format";
 import type { Clipboard } from "../lib/types";

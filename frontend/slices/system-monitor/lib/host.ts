@@ -7,4 +7,4 @@
 
 export type { AppDescriptor } from "@/features/os-shell";
 export { usePublishInspector } from "@/features/os-shell";
-export { useOsApi, type SysStats, type Process } from "@/lib/os-api";
+export { useOsApi, type SysStats, type Process } from "@/features/os-shell";

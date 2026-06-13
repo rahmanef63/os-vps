@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FileTree } from "@/shared/file-tree";
-import type { FsRoot, FsUsage } from "@/lib/os-api";
+import type { FsRoot, FsUsage } from "../lib/host";
 import { fmtGiB } from "../lib/format";
 import { TRASH_PATH } from "../hooks/use-files";
 

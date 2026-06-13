@@ -2,7 +2,7 @@
 
 import { createElement } from "react";
 import { Copy } from "lucide-react";
-import type { FsEntry } from "@/lib/os-api";
+import type { FsEntry } from "../lib/host";
 import { toast } from "@/features/os-shell";
 import { iconFor, colorFor } from "../lib/icons";
 import { fmtSize, joinPath } from "../lib/format";

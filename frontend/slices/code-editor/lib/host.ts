@@ -7,4 +7,4 @@
 
 export type { AppProps, AppDescriptor } from "@/features/os-shell";
 export { usePublishInspector, setCloseGuard, closeWindow } from "@/features/os-shell";
-export { useOsApi, type FsEntry } from "@/lib/os-api";
+export { useOsApi, type FsEntry } from "@/features/os-shell";
