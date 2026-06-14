@@ -3,16 +3,7 @@
 // are declared; appshell core imports none of it. Runtime-installed apps are
 // merged on top in os-root (they come from a hook, not static config).
 import type { AppDescriptor, Brand, FeatureDescriptor } from "@/features/appshell";
-import { searchFeature } from "@/features/shell-search";
-import { inspectorFeature } from "@/features/shell-inspector";
-import { notificationsFeature } from "@/features/shell-notifications";
-import { controlCenterFeature } from "@/features/shell-control-center";
-import { widgetsFeature } from "@/features/shell-widgets";
-import { quickLookFeature } from "@/features/shell-quick-look";
-import { clipboardFeature } from "@/features/shell-clipboard";
-import { shareFeature } from "@/features/shell-share";
-import { shortcutHelpFeature } from "@/features/shell-shortcut-help";
-import { lockScreenFeature } from "@/features/shell-lock-screen";
+import { DEFAULT_FEATURES } from "@/features/appshell";
 import { filesManagerApp } from "@/features/files-manager";
 import { browserApp } from "@/features/browser";
 import { codeEditorApp } from "@/features/code-editor";
@@ -60,19 +51,10 @@ export const BUILTIN_APPS: AppDescriptor[] = [
   pin(withSlug(osSettingsApp, "settings")),
 ];
 
-// Shell features — each lives in its own `shell-*` slice and mounts into the
-// surfaces via named slots (overlay/rightPanel/notifications/topPill/
-// controlCenter/today). Add/remove a feature here = it appears/disappears with
-// no surface edit. Settings stays the `os-settings` app (already its own slice).
-export const TOPSIDE_FEATURES: FeatureDescriptor[] = [
-  searchFeature,
-  quickLookFeature,
-  clipboardFeature,
-  shareFeature,
-  shortcutHelpFeature,
-  lockScreenFeature,
-  inspectorFeature,
-  notificationsFeature,
-  controlCenterFeature,
-  widgetsFeature,
-];
+// Shell features — the generic brand-free set now lives INSIDE the appshell
+// slice (appshell/features/*) and ships as one bundle, DEFAULT_FEATURES. os-vps
+// uses them verbatim; trim/extend by spreading ([...DEFAULT_FEATURES, …]). Each
+// mounts into a named slot (overlay/rightPanel/notifications/topPill/
+// controlCenter/today), so a feature absent from the array just doesn't render.
+// Settings stays the `os-settings` app (its own slice).
+export const TOPSIDE_FEATURES: FeatureDescriptor[] = DEFAULT_FEATURES;
