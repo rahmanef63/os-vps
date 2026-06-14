@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { RegisterSW } from "./register-sw";
@@ -37,14 +38,16 @@ export default function RootLayout({
       <body className="antialiased overflow-hidden select-none">
         {/* Pre-hydration theme: AppearanceProvider applies tweaks in a
             post-hydration effect, which gave dark-theme users a light flash on
-            every cold load. This parser-blocking script sets data-theme before
-            first paint (html has suppressHydrationWarning for the attr swap). */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              'try{var t=JSON.parse(localStorage.getItem("os-vps:tweaks"));if(t&&t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}',
-          }}
-        />
+            every cold load. next/script with beforeInteractive runs before
+            first paint (html has suppressHydrationWarning for the attr swap)
+            AND lets us tighten CSP script-src — no `unsafe-inline` required
+            since the framework emits this with the route's nonce. */}
+        <Script
+          id="theme-noflash"
+          strategy="beforeInteractive"
+        >
+          {'try{var t=JSON.parse(localStorage.getItem("os-vps:tweaks"));if(t&&t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}'}
+        </Script>
         {children}
         <RegisterSW />
         <InstallPrompt />

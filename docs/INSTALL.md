@@ -130,6 +130,17 @@ sudo systemctl enable --now os-vps.service
 journalctl -u os-vps -f        # watch logs
 ```
 
+**Graceful shutdown**: add to the `[Service]` block:
+
+```ini
+KillSignal=SIGTERM
+TimeoutStopSec=20
+```
+
+This gives 20 s for in-flight requests + PTY sessions to drain on
+restart. Without it, systemd waits the default 90 s then SIGKILLs —
+fine for normal use, but interactive PTY sessions get cut mid-keystroke.
+
 ## 5. Put TLS in front (pick ONE)
 
 **Tailscale (recommended for a personal box):** don't expose anything.
@@ -266,16 +277,23 @@ restic -r b2:my-bucket backup ~/.os-vps --tag os-vps --exclude chrome-profile
 
 ```
 # /etc/logrotate.d/os-vps
-~rahman/.os-vps/audit.log {
+/home/rahman/.os-vps/audit.log {
+    su rahman rahman
     size 1M
     rotate 4
     copytruncate
-    missingok
-    notifempty
     compress
     delaycompress
+    missingok
+    notifempty
 }
 ```
+
+The `su` directive tells logrotate which user owns the rotated files
+(required when the path lives under a non-root home). `copytruncate` is
+the right choice here: the audit writer in `lib/host/audit.ts` opens the
+log with each `appendFile` call, so no HUP/USR1 signal is needed to make
+it reopen the fd — truncate-in-place is safe.
 
 ## 9d. Zero-downtime restart (advanced)
 

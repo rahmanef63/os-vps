@@ -16,15 +16,20 @@ export const onRequestError: Instrumentation.onRequestError = async (
   try {
     const { audit } = await import("./lib/host/audit");
     const e = err instanceof Error ? err : new Error(String(err));
-    // audit.target is a string — pack the route shape into it so the trail
-    // stays greppable (e.g. `routerKind=app routeType=route path=/api/...`).
-    const target = `${request.path} (${context.routerKind}:${context.routeType})`;
+    // Route shape goes into structured `meta` (since the audit field exists)
+    // instead of being packed into `target` — easier to filter with `jq`,
+    // greppable as `routerKind`/`routeType` keys, and leaves `target` clean
+    // for the actual path the request hit.
     await audit({
       action: "framework.error",
       ok: false,
       actor: null,
-      target,
+      target: request.path,
       detail: `${e.name}: ${e.message}`,
+      meta: {
+        routerKind: context.routerKind,
+        routeType: context.routeType,
+      },
     });
   } catch {
     // never crash here — best-effort logging only

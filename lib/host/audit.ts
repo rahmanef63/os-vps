@@ -49,6 +49,10 @@ export interface AuditEntry {
   ok?: boolean;
   /** Optional extra context (exit code, reason). */
   detail?: string;
+  /** Structured side-channel for shape data that does not fit `target` cleanly
+   *  (route kind, http status, byte counts, …). Scalar values only so the
+   *  JSONL line stays one shallow object — keeps `jq` + grep workflows sane. */
+  meta?: Record<string, string | number | boolean>;
 }
 
 function auditPath(): string {
@@ -70,6 +74,7 @@ export interface AuditRecord {
   target?: string;
   ok?: boolean;
   detail?: string;
+  meta?: Record<string, string | number | boolean>;
 }
 
 // Read the tail of the audit log, newest-first, optionally filtered to actions
@@ -115,6 +120,9 @@ async function writeLine(line: string): Promise<void> {
 // and must never break the caller). Callers may fire-and-forget the returned
 // promise; ordering across concurrent callers is preserved via _writeChain.
 export function audit(entry: AuditEntry): Promise<void> {
+  // Drop `meta` from the serialized line when it's empty so existing greps that
+  // assume a fixed-shape record don't suddenly see `"meta":{}` everywhere.
+  const hasMeta = entry.meta && Object.keys(entry.meta).length > 0;
   const line =
     JSON.stringify({
       ts: new Date().toISOString(),
@@ -124,6 +132,7 @@ export function audit(entry: AuditEntry): Promise<void> {
       target: trunc(entry.target),
       ok: entry.ok ?? true,
       detail: trunc(entry.detail, 256),
+      ...(hasMeta ? { meta: entry.meta } : {}),
     }) + "\n";
   _writeChain = _writeChain.then(() => writeLine(line));
   return _writeChain;
