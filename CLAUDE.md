@@ -44,11 +44,15 @@ to `resources/` (rr) and drive any project from one manifest:
   (toast/activity/inspector), and `<AppShell manifest>` (the one entry point). It
   imports NO brand/feature and NO os-vps `@/lib/*` — only the universal `@/lib/utils`
   (`cn`). Everything project-specific arrives via `manifest.capabilities`.
-- `shell-search` / `shell-inspector` / `shell-notifications` / `shell-control-center`
-  / `shell-widgets` — each shell **feature** is its own slice, mounts into a named
-  `<Slot>` via `defineFeature({ id, slots, provider? })`, and is also consumer-free
-  (data via capabilities, not `@/lib`). Buses live in core so apps fire them without
-  depending on a feature slice.
+- `appshell/features/{search,inspector,notifications,control-center,widgets,quick-look,
+  clipboard,share,shortcut-help,lock-screen}` — each shell **feature** lives NESTED inside
+  the appshell slice (converged to the rr-canonical shape; they were flat top-level
+  `shell-*` slices before). Each mounts into a named `<Slot>` via `defineFeature({ id,
+  slots, provider? })` and is consumer-free (data via capabilities, not `@/lib`).
+  `appshell/defaults.ts` bundles all 10 as `DEFAULT_FEATURES` (one-line install:
+  `features: DEFAULT_FEATURES`); the barrel re-exports it LAST so the `defineFeature`
+  ES-cycle resolves. Buses live in core so apps fire them without depending on a feature
+  slice. (`shell-settings` stays a flat UI-primitives slice — not a feature unit.)
 - `os-shell` — the thin os-vps **consumer**: `shell.manifest.ts` (Topside brand + app
   list + slugs + features) + `capabilities.ts` (adapts `@/lib/appearance`+`os-api`+
   `ai/stream` to `ShellCapabilities`) + a re-export barrel (`@/features/os-shell`
@@ -74,8 +78,9 @@ to `resources/` (rr) and drive any project from one manifest:
 - **`ShellCapabilities`** is the injection seam: `useAppearance`, `useCpuPercent`,
   `useSearch`→`SearchHit[]`, `useSystemStats`, `useChat`, `useServerToggle`. Defaults
   merged in `CapabilitiesProvider` so optional caps degrade (accessors stay
-  unconditional). Add an app = manifest edit; add a shell feature = new `shell-*` slice
-  + `defineFeature` + list in `TOPSIDE_FEATURES`. No surface edits (open/closed).
+  unconditional). Add an app = manifest edit; add a shell feature = new
+  `appshell/features/<feat>/` + `defineFeature` + add to `DEFAULT_FEATURES`. No surface
+  edits (open/closed).
 
 ## Routing — the OS is addressable (keep windowing!)
 - ONE catch-all route `app/[[...slug]]/page.tsx` (no per-app pages). Windowing is
