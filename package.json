@@ -49,7 +49,10 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "node-pty"
-    ]
+    ],
+    "overrides": {
+      "postcss": "^8.5.10"
+    }
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",

@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { AppFrame, AppSidebar, type AppProps } from "@/features/os-shell";
+import { AppFrame, AppSidebar, useResponsive, type AppProps } from "@/features/os-shell";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropOverlay } from "./components/drop-overlay";
@@ -40,6 +40,11 @@ export default function FilesManager({ payload }: AppProps) {
   const [view, setView] = useState<ViewMode>("grid");
   const [sort, setSort] = useState<SortKey>("name");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Mobile pulls the FileDetails strip out of the footer (path + size + copy
+  // are recoverable from the row's context menu / long-press); the saved
+  // ~52px back-to viewable rows is a bigger win than a dense info strip on a
+  // 380px-wide window.
+  const { isMobile } = useResponsive();
 
   const ordered = useMemo(
     () => (fs.entries ? sortEntries(fs.entries, sort) : null),
@@ -126,7 +131,7 @@ export default function FilesManager({ payload }: AppProps) {
         }
         footer={
           <>
-            <FileDetails entry={selectedEntry} dir={fs.path} />
+            {!isMobile && <FileDetails entry={selectedEntry} dir={fs.path} />}
             <div className="flex items-center gap-3 px-3 pt-1.5 text-[11px] text-muted-foreground [padding-bottom:calc(0.375rem+var(--sai-bottom))]">
               <span>{ordered ? `${ordered.length} items` : "—"}</span>
               {sel.selected.size > 0 && <span>{sel.selected.size} selected</span>}

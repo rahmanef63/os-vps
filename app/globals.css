@@ -24,7 +24,9 @@
   --sai-bottom: env(safe-area-inset-bottom, 0px);
   --sai-left: env(safe-area-inset-left, 0px);
 
-  --accent: #2f7bf6;
+  /* Primary accent — darkened from #2f7bf6 (3.97:1 vs white) to #1f6df0
+     (4.66:1) so primary buttons hit WCAG AA. Visual delta is minimal. */
+  --accent: #1f6df0;
   --accent-text: #ffffff;
 
   --text: #1c1c1f;
@@ -81,16 +83,15 @@
 }
 
 /* Accessibility: high-contrast (Settings / a11y commands) — stronger
-   separators + darker secondary text, both themes. */
+   separators + darker secondary text, both themes. NOTE: order matters —
+   the base [data-theme="dark"] block MUST come before the high-contrast
+   variant so scripts/check-contrast.mjs's first-match regex picks up the
+   correct dark token map (the high-contrast variant has unique --text-dim
+   that scans as a false-positive against light backgrounds). */
 .high-contrast {
   --sep: rgba(0, 0, 0, 0.45);
   --sep-strong: rgba(0, 0, 0, 0.6);
   --text-dim: rgba(28, 28, 31, 0.88);
-}
-.high-contrast[data-theme="dark"] {
-  --sep: rgba(255, 255, 255, 0.4);
-  --sep-strong: rgba(255, 255, 255, 0.55);
-  --text-dim: rgba(236, 237, 241, 0.92);
 }
 
 [data-theme="dark"] {
@@ -118,6 +119,12 @@
 
   --warning: #ff9f0a;
   --info: #409cff;
+}
+
+.high-contrast[data-theme="dark"] {
+  --sep: rgba(255, 255, 255, 0.4);
+  --sep-strong: rgba(255, 255, 255, 0.55);
+  --text-dim: rgba(236, 237, 241, 0.92);
 }
 
 .reduce-glass { --blur: 0px; }

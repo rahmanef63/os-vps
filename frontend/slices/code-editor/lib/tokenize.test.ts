@@ -109,4 +109,63 @@ describe("tokenize incremental cache", () => {
     const next = tokenize(src, "ts", prev);
     expect(next).toBe(prev);
   });
+
+  it("ts single-line edit re-tokenizes only changed line + 10 below", () => {
+    // Build a 50-line ts file so the window (10) is well inside it.
+    const lines: string[] = [];
+    for (let i = 0; i < 50; i++) lines.push(`const x${i} = ${i};`);
+    const src = lines.join("\n");
+    // Warm up: cold tokenize falls through to full-body (LRU populated below).
+    const cold = tokenize(src, "ts");
+    // Seed line cache by tokenizing once with a fake prev that has lines.
+    const seeded: TokenCache = {
+      lang: "ts",
+      lines: lines.map((l) => l),
+      hashes: lines.map((l) => __test.hash(l)),
+      body: src,
+      codeHash: cold.codeHash,
+    };
+    __test.resetStats();
+    // Edit line 5 only. Window=10 → lines 5..15 re-tokenize (11 lines), the
+    // other 39 lines reuse from `seeded.lines`.
+    const edited = [...lines];
+    edited[5] = "const x5 = 999;";
+    tokenize(edited.join("\n"), "ts", seeded);
+    expect(__test.stats.lineTokenizations).toBe(11);
+  });
+
+  it("ts incremental tokenize call count is bounded across edits", () => {
+    const lines: string[] = [];
+    for (let i = 0; i < 100; i++) lines.push(`let v${i} = ${i};`);
+    const src = lines.join("\n");
+    const cold = tokenize(src, "ts");
+    const seeded: TokenCache = {
+      lang: "ts",
+      lines: lines.map((l) => l),
+      hashes: lines.map((l) => __test.hash(l)),
+      body: src,
+      codeHash: cold.codeHash,
+    };
+    __test.resetStats();
+    // Three sequential single-line edits, accumulated — each edit only
+    // re-tokenizes its changed line + 10-line window. Total ≤ 33 (3 × 11),
+    // versus the non-incremental 300 (3 × full-body).
+    let prev = seeded;
+    const buf = [...lines];
+    for (const idx of [10, 40, 70]) {
+      buf[idx] = `let v${idx} = 999;`;
+      prev = tokenize(buf.join("\n"), "ts", prev);
+    }
+    expect(__test.stats.lineTokenizations).toBeLessThanOrEqual(33);
+  });
+
+  it("ts cold tokenize (no prev) still uses full-body path", () => {
+    // Cross-line constructs require full-body on cold start.
+    __test.resetStats();
+    const out = tokenize("/* a\n   b */ const x = 1;", "ts");
+    // No prev → full-body path → bodyTokenizations bumps, lineTokenizations 0.
+    expect(__test.stats.bodyTokenizations).toBe(1);
+    expect(__test.stats.lineTokenizations).toBe(0);
+    expect(out.body).toContain('<span class="tok-cmt">/* a\n   b */</span>');
+  });
 });

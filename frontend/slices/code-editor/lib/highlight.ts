@@ -100,17 +100,9 @@ function highlightCode(code: string, lang: Lang): string {
 // Per-line CSS tokenizer. Each line is independent (block comments aren't
 // handled cross-line in the original either — matches existing behaviour).
 function highlightCssLine(ln: string): string {
-  const cmt = ln.match(/\/\*.*\*\//);
-  if (cmt) return span("tok-cmt", ln);
+  if (/\/\*.*\*\//.test(ln)) return span("tok-cmt", ln);
   const m = ln.match(/^(\s*)([\w-]+)(\s*:\s*)(.+?)(;?)$/);
-  if (m)
-    return (
-      escapeHtml(m[1]) +
-      span("tok-fn", m[2]) +
-      escapeHtml(m[3]) +
-      span("tok-str", m[4]) +
-      escapeHtml(m[5])
-    );
+  if (m) return escapeHtml(m[1]) + span("tok-fn", m[2]) + escapeHtml(m[3]) + span("tok-str", m[4]) + escapeHtml(m[5]);
   return span("tok-kw", escapeHtml(ln));
 }
 
@@ -122,10 +114,11 @@ function highlightMdLine(ln: string): string {
   return s;
 }
 
-// Option-A incremental cache: per-line tokenization for line-independent
-// langs (md, css) — single-line edits only re-tokenize that line. Other
-// langs use a full-body LRU keyed on (lang, hash) inside {@link highlight}.
-// Pairs with `useDeferredValue` in the editor surface (Option C).
+// Per-line incremental cache. md/css are pure line-independent. ts/js/py/sh/
+// json use a per-line memo but a changed line invalidates N lines below
+// (multi-line constructs: block comments, template literals). Cold tokenize
+// (no `prev`) of window-incremental langs falls through to full-body to keep
+// cross-line constructs correct. Pairs with `useDeferredValue` in editor.
 
 export interface TokenCache {
   lang: Lang;
@@ -136,39 +129,45 @@ export interface TokenCache {
 }
 
 const LINE_INDEPENDENT = new Set<Lang>(["css", "md"]);
+const WINDOW_INCREMENTAL = new Set<Lang>(["ts", "js", "py", "sh", "json"]);
+const INVALIDATION_WINDOW = 10;
 
 function tokenizeLine(ln: string, lang: Lang): string {
   __cacheStats.lineTokenizations++;
   if (lang === "css") return highlightCssLine(ln);
   if (lang === "md") return highlightMdLine(ln);
+  if (lang === "json") return highlightJson(ln);
+  if (WINDOW_INCREMENTAL.has(lang)) return highlightCode(ln, lang);
   return escapeHtml(ln);
 }
 
-/**
- * Incrementally tokenize `code` for `lang`, reusing `prev` where possible.
- * For line-independent langs (md/css) only changed lines are re-tokenized.
- * For other langs, falls back to a full tokenize (the LRU inside
- * {@link highlight} dedupes identical inputs across keystrokes).
- */
 export function tokenize(
   code: string,
   lang: Lang,
   prev?: TokenCache,
 ): TokenCache {
-  if (LINE_INDEPENDENT.has(lang)) {
+  const reusable = prev?.lang === lang;
+  const useLines =
+    LINE_INDEPENDENT.has(lang) ||
+    (WINDOW_INCREMENTAL.has(lang) && reusable && prev!.lines.length > 0);
+  if (useLines) {
     const src = code.split("\n");
     const lines: string[] = new Array(src.length);
     const hashes: string[] = new Array(src.length);
-    const prevLines = prev?.lang === lang ? prev.lines : [];
-    const prevHashes = prev?.lang === lang ? prev.hashes : [];
+    const prevLines = reusable ? prev!.lines : [];
+    const prevHashes = reusable ? prev!.hashes : [];
+    const changed = new Set<number>();
     for (let i = 0; i < src.length; i++) {
       const h = hash(src[i]);
       hashes[i] = h;
-      lines[i] =
-        prevHashes[i] === h && prevLines[i] !== undefined
-          ? prevLines[i]
-          : tokenizeLine(src[i], lang);
+      if (prevHashes[i] !== h || prevLines[i] === undefined) changed.add(i);
     }
+    const win = WINDOW_INCREMENTAL.has(lang) ? INVALIDATION_WINDOW : 0;
+    if (win > 0)
+      for (const i of [...changed])
+        for (let j = i + 1; j <= i + win && j < src.length; j++) changed.add(j);
+    for (let i = 0; i < src.length; i++)
+      lines[i] = changed.has(i) ? tokenizeLine(src[i], lang) : prevLines[i];
     return { lang, lines, hashes, body: lines.join("\n"), codeHash: "" };
   }
   const codeHash = hash(code);

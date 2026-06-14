@@ -220,6 +220,45 @@ local changes first. If chunks are 404ing after restart (build/run version
 mismatch): `rm -rf .next && pnpm build && sudo systemctl restart os-vps.service`
 — clean rebuild always wins.
 
+## 9c. Healthcheck
+
+`GET /api/health` returns `{status, buildId, uptime, version}` with
+`Cache-Control: no-store`. Wire it into:
+
+**systemd**: add to the `[Service]` block of `os-vps.service`:
+
+```
+WatchdogSec=30s
+NotifyAccess=all
+```
+
+Then call `systemd-notify --pid=$$ WATCHDOG=1` inside a `setInterval` in a
+custom node wrapper. (Or use `Type=notify` with `sd-notify` — bigger refactor.)
+
+**External monitor** (Uptime Kuma / Healthchecks.io / etc):
+
+- URL: `https://os.rahmanef.com/api/health`
+- Expected: HTTP 200 + JSON body
+- Interval: 60s
+- Timeout: 5s
+- Alert when: `status!="ok"` OR 2 consecutive failures
+
+**Dokploy**: configure the application healthcheck endpoint at `/api/health`.
+
+## 9d. Zero-downtime restart (advanced)
+
+`systemctl restart` kills the running process then starts the new one — brief
+200-500 ms gap during which `/_next/static` chunks 404 mid-flight. For higher
+availability:
+
+1. Run two instances on adjacent ports (4005 + 4006) behind a reverse proxy
+   (Caddy/nginx).
+2. Update systemd to a socket-activated `os-vps@.service` template.
+3. Rolling restart: `systemctl restart os-vps@4006.service` first; verify
+   `/api/health`; then 4005.
+
+For a single-owner personal tool, this is overkill — the 200-500 ms gap is fine.
+
 ## 10. Uninstall
 
 ```bash
