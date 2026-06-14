@@ -17,8 +17,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   // Draw under the notch / home-bar so the shell's safe-area-inset padding
   // (--sai-*) actually has insets to work with in standalone mode.
   viewportFit: "cover",

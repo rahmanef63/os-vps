@@ -43,10 +43,21 @@ export function ImagePickerDialog({ open, onOpenChange, onSelect, onUpload, titl
         <DialogHeader className="border-b border-border px-4 py-3">
           <DialogTitle className="text-sm">{title}</DialogTitle>
         </DialogHeader>
-        <div className="flex items-center gap-1 border-b border-border px-2 py-1.5">
+        <div
+          role="tablist"
+          aria-label="Image source"
+          className="flex items-center gap-1 border-b border-border px-2 py-1.5"
+        >
           {tabs.map((t) => (
             <button
-              key={t.id} type="button" onClick={() => setTab(t.id)}
+              key={t.id}
+              type="button"
+              role="tab"
+              id={`image-picker-tab-${t.id}`}
+              aria-selected={tab === t.id}
+              aria-controls={`image-picker-panel-${t.id}`}
+              tabIndex={tab === t.id ? 0 : -1}
+              onClick={() => setTab(t.id)}
               className={cn(
                 "rounded-md px-3 py-1 text-xs font-medium transition",
                 tab === t.id ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50",
@@ -56,7 +67,12 @@ export function ImagePickerDialog({ open, onOpenChange, onSelect, onUpload, titl
             </button>
           ))}
         </div>
-        <div className="h-[440px] overflow-y-auto">
+        <div
+          role="tabpanel"
+          id={`image-picker-panel-${tab}`}
+          aria-labelledby={`image-picker-tab-${tab}`}
+          className="h-[440px] overflow-y-auto"
+        >
           {tab === "gallery" && <GalleryTab onSelect={handle} />}
           {tab === "upload" && onUpload && <UploadTab onSelect={handle} onUpload={onUpload} />}
           {tab === "link" && <LinkTab onSelect={handle} />}

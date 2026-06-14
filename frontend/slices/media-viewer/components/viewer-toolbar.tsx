@@ -119,6 +119,7 @@ function IconBtn({
         <Button
           size="icon"
           variant="ghost"
+          aria-label={label}
           // Slightly larger hit target when the pane is compact (touch).
           className={cn("size-7 @max-[480px]:size-8", className)}
           {...rest}
