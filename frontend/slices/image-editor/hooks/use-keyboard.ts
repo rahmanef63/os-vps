@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import { useEditor } from "../lib/store";
 import { useConfirmRemoveLayer } from "../components/confirm-remove-layer";
+import { useFocusedHotkey, type HotkeyDef } from "@/features/appshell";
 
 const TOOL_KEYS: Record<string, "move" | "select" | "brush" | "eraser" | "eyedropper" | "hand"> = {
   v: "move",
@@ -13,47 +13,42 @@ const TOOL_KEYS: Record<string, "move" | "select" | "brush" | "eraser" | "eyedro
   h: "hand",
 };
 
-// Global editor shortcuts: ⌘/Ctrl+Z undo, ⌘/Ctrl+Shift+Z (or Ctrl+Y) redo,
-// Delete/Backspace removes the selection, V/B/E/H pick tools. Ignored while a
-// text field is focused so typing in panels isn't hijacked.
-export function useKeyboard() {
-  const { undo, redo, selectedId, setTool, swapColors, resetColors, rootRef } = useEditor();
+const TOOL_DEFS: HotkeyDef[] = Object.keys(TOOL_KEYS).map((k) => ({ key: k }));
+const UNDO_DEFS: HotkeyDef[] = [
+  { key: "z", meta: true },
+  { key: "z", ctrl: true },
+];
+const REDO_DEFS: HotkeyDef[] = [
+  { key: "z", meta: true, shift: true },
+  { key: "z", ctrl: true, shift: true },
+  { key: "y", meta: true },
+  { key: "y", ctrl: true },
+];
+const REMOVE_DEFS: HotkeyDef[] = [{ key: "Delete" }, { key: "Backspace" }];
+const SWAP_DEFS: HotkeyDef[] = [{ key: "x" }];
+const RESET_DEFS: HotkeyDef[] = [{ key: "d" }];
+
+// Editor shortcuts: ⌘/Ctrl+Z undo, ⌘/Ctrl+Shift+Z (or Ctrl+Y) redo,
+// Delete/Backspace removes the selection, V/B/E/H/M/I pick tools. Gated on the
+// host shell's focused-window id — Backspace in another window's input will
+// NOT delete a layer here. Editable surfaces are skipped (default), so typing
+// in panels never hijacks a tool key.
+export function useKeyboard(winId?: string) {
+  const { undo, redo, selectedId, setTool, swapColors, resetColors } = useEditor();
   const requestRemoveLayer = useConfirmRemoveLayer();
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      // Window-scoped guard: only act when focus is inside THIS editor. The
-      // listener is on `window` (so canvas keystrokes are caught), but another
-      // OS window being focused must NOT let Backspace delete a layer here.
-      const root = rootRef.current;
-      if (!root || !root.contains(document.activeElement)) return;
-      const el = e.target as HTMLElement;
-      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod && e.key.toLowerCase() === "x") { e.preventDefault(); swapColors(); return; }
-      if (!mod && e.key.toLowerCase() === "d") { e.preventDefault(); resetColors(); return; }
-      if (mod && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-        return;
-      }
-      if (mod && e.key.toLowerCase() === "y") {
-        e.preventDefault();
-        redo();
-        return;
-      }
-      if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
-        e.preventDefault();
-        // Confirm-gated: empty paint layers drop without a prompt; anything
-        // with content (paint pixels / image / text / shape / adjustment) pops
-        // the destructive dialog instead.
-        requestRemoveLayer(selectedId);
-        return;
-      }
-      const t = TOOL_KEYS[e.key.toLowerCase()];
-      if (t && !mod) setTool(t);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [undo, redo, requestRemoveLayer, selectedId, setTool, swapColors, resetColors, rootRef]);
+  useFocusedHotkey(winId, UNDO_DEFS, () => undo());
+  useFocusedHotkey(winId, REDO_DEFS, () => redo());
+  useFocusedHotkey(winId, REMOVE_DEFS, () => {
+    if (!selectedId) return;
+    // Confirm-gated: empty paint layers drop without a prompt; anything with
+    // content (paint pixels / image / text / shape / adjustment) pops the
+    // destructive dialog instead.
+    requestRemoveLayer(selectedId);
+  });
+  useFocusedHotkey(winId, SWAP_DEFS, () => swapColors());
+  useFocusedHotkey(winId, RESET_DEFS, () => resetColors());
+  useFocusedHotkey(winId, TOOL_DEFS, (e) => {
+    const t = TOOL_KEYS[e.key.toLowerCase()];
+    if (t) setTool(t);
+  });
 }

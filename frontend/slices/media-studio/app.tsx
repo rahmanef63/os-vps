@@ -81,6 +81,7 @@ export default function MediaStudio({ payload, winId }: AppProps) {
     onClose: () => winId && closeWindow(winId), // routes through the guard (prompts if dirty)
     onDirty: (d: boolean) => { dirty.current = d; },
     onReady: (a: EditorApi) => { api.current = a; },
+    winId, // gates editor hotkeys on this OS window's focus state
   };
   const isDoc = p?.path && /\.(ie\.)?json$/i.test(p.path);
 

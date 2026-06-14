@@ -10,10 +10,9 @@ export const contract = defineSliceContract({
   category: "auth",
   kind: "full",
   requires: {
-    auth: "convex" as const,
+    auth: "cookie" as const,
     rbac: [] as string[],
-    env: ["JWT_PRIVATE_KEY", "JWKS"] as string[],
-    convex: { prefix: "auth", tables: ["users", "authSessions"] as string[] },
+    env: [] as string[],
     deps: [] as const,
   },
   provides: {

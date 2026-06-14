@@ -3,11 +3,10 @@
   "slug": "auth",
   "version": "0.1.0",
   "generated": "stub",
-  "install": { "frontend": "frontend/slices/auth", "convex": "convex/auth.ts" },
+  "install": { "frontend": "frontend/slices/auth" },
   "files": [
     "frontend/slices/auth/index.ts",
     "frontend/slices/auth/components/auth-gate.tsx",
     "frontend/slices/auth/components/login-screen.tsx"
-  ],
-  "convexFiles": ["convex/auth.ts", "convex/auth.config.ts", "convex/http.ts"]
+  ]
 }

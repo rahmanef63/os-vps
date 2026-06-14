@@ -4,30 +4,23 @@
   "version": "0.1.0",
   "category": "auth",
   "kind": "full",
-  "title": "Auth — @convex-dev/auth gate",
-  "description": "Password sign-in/sign-up screen + AuthGate that gates the OS behind @convex-dev/auth. Self-hosted hardening: PBKDF2 hashing + auth:* actions over HTTP (see ConvexClientProvider).",
+  "title": "Auth — HMAC signed-cookie gate",
+  "description": "Password sign-in/sign-up screen + AuthGate that gates the OS behind a signed HTTP-only cookie. /api/auth/me verifies the HMAC session and rehydrates the user.",
   "namespace": "@/features/auth",
   "frontend": {
     "slicePath": "frontend/slices/auth",
     "configExport": "AuthGate"
   },
-  "convex": {
-    "schemaPath": "",
-    "tablesExport": "",
-    "rootPaths": ["convex/auth.ts", "convex/auth.config.ts", "convex/http.ts"]
-  },
   "deps": {
-    "npm": ["@convex-dev/auth", "convex", "lucide-react"],
+    "npm": ["lucide-react"],
     "shadcn": ["button", "input"],
     "env": [
-      { "name": "JWT_PRIVATE_KEY", "scope": "convex", "required": true, "description": "PKCS8 RSA — signs session JWTs (set on backend)." },
-      { "name": "JWKS", "scope": "convex", "required": true, "description": "Public JWKS served at /.well-known/jwks.json." },
-      { "name": "SUPER_ADMIN_EMAIL", "scope": "convex", "required": false, "description": "Super-admin gate for requireAdmin." }
+      { "name": "SUPER_ADMIN_EMAIL", "scope": "server", "required": false, "description": "Super-admin gate for requireAdmin." }
     ],
     "peers": []
   },
   "registers": [],
   "audit": ["bp:public-fn-validator", "bp:rbac-coverage"],
   "license": "MIT",
-  "tags": ["auth", "convex-auth", "login", "session"]
+  "tags": ["auth", "cookie", "login", "session"]
 }

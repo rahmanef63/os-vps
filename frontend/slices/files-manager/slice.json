@@ -11,11 +11,6 @@
     "slicePath": "frontend/slices/files-manager",
     "configExport": "filesManagerApp"
   },
-  "convex": {
-    "schemaPath": "",
-    "tablesExport": "",
-    "rootPaths": []
-  },
   "deps": {
     "npm": [
       "lucide-react"
@@ -35,7 +30,7 @@
         "reason": "renders as a window app; openWindow routes file opens to media-viewer/code-editor"
       },
       {
-        "slug": "convex-auth",
+        "slug": "auth",
         "range": "^0.1",
         "reason": "gated filesystem reads"
       }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setCloseGuard, closeWindow } from "./host";
+import { useFocusedHotkey } from "@/features/appshell";
 
 // Owns save-on-shortcut + the dirty-window close guard. `save` and `dirty` are
 // read through refs so the global keydown listener and the shell close guard
@@ -21,17 +22,19 @@ export function useCloseGuard(
     dirtyRef.current = dirty;
   });
 
-  // Cmd/Ctrl+S saves the active buffer regardless of focus within the app.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        void saveRef.current();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  // Cmd/Ctrl+S saves the active buffer — but ONLY when this code-editor window
+  // is the focused one. `allowInEditable: true` because the textarea IS the
+  // editor (that's the point); a Save shortcut that stood down inside textareas
+  // would never fire here.
+  useFocusedHotkey(
+    winId,
+    [
+      { key: "s", meta: true },
+      { key: "s", ctrl: true },
+    ],
+    () => void saveRef.current(),
+    { allowInEditable: true },
+  );
 
   // Veto a close while dirty and surface the Save / Don't Save / Cancel prompt.
   useEffect(() => {

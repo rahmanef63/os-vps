@@ -10,20 +10,16 @@ export const contract = defineSliceContract({
   category: "infra",
   kind: "full",
   requires: {
-    auth: "convex" as const,
+    auth: "cookie" as const,
     rbac: [] as string[],
     env: [] as string[],
-    convex: {
-      prefix: "systemMonitor_",
-      tables: ["systemMonitor_snapshots"] as string[],
-    },
-    deps: ["os-shell", "convex-auth"] as const,
+    deps: ["os-shell", "auth"] as const,
   },
   provides: {
     routes: [] as string[],
     hooks: [] as string[],
     components: ["SystemMonitor"] as string[],
-    tables: ["systemMonitor_snapshots"] as string[],
+    tables: [] as string[],
   },
 });
 

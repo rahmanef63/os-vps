@@ -11,18 +11,13 @@
     "slicePath": "frontend/slices/system-monitor",
     "configExport": "systemMonitorApp"
   },
-  "convex": {
-    "schemaPath": "convex/features/systemMonitor/schema.ts",
-    "tablesExport": "systemMonitorTables",
-    "rootPaths": ["convex/features/systemMonitor"]
-  },
   "deps": {
     "npm": ["lucide-react"],
     "shadcn": ["scroll-area"],
     "env": [],
     "peers": [
       { "slug": "os-shell", "range": "^0.1", "reason": "renders as a window app" },
-      { "slug": "convex-auth", "range": "^0.1", "reason": "gated telemetry reads" }
+      { "slug": "auth", "range": "^0.1", "reason": "gated telemetry reads" }
     ]
   },
   "registers": ["registry"],

@@ -47,6 +47,11 @@ export type ImageEditorProps = {
   /** Optional starting canvas size; defaults to config (1080×1080). */
   width?: number;
   height?: number;
+  /** Window id from the host shell — keyboard hotkeys gate on this so Backspace
+   *  / ⌘Z / tool keys only fire when THIS editor's window is the OS-focused
+   *  one. Without it the editor still works in standalone embeds; the
+   *  per-window guard simply degrades to "no editor is currently scoped." */
+  winId?: string;
   /** Fired by the Save button with a PNG data URL. Omit to hide Save. */
   onSave?: (dataUrl: string) => void;
   /** Fired by the "Save As" button with a PNG data URL — consumers show a
@@ -121,10 +126,11 @@ type ShellProps = {
   saveDoc?: (doc: Doc) => void;
   ready?: boolean;
   compact?: boolean;
+  winId?: string;
 };
 
-function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveDoc, ready, compact }: ShellProps) {
-  useKeyboard();
+function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveDoc, ready, compact, winId }: ShellProps) {
+  useKeyboard(winId);
   useAutosave(autoRestore, saveDoc, ready);
   const autoMobile = useIsMobile();
   const mobile = compact ?? autoMobile;
@@ -169,7 +175,7 @@ function Shell({ onSave, onSaveAs, onClose, onDirty, onReady, autoRestore, saveD
 }
 
 // Standalone, self-contained image editor. Drops into any height-bearing box.
-export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height, onSave, onSaveAs, onClose, onDirty, onReady, compact, className }: ImageEditorProps) {
+export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height, onSave, onSaveAs, onClose, onDirty, onReady, compact, className, winId }: ImageEditorProps) {
   const initialDoc = useMemo<Doc>(() => {
     const d = blankDoc(width ?? imageEditorConfig.defaultWidth, height ?? imageEditorConfig.defaultHeight);
     if (initialImage) d.layers.push(createLayer("image", { name: "Image", src: initialImage }));
@@ -190,7 +196,7 @@ export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height
       <EditorProvider initialDoc={initialDoc}>
         <ConfirmRemoveLayerProvider>
           {projectSrc && <ProjectLoader src={projectSrc} onDone={onLoaded} />}
-          <Shell onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} onDirty={onDirty} onReady={onReady} autoRestore={!initialImage && !projectSrc} saveDoc={onSaveDoc} ready={ready} compact={compact} />
+          <Shell onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} onDirty={onDirty} onReady={onReady} autoRestore={!initialImage && !projectSrc} saveDoc={onSaveDoc} ready={ready} compact={compact} winId={winId} />
         </ConfirmRemoveLayerProvider>
       </EditorProvider>
       {loadError && <ProjectLoadError message={loadError} />}

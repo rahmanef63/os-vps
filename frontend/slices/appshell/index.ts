@@ -87,6 +87,12 @@ export * from "./lib/shortcuts";
 export * from "./lib/focus-mode";
 export * from "./lib/dnd";
 export * from "./lib/quick-look";
+export {
+  useFocusedHotkey,
+  inEditable,
+  matchesHotkey,
+} from "./lib/use-focused-hotkey";
+export type { HotkeyDef, HotkeyOptions } from "./lib/use-focused-hotkey";
 // Dynamic per-shell context menu + live-wallpaper registries (the consumer/apps
 // register dynamic right-click items + code-defined live wallpapers here).
 export { registerContextMenu, getContextMenuItems } from "./lib/context-menu";

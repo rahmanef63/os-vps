@@ -10,7 +10,7 @@ export const contract = defineSliceContract({
   category: "infra",
   kind: "full",
   requires: {
-    auth: "convex" as const,
+    auth: "cookie" as const,
     rbac: [] as string[],
     env: [] as string[],
     deps: ["os-shell"] as const,

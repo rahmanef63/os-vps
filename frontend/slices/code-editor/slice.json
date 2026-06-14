@@ -11,11 +11,6 @@
     "slicePath": "frontend/slices/code-editor",
     "configExport": "codeEditorApp"
   },
-  "convex": {
-    "schemaPath": "",
-    "tablesExport": "",
-    "rootPaths": []
-  },
   "deps": {
     "npm": ["lucide-react"],
     "shadcn": ["button", "textarea", "badge", "input", "scroll-area"],
