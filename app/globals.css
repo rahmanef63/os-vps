@@ -161,6 +161,10 @@
 }
 
 * { box-sizing: border-box; border-color: var(--color-border); }
+/* Global :focus-visible fallback — component primitives (Button etc.) own
+   their own rings; this catches native <a>/<input>, custom tabIndex divs and
+   anything else without a bespoke focus style. WCAG 2.4.7 (Focus Visible). */
+*:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
 html, body { height: 100%; margin: 0; }
 /* Root font-size = browser default × the a11y scale, so every rem reacts live. */
 html { font-size: calc(100% * var(--font-scale, 1)); }

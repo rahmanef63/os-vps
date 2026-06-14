@@ -28,6 +28,7 @@ os-vps/
 │   ├── [[...slug]]/page.tsx  one catch-all route → os-root → <OsDesktop/> (auth-gated)
 │   └── api/
 │       ├── v1/               host Cloud API — fs · exec · sys · term · stock · browser
+│       ├── health/           tiny liveness probe (200 OK) for uptime checks
 │       ├── auth/             login · logout · me · devices
 │       ├── config/           BYOK AI key (read/write ~/.os-vps/config.json)
 │       └── assistant/        Claude SSE stream (BYOK)
@@ -55,8 +56,9 @@ os-vps/
 ├── frontend/slices/<slug>/   app slices (UI + types + config + metadata trio), plus:
 │   ├── appshell/             generic shell framework — <AppShell manifest>, window
 │   │                         runtime, desktop+mobile surfaces, registries, ResponsiveProvider,
-│   │                         primitives (MasterDetail · AppFrame · WindowPreview · useResponsive · useFocusedHotkey),
-│   │                         pub/sub buses. Brand/feature-agnostic → lifts to rr.
+│   │                         primitives (MasterDetail · AppFrame · WindowPreview · useResponsive ·
+│   │                         useFocusedHotkey · useViewportWindow), pub/sub buses.
+│   │                         Brand/feature-agnostic → lifts to rr.
 │   ├── shell-search / shell-inspector / shell-notifications / shell-control-center /
 │   │                         shell-widgets   pluggable features mounted via <Slot region>
 │   └── os-shell/             os-vps consumer: shell.manifest.ts (brand+apps+features)
@@ -190,3 +192,7 @@ still works.
 
 Ship: commit to `main`, push (pre-push hook runs typecheck + lint CI), then
 restart prod + sync/rebuild demo manually.
+
+`package.json` carries a `pnpm.overrides` pin for `postcss` to keep the build
+deterministic across transitive resolutions — bump it deliberately, never via
+auto-update.

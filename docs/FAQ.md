@@ -84,6 +84,14 @@ It's a normal Node process. Idle it sits around a few hundred MB RSS; the
 systemd unit caps it at 3 GB. The optional headless Chromium (`os-browser`)
 adds the usual browser footprint — skip it on tiny boxes.
 
+### How was the codebase audited?
+
+Two passes by the maintainer: `docs/AUDIT-2026-06-11.md` (initial cross-cutting
+sweep — security, perf, a11y, slice boundaries) and `docs/AUDIT-2026-06-14.md`
+(follow-up after the first round of fixes). The score trajectory across both
+passes lives in `docs/SCORECARD-2026-06-14.md`. Quality gates (typecheck, lint,
+280+ vitest tests, build) run on every push via the pre-push hook.
+
 ### Phone support?
 
 Mobile-first is the point: the shell switches to a home-screen/app-switcher

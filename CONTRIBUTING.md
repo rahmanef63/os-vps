@@ -15,13 +15,16 @@ without a VPS or any credentials.
 
 ## Before you open a PR
 
-```bash
-pnpm typecheck && pnpm lint && pnpm test && pnpm build
-```
+There is no CI — this checklist is the gate. The first four are required;
+the rest are belt-and-braces for bigger changes.
 
-All four must be green. There is no CI — these are the gates. `pnpm test`
-runs the vitest suite (unit + integration); `pnpm smoke` runs the e2e smoke
-test against a local server.
+- [ ] `pnpm typecheck`
+- [ ] `pnpm lint`
+- [ ] `pnpm test` — vitest unit + integration (280+ tests)
+- [ ] `pnpm build`
+- [ ] (optional) `node scripts/check-cycles.mjs` — no value-level import cycles
+- [ ] (optional) `node scripts/check-slices.mjs` — no slice-boundary violations
+- [ ] (optional) `pnpm smoke` — e2e smoke against a local `pnpm start`
 
 ## Conventions (the short version)
 

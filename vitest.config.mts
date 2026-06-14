@@ -19,5 +19,26 @@ export default defineConfig({
       "scripts/e2e/**/*.test.{ts,tsx}",
     ],
     environment: "node",
+    // Coverage configured but inert until @vitest/coverage-v8 is installed
+    // (no new dep added per audit constraints). Uses Node 22's built-in V8
+    // engine — `pnpm coverage` will prompt the install on first run.
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json-summary"],
+      include: ["lib/**/*.{ts,tsx}", "frontend/slices/**/*.{ts,tsx}"],
+      exclude: [
+        "**/*.test.{ts,tsx}",
+        "**/*.d.ts",
+        "**/node_modules/**",
+        "**/.next/**",
+        "mock-os/**",
+      ],
+      thresholds: {
+        statements: 50,
+        branches: 40,
+        functions: 50,
+        lines: 50,
+      },
+    },
   },
 });

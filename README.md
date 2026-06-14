@@ -222,6 +222,8 @@ slice index: [docs/SLICE-CATALOG.md](./docs/SLICE-CATALOG.md).
 Personal tool, alpha. Auth and FS jail are implemented and the host layer is
 bounded, but it has **not** had a third-party security audit. Use accordingly.
 
+- **Quality gates**: typecheck · lint · 280+ vitest tests · build. See `docs/SCORECARD-2026-06-14.md` for the full audit + score trajectory.
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
