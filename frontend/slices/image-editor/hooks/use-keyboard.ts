@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useEditor } from "../lib/store";
+import { useConfirmRemoveLayer } from "../components/confirm-remove-layer";
 
 const TOOL_KEYS: Record<string, "move" | "select" | "brush" | "eraser" | "eyedropper" | "hand"> = {
   v: "move",
@@ -16,7 +17,8 @@ const TOOL_KEYS: Record<string, "move" | "select" | "brush" | "eraser" | "eyedro
 // Delete/Backspace removes the selection, V/B/E/H pick tools. Ignored while a
 // text field is focused so typing in panels isn't hijacked.
 export function useKeyboard() {
-  const { undo, redo, removeLayer, selectedId, setTool, swapColors, resetColors, rootRef } = useEditor();
+  const { undo, redo, selectedId, setTool, swapColors, resetColors, rootRef } = useEditor();
+  const requestRemoveLayer = useConfirmRemoveLayer();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Window-scoped guard: only act when focus is inside THIS editor. The
@@ -42,7 +44,10 @@ export function useKeyboard() {
       }
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
         e.preventDefault();
-        removeLayer(selectedId);
+        // Confirm-gated: empty paint layers drop without a prompt; anything
+        // with content (paint pixels / image / text / shape / adjustment) pops
+        // the destructive dialog instead.
+        requestRemoveLayer(selectedId);
         return;
       }
       const t = TOOL_KEYS[e.key.toLowerCase()];
@@ -50,5 +55,5 @@ export function useKeyboard() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [undo, redo, removeLayer, selectedId, setTool, swapColors, resetColors, rootRef]);
+  }, [undo, redo, requestRemoveLayer, selectedId, setTool, swapColors, resetColors, rootRef]);
 }

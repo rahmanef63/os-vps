@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Info } from "lucide-react";
+import { Info, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormDrawer } from "@/features/os-shell";
 import { useOsApi } from "@/lib/os-api";
 import type { SysStats, FsUsage } from "@/lib/os-api";
 import { fmtGiB, fmtUptime } from "@/lib/os-api/format";
@@ -13,9 +14,7 @@ const APP_TAGLINE = "VPS cockpit";
 
 // Wipes appearance + device identity, then reloads fresh. Storage keys keep the
 // historical "os-vps" prefix (changing them would orphan existing device ids).
-function resetOsVps() {
-  if (typeof window === "undefined") return;
-  if (!window.confirm("Reset Topside? This clears appearance + device identity.")) return;
+function performReset() {
   try {
     localStorage.removeItem("os-vps:tweaks");
     localStorage.removeItem("os-vps.device.id");
@@ -30,6 +29,7 @@ export function AboutSection() {
   const api = useOsApi();
   const [stats, setStats] = useState<SysStats | null>(null);
   const [usage, setUsage] = useState<FsUsage | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -85,11 +85,36 @@ export function AboutSection() {
           size="sm"
           variant="outline"
           className="text-destructive"
-          onClick={resetOsVps}
+          onClick={() => setConfirmReset(true)}
         >
           Reset Topside
         </Button>
       </div>
+
+      <FormDrawer open={confirmReset} onOpenChange={setConfirmReset} size="sm">
+        <FormDrawer.Header>
+          <FormDrawer.Title>Reset Topside?</FormDrawer.Title>
+          <FormDrawer.Description>
+            Clears appearance + device identity, then reloads. Your files on disk are untouched.
+          </FormDrawer.Description>
+        </FormDrawer.Header>
+        <FormDrawer.Footer>
+          <Button type="button" variant="ghost" onClick={() => setConfirmReset(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              setConfirmReset(false);
+              performReset();
+            }}
+          >
+            <RotateCcw className="size-4" />
+            Reset
+          </Button>
+        </FormDrawer.Footer>
+      </FormDrawer>
     </Section>
   );
 }

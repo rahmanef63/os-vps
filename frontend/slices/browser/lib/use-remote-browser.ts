@@ -6,6 +6,7 @@
 // it falls back to fast adaptive JPEG polling so the view is never frozen.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useBrowserApi, type RemoteState } from "./host";
+import { useOfflineTracker } from "./use-offline-tracker";
 import { useScreencast } from "./use-screencast";
 
 export const VIEW_W = 1280;
@@ -13,11 +14,6 @@ export const VIEW_H = 800;
 
 export type Tab = { id: number; url: string; title: string };
 export type { RemoteState } from "./host";
-
-// Consecutive failed polls/acts before we declare the service offline. ~3s of a
-// dead endpoint at the 320ms poll cadence — long enough to ride out a blip,
-// short enough that an eternal spinner never happens.
-const OFFLINE_AFTER = 8;
 
 export function useRemoteBrowser() {
   const api = useBrowserApi();
@@ -27,12 +23,13 @@ export function useRemoteBrowser() {
   const [state, setState] = useState<RemoteState>({ url: "", title: "" });
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState(false);
-  const [offline, setOffline] = useState(false);
+  // Failure-streak → offline gate + one-shot toast extracted to a sibling hook
+  // so this file stays under the 200-line cap. See use-offline-tracker.ts.
+  const { offline, offlineRef, markOk, markFail, reset: resetOffline } = useOfflineTracker();
   const urlRef = useRef<string | null>(null);
   const liveRef = useRef(false);
   const activityRef = useRef(0);
   const lastPollRef = useRef(0);
-  const failRef = useRef(0);
   const nextId = useRef(1);
 
   // Live set of consumer ids this hook owns — read by the unmount cleanup so it
@@ -44,17 +41,6 @@ export function useRemoteBrowser() {
   // eslint-disable-next-line react-hooks/refs -- latest-value ref: async stream/poll callbacks compare against the CURRENT consumer synchronously; an effect-based sync would lag a commit
   consumerRef.current = consumer;
   useEffect(() => { ownedRef.current = new Set(tabs.map((t) => `ui-${t.id}`)); }, [tabs]);
-
-  // Any successful round-trip clears the failure streak + offline flag.
-  const markOk = useCallback(() => {
-    failRef.current = 0;
-    setOffline((o) => (o ? false : o));
-  }, []);
-  // A failed round-trip; flip offline once the streak crosses the threshold.
-  const markFail = useCallback(() => {
-    failRef.current += 1;
-    if (failRef.current >= OFFLINE_AFTER) setOffline((o) => (o ? o : true));
-  }, []);
 
   const setFrame = useCallback((blob: Blob) => {
     const next = URL.createObjectURL(blob);
@@ -74,10 +60,9 @@ export function useRemoteBrowser() {
   }, [api, setFrame, markOk, markFail]);
 
   const retry = useCallback(() => {
-    failRef.current = 0;
-    setOffline(false);
+    resetOffline();
     void refresh();
-  }, [refresh]);
+  }, [refresh, resetOffline]);
 
   const mergeState = useCallback((s: RemoteState) => {
     setState(s);
@@ -157,6 +142,10 @@ export function useRemoteBrowser() {
     })();
     const beat = setInterval(() => {
       if (liveRef.current) return;
+      // Service is offline — stop hammering the dead endpoint. The user's
+      // Retry click clears `offline` (via the `retry` callback) and the next
+      // tick resumes polling.
+      if (offlineRef.current) return;
       if (typeof document !== "undefined" && document.hidden) return;
       const now = Date.now();
       const minGap = now - activityRef.current > 8000 ? 1000 : 320;
@@ -165,6 +154,9 @@ export function useRemoteBrowser() {
       void refresh();
     }, 320);
     return () => clearInterval(beat);
+    // offlineRef is a stable ref object returned from useOfflineTracker — its
+    // identity never changes, so omitting it from deps is safe.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consumer, api, refresh, mergeState]);
 
   // Unmount = window close: revoke the live object URL AND keepalive-close

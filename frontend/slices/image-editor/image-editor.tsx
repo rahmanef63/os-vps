@@ -15,6 +15,7 @@ import { ProjectLoader, ProjectLoadError } from "./components/project-loader";
 import { ToolOptionsBar } from "./components/tool-options-bar";
 import { SidePanel } from "./components/side-panel";
 import { MobileShell } from "./components/mobile-shell";
+import { ConfirmRemoveLayerProvider } from "./components/confirm-remove-layer";
 import { useKeyboard } from "./hooks/use-keyboard";
 import { useIsMobile } from "./hooks/use-is-mobile";
 import type { Doc } from "./lib/types";
@@ -187,8 +188,10 @@ export function ImageEditor({ initialImage, projectSrc, onSaveDoc, width, height
   return (
     <div className={cn("relative h-full w-full", className)}>
       <EditorProvider initialDoc={initialDoc}>
-        {projectSrc && <ProjectLoader src={projectSrc} onDone={onLoaded} />}
-        <Shell onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} onDirty={onDirty} onReady={onReady} autoRestore={!initialImage && !projectSrc} saveDoc={onSaveDoc} ready={ready} compact={compact} />
+        <ConfirmRemoveLayerProvider>
+          {projectSrc && <ProjectLoader src={projectSrc} onDone={onLoaded} />}
+          <Shell onSave={onSave} onSaveAs={onSaveAs} onClose={onClose} onDirty={onDirty} onReady={onReady} autoRestore={!initialImage && !projectSrc} saveDoc={onSaveDoc} ready={ready} compact={compact} />
+        </ConfirmRemoveLayerProvider>
       </EditorProvider>
       {loadError && <ProjectLoadError message={loadError} />}
     </div>

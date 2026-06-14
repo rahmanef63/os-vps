@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils"
 
 import { useEditor } from "../../lib/store"
 import type { Layer } from "../../lib/types"
+import { useConfirmRemoveLayer } from "../confirm-remove-layer"
 
 export function LayerActionsMenu({
   layer,
@@ -37,7 +38,8 @@ export function LayerActionsMenu({
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
-  const { duplicateLayer, removeLayer, raise, lower, update, addMask, removeMask, setMaskEdit, maskEditId } = useEditor()
+  const { duplicateLayer, raise, lower, update, addMask, removeMask, setMaskEdit, maskEditId } = useEditor()
+  const requestRemoveLayer = useConfirmRemoveLayer()
 
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
@@ -110,7 +112,7 @@ export function LayerActionsMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className={cn("gap-2 text-xs text-destructive")}
-          onSelect={() => removeLayer(layer.id)}
+          onSelect={() => requestRemoveLayer(layer.id)}
         >
           <Trash2 className="size-4" />
           Delete

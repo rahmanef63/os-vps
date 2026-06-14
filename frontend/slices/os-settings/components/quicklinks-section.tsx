@@ -4,8 +4,11 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, Globe, Link2, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FormDrawer } from "@/features/os-shell";
 import { useQuicklinks, faviconUrl, normalizeUrl } from "@/lib/quicklinks";
 import { Section } from "./section";
+
+type PendingQL = { id: string; label: string };
 
 // Manage website shortcuts. They surface (with their favicon) in the dock,
 // Launchpad, mobile grid, the Today widget and the Quicklinks window; opening
@@ -14,6 +17,9 @@ export function QuicklinksSection() {
   const { items, add, update, remove, move } = useQuicklinks();
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
+  // Destructive confirm — losing a quicklink mid-typing is the kind of miss
+  // tap that triggers a sigh, so we gate the Trash button behind a dialog.
+  const [pending, setPending] = useState<PendingQL | null>(null);
 
   const submit = () => {
     if (!url.trim()) return;
@@ -83,7 +89,13 @@ export function QuicklinksSection() {
                   <Button type="button" variant="ghost" size="icon" aria-label="Move down" onClick={() => move(ql.id, 1)} disabled={i === items.length - 1}>
                     <ArrowDown className="size-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="icon" aria-label="Remove" onClick={() => remove(ql.id)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Remove"
+                    onClick={() => setPending({ id: ql.id, label: ql.title || ql.url })}
+                  >
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
                 </li>
@@ -92,6 +104,31 @@ export function QuicklinksSection() {
           </ul>
         )}
       </Section>
+
+      <FormDrawer open={pending !== null} onOpenChange={(open) => !open && setPending(null)} size="sm">
+        <FormDrawer.Header>
+          <FormDrawer.Title>Remove quick link?</FormDrawer.Title>
+          <FormDrawer.Description>
+            {pending ? `"${pending.label}" will be removed from your dock and Spotlight.` : ""}
+          </FormDrawer.Description>
+        </FormDrawer.Header>
+        <FormDrawer.Footer>
+          <Button type="button" variant="ghost" onClick={() => setPending(null)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (pending) remove(pending.id);
+              setPending(null);
+            }}
+          >
+            <Trash2 className="size-4" />
+            Remove
+          </Button>
+        </FormDrawer.Footer>
+      </FormDrawer>
     </div>
   );
 }

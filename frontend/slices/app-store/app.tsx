@@ -5,6 +5,7 @@ import { Search, Store } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { AppFrame, useContainer } from "@/features/os-shell";
+import { UninstallConfirm } from "./components/uninstall-confirm";
 import { usePublishInspector } from "./lib/host";
 import {
   StoreFilterChips,
@@ -14,14 +15,11 @@ import {
 import { FeaturedCard } from "./components/featured-card";
 import { StoreAppCard } from "./components/store-app-card";
 import { SystemCard } from "./components/system-card";
-import {
-  FEATURED_ID,
-  mergeCatalog,
-  type CatalogApp,
-} from "./lib/store-catalog";
-import { SYSTEM_CATALOG, type SystemEntry } from "./lib/system-catalog";
-import { setInstalled, useApps } from "./lib/apps-store";
-import { setEnabled, useDisabledIds } from "./lib/enabled-store";
+import { FEATURED_ID, mergeCatalog } from "./lib/store-catalog";
+import { SYSTEM_CATALOG } from "./lib/system-catalog";
+import { useApps } from "./lib/apps-store";
+import { useDisabledIds } from "./lib/enabled-store";
+import { useStoreInstall } from "./lib/use-store-install";
 
 // Default export so os-shell can lazy-load it as a window app. Installing an app
 // flips its localStorage row (useInstalledApps surfaces it in the dock/launchpad).
@@ -30,7 +28,6 @@ import { setEnabled, useDisabledIds } from "./lib/enabled-store";
 export default function AppStore() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<StoreFilter>("Featured");
-  const [busy, setBusy] = useState<string | null>(null);
   // Pane-width bucket (JS, not CSS): the sidebar/chip swap must share ONE
   // measurement, and the chips live inside the AppFrame's own @container.
   const [paneRef, pane] = useContainer<HTMLDivElement>();
@@ -45,24 +42,8 @@ export default function AppStore() {
   const catalog = useMemo(() => mergeCatalog(rows), [rows]);
   const featured = catalog.find((a) => a.appId === FEATURED_ID) ?? catalog[0];
 
-  const toggle = async (app: CatalogApp) => {
-    setBusy(app.appId);
-    try {
-      setInstalled({
-        appId: app.appId,
-        installed: !app.installed,
-        title: app.title,
-        glyph: app.glyph,
-        gradient: app.gradient,
-        runtime: app.runtime,
-        entry: app.entry,
-      });
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const toggleSystem = (e: SystemEntry) => setEnabled(e.id, off.has(e.id));
+  // Install state machine + destructive confirm gates (uninstall = needs prompt).
+  const install = useStoreInstall(off);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -149,7 +130,7 @@ export default function AppStore() {
                       key={e.id}
                       entry={e}
                       installed={!off.has(e.id)}
-                      onToggle={toggleSystem}
+                      onToggle={install.toggleSystem}
                     />
                   ))}
                 </div>
@@ -159,8 +140,8 @@ export default function AppStore() {
                 {filter === "Featured" && featured && !query && (
                   <FeaturedCard
                     app={featured}
-                    busy={busy === featured.appId}
-                    onToggle={toggle}
+                    busy={install.busy === featured.appId}
+                    onToggle={install.toggle}
                   />
                 )}
 
@@ -174,8 +155,8 @@ export default function AppStore() {
                       <StoreAppCard
                         key={app.appId}
                         app={app}
-                        busy={busy === app.appId}
-                        onToggle={toggle}
+                        busy={install.busy === app.appId}
+                        onToggle={install.toggle}
                       />
                     ))}
                   </div>
@@ -185,6 +166,19 @@ export default function AppStore() {
           </div>
         </ScrollArea>
       </AppFrame>
+
+      <UninstallConfirm
+        open={install.pendingApp !== null}
+        title={install.pendingApp?.title ?? null}
+        onCancel={install.cancelApp}
+        onConfirm={install.confirmUninstallApp}
+      />
+      <UninstallConfirm
+        open={install.pendingSystem !== null}
+        title={install.pendingSystem?.title ?? null}
+        onCancel={install.cancelSystem}
+        onConfirm={install.confirmUninstallSystem}
+      />
     </div>
   );
 }

@@ -18,10 +18,12 @@ import { cn } from "@/lib/utils"
 
 import { useEditor } from "../../lib/store"
 import { createLayer } from "../../lib/model"
+import { useConfirmRemoveLayer } from "../confirm-remove-layer"
 
 export function LayersFooter() {
-  const { doc, selected, selectedId, addLayer, removeLayer, setTool, duplicateLayer, addMask, setMaskEdit, maskEditId, fg } =
+  const { doc, selected, selectedId, addLayer, setTool, duplicateLayer, addMask, setMaskEdit, maskEditId, fg } =
     useEditor()
+  const requestRemoveLayer = useConfirmRemoveLayer()
 
   const onMask = () => {
     if (!selected) return
@@ -151,7 +153,7 @@ export function LayersFooter() {
             className={cn("size-7 text-destructive")}
             aria-label="Delete"
             disabled={!selectedId}
-            onClick={() => selectedId && removeLayer(selectedId)}
+            onClick={() => selectedId && requestRemoveLayer(selectedId)}
           >
             <Trash2 className="size-4" />
           </Button>

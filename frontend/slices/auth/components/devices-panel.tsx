@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Check, ShieldCheck, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FormDrawer } from "@/features/os-shell";
 import { getOrCreateDeviceId } from "../lib/device";
 
 type Device = { deviceId: string; label: string; status: "approved" | "pending" };
@@ -28,6 +29,8 @@ function flatten(r: DevicesResponse): Device[] {
 // bootstrap device. Backed by the host JSON store via /api/auth/devices.
 export function DevicesPanel() {
   const [devices, setDevices] = useState<Device[] | null>(null);
+  // Revoke is destructive (other browsers lose sign-in); confirm before firing.
+  const [pendingRevoke, setPendingRevoke] = useState<Device | null>(null);
   const thisId = typeof window !== "undefined" ? getOrCreateDeviceId() : "";
 
   // Pure fetch (no setState) so the mount effect can use the .then form
@@ -75,6 +78,7 @@ export function DevicesPanel() {
   }
 
   return (
+    <>
     <ul className="space-y-2">
       {devices.map((d) => (
         <li
@@ -113,7 +117,7 @@ export function DevicesPanel() {
               size="icon"
               variant="ghost"
               aria-label="Revoke device"
-              onClick={() => void act("revoke", d.deviceId)}
+              onClick={() => setPendingRevoke(d)}
             >
               <Trash2 className="size-4 text-destructive" />
             </Button>
@@ -121,5 +125,37 @@ export function DevicesPanel() {
         </li>
       ))}
     </ul>
+
+      <FormDrawer
+        open={pendingRevoke !== null}
+        onOpenChange={(open) => !open && setPendingRevoke(null)}
+        size="sm"
+      >
+        <FormDrawer.Header>
+          <FormDrawer.Title>
+            {pendingRevoke ? `Revoke device "${pendingRevoke.label}"?` : "Revoke device?"}
+          </FormDrawer.Title>
+          <FormDrawer.Description>
+            This device will need re-approval to sign in again. Existing sessions stay valid until they expire.
+          </FormDrawer.Description>
+        </FormDrawer.Header>
+        <FormDrawer.Footer>
+          <Button type="button" variant="ghost" onClick={() => setPendingRevoke(null)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (pendingRevoke) void act("revoke", pendingRevoke.deviceId);
+              setPendingRevoke(null);
+            }}
+          >
+            <Trash2 className="size-4" />
+            Revoke
+          </Button>
+        </FormDrawer.Footer>
+      </FormDrawer>
+    </>
   );
 }

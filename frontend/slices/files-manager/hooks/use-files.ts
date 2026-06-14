@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "@/features/os-shell";
 import { useOsApi, type FsEntry, type FsRoot, type FsUsage } from "../lib/host";
 import type { Clipboard } from "../lib/types";
 import { useFileOps } from "./use-file-ops";
@@ -42,6 +43,9 @@ export function useFiles(initialPath?: string) {
   const loadKey = `${path} ${reload}`;
   const entries = listing?.key === loadKey ? listing.entries : null;
   const loadFailed = listError?.key === loadKey;
+  // Remember the last key we toasted for so a single failure fires once
+  // (not on every re-render while the error state sticks around).
+  const toastedKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -52,10 +56,19 @@ export function useFiles(initialPath?: string) {
         setListing({ key: loadKey, entries: res.entries });
         if (res.roots?.length) setRoots(res.roots);
       })
-      .catch(() => {
+      .catch((e) => {
         // Don't fake an empty folder (its "drop to upload" invite is misleading)
         // — flag the failed request so the view offers a Retry instead.
-        if (alive) setListError({ key: loadKey });
+        if (!alive) return;
+        setListError({ key: loadKey });
+        if (toastedKeyRef.current !== loadKey) {
+          toastedKeyRef.current = loadKey;
+          const msg = e instanceof Error ? e.message : String(e);
+          toast(`Couldn't load ${path}: ${friendly(msg)}`, {
+            tone: "error",
+            appId: "files-manager",
+          });
+        }
       });
     return () => {
       alive = false;

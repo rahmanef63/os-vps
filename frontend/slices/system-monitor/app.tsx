@@ -1,6 +1,7 @@
 "use client";
 
-import { Activity, Loader2 } from "lucide-react";
+import { Activity, AlertCircle, Loader2, RotateCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePublishInspector, useOsApi } from "./lib/host";
 import { AppFrame } from "./components/host-frame";
@@ -15,7 +16,7 @@ import { fmtGiBPair, fmtMBs, fmtPct } from "./lib/format";
 // Default export so os-shell can lazy-load it as a window app.
 export default function SystemMonitor() {
   const api = useOsApi();
-  const { stats, procs, cpuSeries, netSeries, gpu, refresh } = useStatsHistory();
+  const { stats, procs, cpuSeries, netSeries, gpu, error, refresh } = useStatsHistory();
 
   usePublishInspector(
     "system-monitor",
@@ -36,6 +37,23 @@ export default function SystemMonitor() {
     },
     [stats, procs.length, api.mode, refresh],
   );
+
+  // Error path: telemetry never landed AND the poll keeps failing — surface a
+  // retry tile so the user can act instead of staring at a frozen spinner.
+  if (!stats && error) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <AlertCircle className="size-6 text-destructive" />
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">Couldn&apos;t load stats</p>
+          <p className="max-w-xs text-xs text-muted-foreground">{error}</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={refresh} className="gap-1.5">
+          <RotateCw className="size-3.5" /> Retry
+        </Button>
+      </div>
+    );
+  }
 
   if (!stats) {
     return (
