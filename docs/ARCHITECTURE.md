@@ -41,7 +41,7 @@ os-vps/
 │   │   ├── sys.ts            cpu/mem/disk/uptime/processes
 │   │   ├── host-error.ts / api-error.ts  HostError + apiError + readJson/requireString kit
 │   │   ├── paths.ts          read/write root jail + realpath bounds check
-│   │   ├── audit.ts          append-only JSONL audit (~/.os-vps/audit.log)
+│   │   ├── audit.ts          append-only JSONL audit (~/.os-vps/audit.log) — writes serialized through a chained promise so bursty callers land in submission order
 │   │   ├── rate-limit.ts     fixed-window in-memory limiter
 │   │   └── index.ts          barrel
 │   ├── auth/                 session.ts (HMAC sign/verify) · require-session.ts ·
@@ -55,7 +55,8 @@ os-vps/
 ├── frontend/slices/<slug>/   app slices (UI + types + config + metadata trio), plus:
 │   ├── appshell/             generic shell framework — <AppShell manifest>, window
 │   │                         runtime, desktop+mobile surfaces, registries, ResponsiveProvider,
-│   │                         primitives, pub/sub buses. Brand/feature-agnostic → lifts to rr.
+│   │                         primitives (MasterDetail · AppFrame · WindowPreview · useResponsive · useFocusedHotkey),
+│   │                         pub/sub buses. Brand/feature-agnostic → lifts to rr.
 │   ├── shell-search / shell-inspector / shell-notifications / shell-control-center /
 │   │                         shell-widgets   pluggable features mounted via <Slot region>
 │   └── os-shell/             os-vps consumer: shell.manifest.ts (brand+apps+features)
@@ -95,6 +96,12 @@ host kernel (as the unprivileged service user — NOT root)
   Device allowlist → `~/.os-vps/auth-devices.json`; BYOK key/model →
   `~/.os-vps/config.json`; audit trail → `~/.os-vps/audit.log`.
 - **Apps lazy-mount.** A window mounts its app component only when opened.
+- **Shared shell primitives.** `MasterDetail` + `AppFrame` + `useResponsive`
+  back the responsive layout of system-monitor / assistant / os-settings (more
+  apps to follow). `<WindowPreview>` powers the mobile app switcher without
+  re-mounting the live app (kills the terminal double-PTY bug).
+  `useFocusedHotkey()` scopes keystrokes to the focused window so background
+  apps don't steal shortcuts.
 
 ## The host boundary — `lib/host` + `lib/os-api`
 
