@@ -17,6 +17,7 @@ export default defineConfig({
       "frontend/slices/**/*.test.{ts,tsx}",
       "lib/**/*.test.{ts,tsx}",
       "scripts/e2e/**/*.test.{ts,tsx}",
+      "instrumentation.test.ts",
     ],
     environment: "node",
     // Coverage configured but inert until @vitest/coverage-v8 is installed

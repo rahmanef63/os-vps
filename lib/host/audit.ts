@@ -34,7 +34,8 @@ export type AuditAction =
   | "auth.pending"
   | "auth.denied"
   | "auth.ratelimited"
-  | "auth.logout";
+  | "auth.logout"
+  | "framework.error";
 
 export interface AuditEntry {
   action: AuditAction;

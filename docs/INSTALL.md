@@ -199,6 +199,7 @@ git pull
 pnpm install                # only when package.json changed
 pnpm build                  # ALWAYS build before restarting
 sudo systemctl restart os-vps.service
+./scripts/post-deploy-smoke.sh   # catches the chunk/MIME drift the README warns about
 ```
 
 Build **then** restart, never the reverse — `next start` loads the build
@@ -244,6 +245,37 @@ custom node wrapper. (Or use `Type=notify` with `sd-notify` — bigger refactor.
 - Alert when: `status!="ok"` OR 2 consecutive failures
 
 **Dokploy**: configure the application healthcheck endpoint at `/api/health`.
+
+## 9e. Backup & retention
+
+`~/.os-vps/` is the persistence root:
+
+- `auth-devices.json` — approved-device allowlist (losing it = re-approve every device)
+- `config.json` — BYOK key + AI model preferences
+- `audit.log` — append-only JSONL forensic trail
+- `chrome-profile/` — Playwright user data (browser app, optional)
+
+**Backup recommendation**: nightly `restic` (or `rsync` to off-host) of `~/.os-vps/`. ≤10MB typical.
+
+```bash
+# example: restic to S3-compatible / Backblaze B2 / local NAS
+restic -r b2:my-bucket backup ~/.os-vps --tag os-vps --exclude chrome-profile
+```
+
+**Audit log rotation** (avoid unbounded growth):
+
+```
+# /etc/logrotate.d/os-vps
+~rahman/.os-vps/audit.log {
+    size 1M
+    rotate 4
+    copytruncate
+    missingok
+    notifempty
+    compress
+    delaycompress
+}
+```
 
 ## 9d. Zero-downtime restart (advanced)
 

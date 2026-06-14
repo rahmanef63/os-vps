@@ -21,17 +21,29 @@ const rateLimitMap = new Map<string, { count: number; reset_at: number }>();
 let globalWindowStart = Date.now();
 let globalAttempts = 0;
 
-function clientIp(req: NextRequest): string {
-  // Take the LAST x-forwarded-for hop: it is the one our own reverse proxy
-  // appended (the FIRST entries are client-supplied and spoofable — rotating
-  // them would dodge the per-IP bucket and poison the audit trail). Direct
-  // access with a forged header still spoofs this, so :4005 must stay
-  // firewalled behind the proxy; the global limiter caps brute force anyway.
+// Exported for tests — module-private otherwise.
+export function clientIp(req: NextRequest): string {
+  // x-forwarded-for is a comma-separated trail; the leftmost entries are
+  // client-supplied and spoofable. The first hop WE trust is N from the end,
+  // where N = number of reverse proxies in front of this app (Cloudflare →
+  // nginx → app = 2). Default 1 = direct proxy. Direct access with a forged
+  // header still spoofs this, so :4005 must stay firewalled behind the proxy;
+  // the global limiter caps brute force anyway.
   const xff = req.headers.get("x-forwarded-for");
   if (xff) {
-    const hops = xff.split(",");
-    const last = hops[hops.length - 1]?.trim();
-    if (last) return last;
+    const hops = xff
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (hops.length > 0) {
+      const parsed = Number(process.env.OS_TRUSTED_PROXY_HOPS ?? "1");
+      const trustedN = Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+      // trustedN=1 → last hop (current behavior). trustedN=2 → second from last.
+      // Clamp to the start of the list if N exceeds the chain length.
+      const idx = Math.max(0, hops.length - trustedN);
+      const hop = hops[idx];
+      if (hop) return hop;
+    }
   }
   return req.headers.get("x-real-ip") ?? "127.0.0.1";
 }
