@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-import { MIN_SECRET_LEN, signSession, type SessionPayload } from "@/lib/auth/session";
+import { constantTimeEq, MIN_SECRET_LEN, signSession, type SessionPayload } from "@/lib/auth/session";
 import { SESSION_COOKIE } from "@/lib/auth/require-session";
 import { isApproved, isValidDeviceId, recordPending, touchApproved } from "@/lib/auth/device-store";
 import { audit } from "@/lib/host";
@@ -90,11 +89,9 @@ export async function POST(req: NextRequest) {
   }
   const label = typeof body.deviceLabel === "string" ? body.deviceLabel.slice(0, 80) : "unknown device";
 
-  const a = Buffer.from(password, "utf8");
-  const b = Buffer.from(provided, "utf8");
-  const ok = a.length === b.length && crypto.timingSafeEqual(a, b);
-  if (!ok) {
-    crypto.timingSafeEqual(a, a); // constant-time even on length mismatch
+  // Length-safe: constantTimeEq hashes both sides to a fixed 32-byte digest
+  // before comparing, so the compare time does NOT reveal the secret's length.
+  if (!constantTimeEq(password, provided)) {
     audit({ action: "auth.denied", actor: deviceId, ip, ok: false, detail: "bad password" });
     return NextResponse.json({ error: "bad_password" }, { status: 401 });
   }

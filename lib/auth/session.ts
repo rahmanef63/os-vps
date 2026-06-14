@@ -6,6 +6,19 @@ import crypto from "crypto";
 /** Minimum length for the signing secret. A short/empty key is forgeable. */
 export const MIN_SECRET_LEN = 32;
 
+/**
+ * Length-safe constant-time string compare. Hashes both sides to a fixed
+ * 32-byte SHA-256 digest before `timingSafeEqual`, so the comparison time
+ * does NOT depend on the inputs' lengths. A naive `a.length === b.length`
+ * early-exit would leak the secret's length over the network. Use this for
+ * every password / token / signature compare. Mirrors lib/agent/server.ts.
+ */
+export function constantTimeEq(a: string, b: string): boolean {
+  const ha = crypto.createHash("sha256").update(a).digest();
+  const hb = crypto.createHash("sha256").update(b).digest();
+  return crypto.timingSafeEqual(ha, hb);
+}
+
 export interface SessionPayload {
   issued_at: number;
   expires_at: number;
@@ -46,10 +59,9 @@ export function verifySession(cookie: string, secret: string): SessionPayload | 
     hmac.update(encodedPayload);
     const expectedSig = base64urlEncode(hmac.digest());
 
-    const expectedBuf = Buffer.from(expectedSig, "utf8");
-    const providedBuf = Buffer.from(providedSig, "utf8");
-    if (expectedBuf.length !== providedBuf.length) return null;
-    if (!crypto.timingSafeEqual(expectedBuf, providedBuf)) return null;
+    // constantTimeEq hashes both sides to fixed width, so an attacker can't
+    // probe the expected signature's length via timing.
+    if (!constantTimeEq(expectedSig, providedSig)) return null;
 
     const payload: SessionPayload = JSON.parse(base64urlDecode(encodedPayload).toString("utf8"));
     if (typeof payload.expires_at !== "number" || payload.expires_at <= Date.now()) return null;

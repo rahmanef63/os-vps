@@ -54,3 +54,18 @@ the issue violates. Expect a reply within a week (solo maintainer).
   `/api/auth/devices` route.
 - CSRF/clickjacking that triggers exec/fs actions cross-origin despite the
   `SameSite=Strict` cookie + `Sec-Fetch-Site` proxy check + `frame-ancestors`.
+
+## HSTS
+
+The app does **not** emit `Strict-Transport-Security` itself — app-layer HSTS
+is redundant with proxy HSTS and dangerous to misconfigure (a stale
+`max-age` from the app can outlive a deployment change). The operator MUST
+set HSTS at the reverse-proxy / TLS-terminator layer:
+
+- **Caddy:** `header { Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" }`
+- **nginx:** `add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;`
+
+Why it matters: the session cookie is `Secure` + `SameSite=Strict`, so it
+already refuses to ride plain HTTP. HSTS pins the browser to HTTPS on every
+subsequent visit, blocking downgrade attacks (sslstrip) on the first hop
+and on any subdomain that could be tricked into serving HTTP.

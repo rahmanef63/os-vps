@@ -1,8 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { closeAll, openWindow } from "./store";
 import { hydrate, hydrateBoot, serialize } from "./store-persist";
 import { shellStore } from "./store-state";
 import type { PersistedWindow } from "./types";
+
+// Stub viewport for the clamping test (clampRect is a no-op without window).
+vi.stubGlobal("window", Object.assign(globalThis.window ?? {}, { innerWidth: 1280, innerHeight: 800 }));
 
 const pw = (id: string, app: string, extra?: Partial<PersistedWindow>): PersistedWindow => ({
   id,
@@ -81,5 +84,47 @@ describe("store persistence", () => {
     expect(snap.map((w) => w.id)).toEqual(["w3", "w4"]);
     expect(snap[0].minimized).toBe(true);
     expect(snap.some((w) => "z" in w)).toBe(false);
+  });
+
+  it("hydrateBoot dedupes a MULTI-app window when persisted + live share the same payload", () => {
+    // Live window opened from the URL with payload {path:/home/rahman}.
+    const live = openWindow("files", "Files", undefined, { path: "/home/rahman" }, { multi: true });
+    // localStorage has a window for the SAME app + SAME payload — must collapse.
+    hydrateBoot(
+      [pw("w99", "files", { payload: { path: "/home/rahman" } })],
+      new Set(["files"]),
+    );
+    const ids = shellStore.getOrder();
+    const files = ids.filter((id) => shellStore.getWindow(id)?.app === "files");
+    expect(files).toEqual([live]); // dedupe — one Files window survives
+    expect(shellStore.getWindow(live)?.payload).toEqual({ path: "/home/rahman" });
+  });
+
+  it("hydrateBoot keeps both MULTI-app windows when payloads differ", () => {
+    const live = openWindow("files", "Files", undefined, { path: "/a" }, { multi: true });
+    hydrateBoot(
+      [pw("w99", "files", { payload: { path: "/b" } })],
+      new Set(["files"]),
+    );
+    const files = shellStore.getOrder().filter((id) => shellStore.getWindow(id)?.app === "files");
+    expect(files).toHaveLength(2); // different payload → keep both
+    // live still on top; persisted one stacked underneath with the /b payload.
+    const liveWin = shellStore.getWindow(live)!;
+    const otherId = files.find((id) => id !== live)!;
+    expect(shellStore.getWindow(otherId)?.payload).toEqual({ path: "/b" });
+    expect(liveWin.z).toBeGreaterThan(shellStore.getWindow(otherId)!.z);
+  });
+
+  it("hydrateBoot clamps a persisted window whose rect is past the viewport", () => {
+    // Saved on a huge monitor → way off-screen on this 1280×800 viewport.
+    hydrateBoot([pw("w42", "files", { x: 5000, y: 5000, w: 9999, h: 9999 })]);
+    const w = shellStore.getWindow("w42")!;
+    // Width clamped to viewport minus gutters; x kept inside the right edge.
+    expect(w.w).toBeLessThanOrEqual(1280);
+    expect(w.x + w.w).toBeLessThanOrEqual(1280);
+    expect(w.y + w.h).toBeLessThanOrEqual(800);
+    // Heights/widths must be positive after the clamp.
+    expect(w.w).toBeGreaterThan(0);
+    expect(w.h).toBeGreaterThan(0);
   });
 });
