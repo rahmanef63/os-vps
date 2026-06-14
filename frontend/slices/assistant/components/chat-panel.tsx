@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  forwardRef,
   useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
+  type Ref,
 } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { streamReply, type WireMsg } from "../lib/stream";
@@ -39,16 +39,24 @@ export type ChatHandle = {
 // system-style turn so replies adopt the selected agent's voice. An
 // AbortController threads through streamReply so closing the window, switching
 // tabs, or hitting Stop cancels the upstream generation (no orphaned billing).
-export const ChatPanel = forwardRef<
-  ChatHandle,
-  { agent: Agent; onSwitchAgent: () => void; switcher: React.ReactNode }
->(function ChatPanel({ agent, switcher }, ref) {
+export function ChatPanel({
+  agent,
+  switcher,
+  ref,
+}: {
+  agent: Agent;
+  onSwitchAgent: () => void;
+  switcher: React.ReactNode;
+  ref?: Ref<ChatHandle>;
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const agentRef = useRef(agent);
-  agentRef.current = agent;
+  // Sync the agent ref out-of-render so `send` always sees the latest agent
+  // without re-creating the callback (which would tear streamReply's signal).
+  useEffect(() => { agentRef.current = agent; }, [agent]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -148,4 +156,4 @@ export const ChatPanel = forwardRef<
       <ChatComposer onSend={send} streaming={streaming} onStop={stop} />
     </div>
   );
-});
+}

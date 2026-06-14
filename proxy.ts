@@ -25,8 +25,9 @@ export function proxy(request: NextRequest) {
     }
     // No Sec-Fetch-Site (older browsers, non-browser clients): fall back to an
     // Origin host match against the public host the proxy forwarded. Clients
-    // that send neither header (curl, scripts) pass — CSRF is a browser attack
-    // and they carry no ambient cookie.
+    // that send neither header (curl, scripts) must carry the session cookie
+    // to pass — a deliberate non-browser client always brings it; CSRF probes
+    // do not, and we refuse to give them a free pass.
     const origin = request.headers.get("origin");
     if (origin) {
       const expected =
@@ -38,6 +39,11 @@ export function proxy(request: NextRequest) {
       } catch {
         return blocked();
       }
+    } else if (!request.cookies.get("session")) {
+      // No Sec-Fetch-Site, no Origin, no session cookie = block. verifyAuth
+      // will re-check the cookie's signature downstream; here we only gate
+      // on existence so unauthenticated header-less probes cannot reach /api.
+      return blocked();
     }
   }
   return NextResponse.next();

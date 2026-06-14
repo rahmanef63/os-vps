@@ -7,12 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropOverlay } from "./components/drop-overlay";
 import { FilesSidebar } from "./components/files-sidebar";
-import { FilesToolbar } from "./components/files-toolbar";
 import { FileView } from "./components/file-view";
 import { FileContextMenu } from "./components/file-context-menu";
-import { FileDetails } from "./components/file-details";
 import { UploadInput } from "./components/upload-input";
-import { UploadBar } from "./components/upload-bar";
+import { FilesHeader, FilesFooter } from "./components/files-chrome";
 import { useFiles } from "./hooks/use-files";
 import { useFilesInspector } from "./hooks/use-files-inspector";
 import { useFileSelection } from "./hooks/use-file-selection";
@@ -98,50 +96,22 @@ export default function FilesManager({ payload }: AppProps) {
         className="min-w-0 flex-1"
         safeArea={false}
         toolbar={
-          <>
-            <FilesToolbar
-              path={fs.path}
-              canBack={fs.canBack}
-              canForward={fs.canForward}
-              view={view}
-              sort={sort}
-              hasClipboard={!!fs.clip}
-              onBack={() => { fs.goBack(); sel.clear(); }}
-              onForward={() => { fs.goForward(); sel.clear(); }}
-              onNavigate={cmd.go}
-              onView={setView}
-              onSort={setSort}
-              onNewFolder={cmd.newFolder}
-              onUpload={openPicker}
-              onUploadFolder={openFolderPicker}
-              onPaste={fs.paste}
-              onOpenSidebar={() => setSidebarOpen(true)}
-              dropTarget={dnd.dropTarget}
-              onCrumbDragOver={dnd.onDragOver}
-              onCrumbDragLeave={dnd.onDragLeave}
-              onCrumbDrop={dnd.onDrop}
-            />
-            <UploadBar />
-            {fs.error && (
-              <div className="border-t border-destructive/30 bg-destructive/10 px-3 py-1 text-[11px] text-destructive">
-                {fs.error}
-              </div>
-            )}
-          </>
+          <FilesHeader
+            fs={fs} cmd={cmd} dnd={dnd}
+            view={view} sort={sort}
+            setView={setView} setSort={setSort}
+            openPicker={openPicker} openFolderPicker={openFolderPicker}
+            openSidebar={() => setSidebarOpen(true)}
+            clearSel={sel.clear}
+          />
         }
         footer={
-          <>
-            {!isMobile && <FileDetails entry={selectedEntry} dir={fs.path} />}
-            <div className="flex items-center gap-3 px-3 pt-1.5 text-[11px] text-muted-foreground [padding-bottom:calc(0.375rem+var(--sai-bottom))]">
-              <span>{ordered ? `${ordered.length} items` : "—"}</span>
-              {sel.selected.size > 0 && <span>{sel.selected.size} selected</span>}
-              {fs.clip && (
-                <span className="ml-auto">
-                  {fs.clip.names.length} {fs.clip.mode === "cut" ? "cut" : "copied"} — ⌘V to paste
-                </span>
-              )}
-            </div>
-          </>
+          <FilesFooter
+            fs={fs} isMobile={isMobile}
+            selectedEntry={selectedEntry}
+            orderedLen={ordered ? ordered.length : null}
+            selectedCount={sel.selected.size}
+          />
         }
       >
         <ScrollArea

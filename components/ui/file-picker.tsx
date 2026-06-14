@@ -22,6 +22,7 @@ export interface FilePickerProps {
    *  pattern. Omit to drive the picker imperatively via the `open()` handle. */
   children?: React.ReactNode;
   "aria-label"?: string;
+  ref?: React.Ref<FilePickerHandle>;
 }
 
 /**
@@ -31,68 +32,73 @@ export interface FilePickerProps {
  *   • imperative — `const ref = useRef<FilePickerHandle>(null); ref.current?.open()`
  *   • zone — pass `children` to get a clickable + droppable drop area.
  */
-export const FilePicker = React.forwardRef<FilePickerHandle, FilePickerProps>(
-  function FilePicker(
-    { onFiles, accept, multiple, directory, disabled, className, children, ...aria },
-    ref,
-  ) {
-    const inputRef = React.useRef<HTMLInputElement>(null);
+export function FilePicker({
+  onFiles,
+  accept,
+  multiple,
+  directory,
+  disabled,
+  className,
+  children,
+  ref,
+  ...aria
+}: FilePickerProps) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
-    const open = React.useCallback(() => {
-      if (!disabled) inputRef.current?.click();
-    }, [disabled]);
+  const open = React.useCallback(() => {
+    if (!disabled) inputRef.current?.click();
+  }, [disabled]);
 
-    React.useImperativeHandle(ref, () => ({ open }), [open]);
+  React.useImperativeHandle(ref, () => ({ open }), [open]);
 
-    const emit = (list: FileList | null) => {
-      const files = Array.from(list ?? []);
-      if (files.length) onFiles(files);
-    };
+  const emit = (list: FileList | null) => {
+    const files = Array.from(list ?? []);
+    if (files.length) onFiles(files);
+  };
 
-    // webkitdirectory / directory are non-standard attrs — spread as raw.
-    const dirAttrs = directory
-      ? ({ webkitdirectory: "", directory: "" } as Record<string, string>)
-      : {};
+  // webkitdirectory / directory are non-standard attrs — spread as raw.
+  const dirAttrs = directory
+    ? ({ webkitdirectory: "", directory: "" } as Record<string, string>)
+    : {};
 
-    return (
-      <>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          hidden
-          disabled={disabled}
-          onChange={(e) => {
-            emit(e.target.files);
-            e.target.value = "";
-          }}
-          {...dirAttrs}
-        />
-        {children != null && (
-          <div
-            role="button"
-            tabIndex={disabled ? -1 : 0}
-            aria-label={aria["aria-label"]}
-            aria-disabled={disabled || undefined}
-            className={className}
-            onClick={open}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                open();
-              }
-            }}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        hidden
+        disabled={disabled}
+        onChange={(e) => {
+          emit(e.target.files);
+          e.target.value = "";
+        }}
+        {...dirAttrs}
+      />
+      {children != null && (
+        <div
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          aria-label={aria["aria-label"]}
+          aria-disabled={disabled || undefined}
+          className={className}
+          onClick={open}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              emit(e.dataTransfer.files);
-            }}
-          >
-            {children}
-          </div>
-        )}
-      </>
-    );
-  },
-);
+              open();
+            }
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            emit(e.dataTransfer.files);
+          }}
+        >
+          {children}
+        </div>
+      )}
+    </>
+  );
+}

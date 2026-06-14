@@ -80,17 +80,17 @@ export function useDocOps(
     });
   }, [setDoc]);
 
-  // TODO(audit): resizing the doc doesn't resize paint/mask offscreen canvases,
-  // so after a size change the brush paints onto a stale-sized buffer (and the
-  // mask is mis-aligned). Needs a re-baked canvas per paint layer + a paired
-  // history entry — a larger change touching the undo model; tracked separately.
+  // NOTE: resizing the doc doesn't resize paint/mask offscreen canvases, so
+  // after a size change the brush paints onto a stale-sized buffer (and the
+  // mask is mis-aligned). A fix needs a re-baked canvas per paint layer + a
+  // paired history entry — a larger change touching the undo model, deferred.
   const setDocSize = useCallback((w: number, h: number) => setDoc((d) => ({ ...d, width: w, height: h })), [setDoc]);
 
   // Crop: resize the doc to (w,h) anchored at (x,y), shift every layer by (-x,-y),
   // and re-bake each paint layer's pixels into a new (w,h) canvas at the offset.
-  // TODO(audit): the re-bake is DESTRUCTIVE — it overwrites the canvas at the same
-  // id while the pushed history step only snapshots the doc, so undoing a crop
-  // restores the doc dimensions but NOT the pre-crop paint pixels. A correct fix
+  // NOTE: the re-bake is DESTRUCTIVE — it overwrites the canvas at the same id
+  // while the pushed history step only snapshots the doc, so undoing a crop
+  // restores doc dimensions but NOT the pre-crop paint pixels. A correct fix
   // pairs a paint snapshot with the doc step (combined action) — deferred.
   const applyCrop = useCallback((x: number, y: number, w: number, h: number) => {
     setDoc((d) => {

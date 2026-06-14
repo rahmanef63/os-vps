@@ -49,7 +49,10 @@ solves one piece. This stitches the common ones into a single mobile-first pane.
 - **What protects you:** device-approval 2FA, HMAC-signed `httpOnly`+`Secure`
   +`SameSite=strict` session cookies, per-IP + global login rate limits, an exec
   burst limit, a filesystem jail (realpath-checked read/write roots), a
-  destructive-command guard, and an append-only **audit log**.
+  destructive-command guard (applies to one-shot `/api/v1/exec`; the interactive
+  Terminal PTY shell intentionally does **not** have this guard — by design,
+  since raw keystrokes have no command boundary to inspect; the gate is the same
+  session + approved device), and an append-only **audit log**.
 - **What it does NOT do:** it is not hardened for hostile public internet without
   a network boundary, and it is not a sandbox — within the FS roots the owner has
   real access. There is no second human to approve dangerous actions.
