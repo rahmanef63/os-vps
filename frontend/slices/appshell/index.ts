@@ -1,5 +1,9 @@
 // Public barrel — other slices/app layer import ONLY from here.
 export { OsDesktop } from "./components/desktop";
+// Bundled single-pane cockpit shell (self-registers as ShellId "dashboard" on
+// import — matching rr). Brand comes from <BrandProvider> (useBrand); the file
+// is brand-free. macOS/Windows/iOS/Android register from the framework itself.
+export { DashboardShell } from "./components/shells/dashboard/dashboard-shell";
 export { AppIcon } from "./components/app-icon";
 export { QuicklinkIcon } from "./components/quicklink-icon";
 // Generic app mounter (lazy-loads an app by id + payload). Used by windows AND

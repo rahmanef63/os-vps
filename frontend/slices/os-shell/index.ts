@@ -20,11 +20,10 @@ export {
   BUILTIN_APPS,
 } from "./shell.manifest";
 export { topsideCapabilities } from "./capabilities";
-// Topside's Dashboard shell (single-pane cockpit) — registers itself into the
-// appshell shell registry on import; macOS/Windows/iOS/Android register from
-// the framework itself.
-import "./dashboard-shell";
-export { DashboardShell } from "./dashboard-shell";
+// Dashboard shell now lives in the brand-free framework (appshell) and is
+// surfaced by the `export * from "@/features/appshell"` above (it self-registers
+// on import there). App slices that referenced DashboardShell via
+// @/features/os-shell keep working unchanged.
 // Built-in live wallpapers (Drift / Starfield) — register into the appshell
 // wallpaper registry on import; Settings lists them via useWallpapers().
 import "./live-wallpapers";

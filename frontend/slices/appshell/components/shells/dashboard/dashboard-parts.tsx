@@ -4,10 +4,12 @@
    only the Dashboard shell composes these. */
 import { X, Cpu, MemoryStick, HardDrive } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  AppIcon, useApps, useSystemStats, useWindow, closeWindow,
-  type AppDescriptor,
-} from "@/features/appshell";
+import { AppIcon } from "../../app-icon";
+import { useApps } from "../../../lib/registry";
+import { useSystemStats } from "../../../registry/capabilities";
+import { useWindow } from "../../../hooks/use-shell";
+import { closeWindow } from "../../../lib/store";
+import type { AppDescriptor } from "../../../lib/types";
 
 export function DashboardHome({ apps, onOpenApp }: { apps: AppDescriptor[]; onOpenApp: (app: AppDescriptor) => void }) {
   const stats = useSystemStats();

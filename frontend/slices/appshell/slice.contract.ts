@@ -1,12 +1,12 @@
 /**
- * Slice contract for `appshell` — v0.1.0.
+ * Slice contract for `appshell` — v1.5.1.
  * Excluded from app tsc; validated by rr tooling on lift.
  */
 import { defineSliceContract } from "@/packages/cli/lib/contract";
 
 export const contract = defineSliceContract({
   id: "appshell",
-  version: "0.1.0",
+  version: "1.5.1",
   category: "ui",
   kind: "full",
   requires: {
@@ -16,8 +16,25 @@ export const contract = defineSliceContract({
     deps: [] as const,
   },
   provides: {
+    // os-vps runs no agent — the shell's window ops are exposed as store
+    // functions (openWindow/closeWindow/…), not registered agent tools. rr's
+    // optional @/shared/agentic toolkit (appshell/agentic) is absent here, so
+    // provides.tools is empty by design.
+    tools: [] as string[],
     routes: [] as string[],
     hooks: [
+      "useCommands",
+      "useBadges",
+      "useRecents",
+      "useLayouts",
+      "useActiveSpace",
+      "useClips",
+      "useShareState",
+      "useQuickLook",
+      "useShortcuts",
+      "useFocusMode",
+      "useLocked",
+      "useProfiles",
       "useResponsive",
       "useContainer",
       "useApps",
@@ -27,6 +44,7 @@ export const contract = defineSliceContract({
       "useBrand",
       "useShellUI",
       "useShellConfig",
+      "useQuickLinks",
     ] as string[],
     components: [
       "AppShell",
@@ -35,6 +53,8 @@ export const contract = defineSliceContract({
       "MasterDetail",
       "ResponsiveToolbar",
       "TouchList",
+      "QuicklinkIcon",
+      "DashboardShell",
     ] as string[],
     tables: [] as string[],
   },

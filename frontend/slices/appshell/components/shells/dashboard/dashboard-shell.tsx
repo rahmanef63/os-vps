@@ -1,25 +1,29 @@
 "use client";
 /* Dashboard shell — a single-pane cockpit surface (no floating windows):
-   sidebar + breadcrumb + content. Lives in the os-shell CONSUMER (not the
-   appshell framework) because its home page reads Topside capabilities
-   (system stats); the framework stays data-agnostic. It DRIVES the shared
-   window store: launching calls openWindow, the pane shows the focused
-   (or newest non-minimized) window via <AppHost>, Home minimizes it — so
-   UrlSync deep links work here and open windows (with their payloads)
-   carry over intact when switching to the macOS/Windows/mobile shells. */
+   sidebar + breadcrumb + content. Lives in the appshell FRAMEWORK (converged to
+   the rr shape) and stays brand-free: brand via useBrand(), host stats via the
+   injected useSystemStats capability — no project @/lib coupling. It DRIVES the
+   shared window store: launching calls openWindow, the pane shows the focused
+   (or newest non-minimized) window via <WindowContent>, Home minimizes it — so
+   UrlSync deep links work here and open windows (with their payloads) carry over
+   intact when switching to the macOS/Windows/mobile shells. */
 import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Home, Activity, Search } from "lucide-react";
-import {
-  registerShell, AppHost, AppIcon, useApps, useShellConfig,
-  useWindowOrder, useFocused, useWindow, shellStore,
-  openWindow, minimizeWindow, restoreWindow,
-  ShellContextMenu, useShellContextMenu,
-  type AppDescriptor,
-} from "@/features/appshell";
+import { registerShell } from "../../../registry/shells";
+import { useShellConfig } from "../../../registry/shell-config";
+import { useBrand } from "../../../registry/brand";
+import { useApps } from "../../../lib/registry";
+import { useWindowOrder, useFocused, useWindow } from "../../../hooks/use-shell";
+import { shellStore, openWindow, minimizeWindow, restoreWindow } from "../../../lib/store";
+import { AppIcon } from "../../app-icon";
+import { WindowContent } from "../../window-content";
+import { ShellContextMenu, useShellContextMenu } from "../context-menu";
+import type { AppDescriptor } from "../../../lib/types";
 import { DashboardHome, NavItem, RunningRow, SidebarLabel } from "./dashboard-parts";
 
 function DashboardShell() {
+  const brand = useBrand();
   const allApps = useApps();
   const apps = allApps.filter((a) => !a.noDock);
   const [q, setQ] = useState("");
@@ -72,7 +76,7 @@ function DashboardShell() {
     <div className="absolute inset-0 z-[10] flex bg-background/85 backdrop-blur-xl">
       <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card/50">
         <div className="flex h-14 shrink-0 items-center gap-2 px-4 text-sm font-semibold">
-          <LayoutDashboard className="size-4 text-primary" /> Topside
+          <LayoutDashboard className="size-4 text-primary" /> {brand.name}
         </div>
 
         <div className="flex flex-col gap-0.5 px-2">
@@ -136,7 +140,7 @@ function DashboardShell() {
           onContextMenu={(e) => { if (!pane) menu.open(e); }}
         >
           {pane ? (
-            <AppHost key={pane.id} app={pane.app} payload={pane.payload} winId={pane.id} />
+            <WindowContent key={pane.id} app={pane.app} payload={pane.payload} winId={pane.id} />
           ) : (
             <DashboardHome apps={apps} onOpenApp={launch} />
           )}

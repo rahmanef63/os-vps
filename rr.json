@@ -1,0 +1,36 @@
+{
+  "$schema": "https://rahmanef63.github.io/resource-site/rr.schema.json",
+  "version": 1,
+  "consumer": "os-vps",
+  "framework": "next-16",
+  "style": "shadcn-new-york",
+  "rsc": true,
+  "tailwind": {
+    "config": "",
+    "css": "app/globals.css"
+  },
+  "aliases": {
+    "components": "@/components",
+    "ui": "@/components/ui",
+    "shared": "@/shared",
+    "templates": "@/features",
+    "slices": "@/features/{template}",
+    "features": "@/features",
+    "lib": "@/lib",
+    "utils": "@/lib/utils"
+  },
+  "layout": {
+    "kind": "vertical-slice",
+    "sliceRoot": "frontend/slices"
+  },
+  "template": null,
+  "features": [],
+  "slices": [],
+  "skills": [],
+  "auth": {
+    "provider": "none"
+  },
+  "convex": {
+    "self_hosted": false
+  }
+}
