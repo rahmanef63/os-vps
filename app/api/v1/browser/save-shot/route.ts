@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { browserFetch, verifyAuth, browserConfigured } from "@/lib/agent/server";
-import { getSessionActor } from "@/lib/auth/require-session";
+import { browserFetch, verifyAgentAuth, browserConfigured, callerActor } from "@/lib/agent/server";
 import { HostError, apiError, audit, makeDir, uploadInto } from "@/lib/host";
 
 export const runtime = "nodejs";
@@ -21,10 +20,10 @@ function stamp(): string {
 export async function POST(req: Request) {
   if (!browserConfigured())
     return NextResponse.json({ error: "browser not configured" }, { status: 501 });
-  if (!(await verifyAuth(req)))
+  if (!(await verifyAgentAuth(req)))
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const actor = await getSessionActor();
+  const actor = await callerActor(req);
   const body = (await req.json().catch(() => ({}))) as { dir?: string };
   const dir = body.dir?.trim() || DEFAULT_DIR;
   const name = `shot-${stamp()}.png`;

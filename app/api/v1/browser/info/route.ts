@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { browserFetch, verifyAuth, browserConfigured } from "@/lib/agent/server";
+import { browserFetch, verifyAgentAuth, browserConfigured } from "@/lib/agent/server";
 import { apiError } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   if (!browserConfigured())
     return NextResponse.json({ error: "browser not configured" }, { status: 501 });
-  if (!(await verifyAuth(req)))
+  if (!(await verifyAgentAuth(req)))
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   try {

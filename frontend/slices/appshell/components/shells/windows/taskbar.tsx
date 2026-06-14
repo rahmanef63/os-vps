@@ -10,6 +10,7 @@ import { useApps } from "../../../lib/registry";
 import { useWindowOrder, useWindow, useFocused } from "../../../hooks/use-shell";
 import { focusWindow, minimizeWindow, restoreWindow, closeWindow, toggleNotificationCenter } from "../../../lib/store";
 import { AppIcon } from "../../app-icon";
+import { WindowPreview } from "../../window-preview";
 import { ContextMenu, useContextMenu } from "../context-menu";
 import { StartMenu } from "./start-menu";
 
@@ -91,22 +92,34 @@ function TaskButton({ id }: { id: string }) {
   };
   return (
     <>
-      <Button type="button" variant="ghost"
-        onClick={onClick}
-        onContextMenu={menu.open}
-        title={win.title}
-        className={cn(`h-auto p-0 font-normal hover:bg-transparent relative flex h-9 items-center gap-2 rounded-md px-2 hover:bg-muted ${active ? "bg-muted" : ""}`)}
-      >
-        {app && (
-          <span className="size-5">
-            <AppIcon app={app} />
-          </span>
-        )}
-        <span className="max-w-[120px] truncate text-xs">{win.title}</span>
-        <span
-          className={cn(`absolute bottom-[1px] left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-info transition-all ${active ? "w-5" : "w-2 opacity-60"}`)}
-        />
-      </Button>
+      <div className="group/task relative">
+        <Button type="button" variant="ghost"
+          onClick={onClick}
+          onContextMenu={menu.open}
+          title={win.title}
+          className={cn(`h-auto p-0 font-normal hover:bg-transparent relative flex h-9 items-center gap-2 rounded-md px-2 hover:bg-muted ${active ? "bg-muted" : ""}`)}
+        >
+          {app && (
+            <span className="size-5">
+              <AppIcon app={app} />
+            </span>
+          )}
+          <span className="max-w-[120px] truncate text-xs">{win.title}</span>
+          <span
+            className={cn(`absolute bottom-[1px] left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-info transition-all ${active ? "w-5" : "w-2 opacity-60"}`)}
+          />
+        </Button>
+        {/* Win11-style hover flyout: a static <WindowPreview> floats above the
+            taskbar button (open delay matches the OS' ~250 ms hover dwell via
+            transition-delay). Uses the SAME primitive as the iOS switcher and
+            Mission Control — Phase C consolidation. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-[70] w-44 -translate-x-1/2 opacity-0 transition-opacity duration-150 delay-200 group-hover/task:opacity-100"
+        >
+          <WindowPreview winId={id} aspect="16/10" variant="minimal" />
+        </div>
+      </div>
       <ContextMenu
         pos={menu.pos}
         onClose={menu.close}

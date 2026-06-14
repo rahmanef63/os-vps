@@ -65,7 +65,11 @@ const SENSITIVE_HOME = [
   ".bash_history", ".zsh_history", ".python_history", ".mysql_history",
   // cloud / infra credentials
   ".aws", ".config/gcloud", ".kube", ".docker", ".config/rclone",
-  ".git-credentials", ".netrc",
+  ".git-credentials", ".netrc", ".config/git/credentials",
+  // database creds + password-manager CLIs
+  ".pgpass", ".config/op", ".config/lpass",
+  // loose private keys saved outside ~/.ssh (heredoc dumps, exports, etc.)
+  "id_rsa", "id_ed25519", "id_ecdsa", "id_dsa",
 ];
 
 export function isSensitivePath(real: string): boolean {
