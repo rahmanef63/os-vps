@@ -29,6 +29,10 @@ const config = [
       "react-hooks/static-components": "error",
       "react-hooks/immutability": "error",
       "react-hooks/use-memo": "error",
+      // CLAUDE.md targets ≤200 LOC per file; warn (not error) at 220 to flag
+      // creep without blocking shipping. Comments/blank lines don't count so
+      // documented files aren't punished. /code-review still picks up warns.
+      "max-lines": ["warn", { max: 220, skipBlankLines: true, skipComments: true }],
     },
   },
 ];

@@ -80,7 +80,7 @@ export function UnsplashTab({ onSelect, defaultQuery }: { onSelect: (c: ImageVal
             className="group relative h-20 overflow-hidden rounded-md ring-1 ring-border transition hover:ring-2 hover:ring-primary"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={r.thumb} alt={r.title || "Stock photo"} loading="lazy" className="h-full w-full object-cover" />
+            <img src={r.thumb} alt={r.title || "Stock photo"} loading="lazy" decoding="async" className="h-full w-full object-cover" />
             <span className="absolute inset-x-0 bottom-0 truncate bg-black/55 px-1 py-0.5 text-left text-[9px] text-white">
               {r.creator || "Unknown"} · {r.license}
             </span>

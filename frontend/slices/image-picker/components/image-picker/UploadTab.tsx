@@ -45,7 +45,7 @@ export function UploadTab({ onSelect, onUpload }: { onSelect: (c: ImageValue) =>
       >
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="" className="h-full w-full object-cover" />
+          <img src={preview} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
         ) : (
           <>
             <UploadCloud className="h-6 w-6" />

@@ -65,7 +65,7 @@ export function QuicklinksSection() {
                   <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-zinc-500">
                     {src ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={src} alt="" width={18} height={18} className="size-[18px] object-contain" />
+                      <img src={src} alt="" width={18} height={18} loading="lazy" decoding="async" className="size-[18px] object-contain" />
                     ) : (
                       <Globe className="size-4" />
                     )}

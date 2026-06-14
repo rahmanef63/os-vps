@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   useApps,
   useCommands,
@@ -19,6 +17,7 @@ import {
 } from "@/features/appshell";
 
 import { matches, type Command } from "../lib";
+import { ResultList } from "./spotlight-results";
 
 // The panel MOUNTS per open (and unmounts on close), so query/selection state
 // starts fresh every time without effect-driven resets (set-state-in-effect).
@@ -147,31 +146,7 @@ function SpotlightPanel() {
           className="w-full bg-transparent px-5 py-4 text-base outline-none placeholder:text-muted-foreground"
         />
         {results.length > 0 && (
-          <ul className="max-h-80 overflow-y-auto border-t border-border p-2">
-            {results.map((c, i) => (
-              <li key={c.id}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onMouseMove={() => setSel(i)}
-                  onClick={() => runAt(i)}
-                  className={cn(
-                    "h-auto flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm",
-                    i === selIdx ? "bg-primary/15 text-foreground" : "text-foreground/80",
-                  )}
-                >
-                  <span
-                    className="grid size-7 shrink-0 place-items-center rounded-md text-xs font-bold text-white"
-                    style={{ background: c.app?.gradient ?? "var(--accent)" }}
-                  >
-                    {c.app ? null : c.hint === "Folder" ? "📁" : "⚡"}
-                  </span>
-                  <span className="flex-1 truncate">{c.label}</span>
-                  <span className="text-[11px] text-muted-foreground">{c.hint}</span>
-                </Button>
-              </li>
-            ))}
-          </ul>
+          <ResultList results={results} selIdx={selIdx} onHover={setSel} onPick={runAt} />
         )}
         {results.length === 0 && (
           <p className="border-t border-border px-5 py-4 text-sm text-muted-foreground">
@@ -182,3 +157,4 @@ function SpotlightPanel() {
     </div>
   );
 }
+

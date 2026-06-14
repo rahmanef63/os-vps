@@ -1,6 +1,7 @@
 // Tests for computeViewportWindow — the pure math that drives the DOM
-// virtualization in file-view list mode. The React hook layer is intentionally
-// kept thin (event wiring only); this file pins the contract.
+// virtualization for any windowed list (files-manager, spotlight, future). The
+// React hook layer is intentionally kept thin (event wiring only); this file
+// pins the contract.
 import { describe, expect, it } from "vitest";
 import { computeViewportWindow } from "./use-viewport-window";
 

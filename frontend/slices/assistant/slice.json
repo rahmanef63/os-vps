@@ -5,7 +5,7 @@
   "category": "ai",
   "kind": "full",
   "title": "Alfa — AI assistant chat",
-  "description": "OS app: a streaming chat UI for the 'Alfa' assistant. Ships with a local mock engine that narrates the VPS actions it would take (terminal, files, services). TODO: swap for a real /api/assistant route (Anthropic) — no backend yet.",
+  "description": "OS app: a streaming chat UI for the 'Alfa' assistant. Backed by the /api/assistant SSE route (Anthropic, session-gated, rate-limited). Falls back to a local mock engine when no API key is configured.",
   "namespace": "@/features/assistant",
   "frontend": {
     "slicePath": "frontend/slices/assistant",

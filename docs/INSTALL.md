@@ -205,6 +205,21 @@ Build **then** restart, never the reverse — `next start` loads the build
 manifest at boot, and mismatched on-disk chunks cause every CSS/JS request to
 404 (see [Troubleshooting](./TROUBLESHOOTING.md#ui-is-unstyledbroken-after-a-deploy)).
 
+## 9b. Rolling back
+
+If a deploy breaks production:
+
+1. Find the prior good commit: `git log --oneline -10`
+2. Reset: `git reset --hard <good-sha>`
+3. Rebuild: `pnpm build`
+4. Restart: `sudo systemctl restart os-vps.service`
+5. Verify: `curl -s http://localhost:4005/api/health | jq .buildId`
+
+If the build itself broke (TypeScript or compile error), `git stash` any
+local changes first. If chunks are 404ing after restart (build/run version
+mismatch): `rm -rf .next && pnpm build && sudo systemctl restart os-vps.service`
+— clean rebuild always wins.
+
 ## 10. Uninstall
 
 ```bash

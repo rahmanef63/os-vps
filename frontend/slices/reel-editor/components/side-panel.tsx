@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   patchClip,
   setKeyframe,
@@ -18,7 +19,7 @@ import { useFrame } from "../lib/frame-store";
 // Right side panel: AI assistant, selected-clip props, or composition props.
 // Subscribes to the external frame-store locally — only this panel + ClipProps
 // re-render per playback tick (for the keyframe diamond), not the orchestrator.
-export function SidePanel({
+export const SidePanel = memo(function SidePanel({
   mode,
   comp,
   selected,
@@ -71,4 +72,4 @@ export function SidePanel({
       )}
     </div>
   );
-}
+});

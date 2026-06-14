@@ -38,7 +38,7 @@ export default function QuicklinksApp() {
               <span className="grid size-16 place-items-center overflow-hidden rounded-2xl bg-white text-zinc-500 shadow-md ring-1 ring-black/10 transition-transform group-hover:scale-105">
                 {src ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={src} alt="" width={36} height={36} className="size-9 object-contain" />
+                  <img src={src} alt="" width={36} height={36} loading="lazy" decoding="async" className="size-9 object-contain" />
                 ) : (
                   <Globe className="size-8" />
                 )}

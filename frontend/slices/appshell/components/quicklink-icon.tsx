@@ -29,6 +29,8 @@ export function QuicklinkIcon({ link, className }: { link: QuickLink; className?
           alt=""
           width={32}
           height={32}
+          loading="lazy"
+          decoding="async"
           className="relative z-[1] size-[58%] object-contain"
           onError={() => setErr(true)}
         />

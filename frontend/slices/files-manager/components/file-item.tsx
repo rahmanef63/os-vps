@@ -116,6 +116,8 @@ export function FileItem({
             src={rawUrl(joinPath(dirPath!, entry.name))}
             alt=""
             loading="lazy"
+            decoding="async"
+            fetchPriority="low"
             onError={() => setThumbFail(true)}
             className={cn(
               "size-9 shrink-0 rounded object-cover transition-transform",

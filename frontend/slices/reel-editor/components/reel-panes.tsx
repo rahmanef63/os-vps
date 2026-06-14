@@ -1,6 +1,7 @@
 "use client";
 // audit-allow-hex: --ve-* canvas palette fallbacks (editor-stage chrome, not theme UI)
 
+import { useCallback } from "react";
 import type { Clip, Composition, MediaRef, Track, TrackKind } from "../lib/mock-timeline";
 import type { ClipDragMode } from "../lib/use-clip-drag";
 import type { MediaCache } from "../lib/media-cache";
@@ -90,6 +91,13 @@ export function ReelPanes({
   moveTrack: (id: string, dir: -1 | 1) => void;
   addMedia: (m: MediaRef, name: string) => void;
 }) {
+  // Stable callbacks so memo'd Transport / SidePanel don't re-render on parent
+  // ticks (e.g. playback writes to the external frame-store but `playing` etc.
+  // are referentially stable).
+  const togglePlay = useCallback(() => setPlaying((p) => !p), [setPlaying]);
+  const toggleMonitor = useCallback(() => setMonitor((m) => !m), [setMonitor]);
+  const onScrubStop = useCallback(() => setPlaying(false), [setPlaying]);
+
   const previewCol = (
     <div className="flex h-full min-w-0 flex-1 flex-col bg-[var(--ve-stage,#0c0d10)]">
       <PreviewStage comp={comp} playing={playing} monitor={monitor} cache={cache} />
@@ -101,12 +109,12 @@ export function ReelPanes({
         hasSel={!!sel}
         monitor={monitor}
         onSeek={setFrame}
-        onTogglePlay={() => setPlaying((p) => !p)}
+        onTogglePlay={togglePlay}
         onSplit={split}
         onDuplicate={dup}
         onDelete={del}
         onZoom={setZoom}
-        onToggleMonitor={() => setMonitor((m) => !m)}
+        onToggleMonitor={toggleMonitor}
       />
     </div>
   );
@@ -131,7 +139,7 @@ export function ReelPanes({
       selectedId={sel}
       dropTrack={dropTrack}
       onSeek={setFrame}
-      onScrub={() => setPlaying(false)}
+      onScrub={onScrubStop}
       onSelect={select}
       onClipDrag={begin}
       onAddTrack={addTrack}

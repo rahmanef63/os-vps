@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { type Composition } from "../lib/mock-timeline";
 import type { MediaCache } from "../lib/media-cache";
@@ -13,7 +13,7 @@ import { useFrame } from "../lib/frame-store";
 // shared MediaCache; CSS scales the fixed-resolution canvas into the stage box.
 // Subscribes to the external frame-store directly so the orchestrator slice
 // doesn't re-render on every playback tick — only this canvas does.
-export function PreviewStage({
+export const PreviewStage = memo(function PreviewStage({
   comp,
   playing,
   monitor,
@@ -71,4 +71,4 @@ export function PreviewStage({
       </div>
     </div>
   );
-}
+});

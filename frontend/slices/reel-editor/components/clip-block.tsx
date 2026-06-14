@@ -60,7 +60,7 @@ export function ClipBlock({
         <span className="pointer-events-none absolute inset-0 flex">
           {Array.from({ length: Math.max(thumbs.length, Math.ceil((clip.len * zoom) / 56)) }).map((_, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={thumbs[i % thumbs.length]} alt="" className="h-full w-14 flex-none object-cover" draggable={false} />
+            <img key={i} src={thumbs[i % thumbs.length]} alt="" loading="lazy" decoding="async" className="h-full w-14 flex-none object-cover" draggable={false} />
           ))}
           <span className="absolute inset-0 bg-black/25" />
         </span>

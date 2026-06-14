@@ -1,7 +1,7 @@
 "use client";
 // audit-allow-hex: --ve-* canvas palette fallbacks (editor-stage chrome, not theme UI)
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Video, AudioLines, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,9 @@ export type DragState = { id: string; mode: ClipDragMode; startX: number; start:
 
 // Playhead is isolated so the timeline's lanes/ticks/clip blocks do NOT
 // re-render on every rAF tick — only this thin red line + caret do.
-function Playhead({ zoom }: { zoom: number }) {
+// React.memo'd because parent re-renders on clip changes; zoom is the only prop
+// and is referentially stable when unchanged, so this stays inert during edits.
+const Playhead = memo(function Playhead({ zoom }: { zoom: number }) {
   const frame = useFrame();
   return (
     <div
@@ -35,7 +37,7 @@ function Playhead({ zoom }: { zoom: number }) {
       <span className="absolute -left-1.5 -top-px h-2 w-3 rounded-b-sm bg-[var(--ve-playhead,#ff3b30)]" />
     </div>
   );
-}
+});
 
 // Multi-track timeline: zoomable ruler, lanes with draggable clip blocks
 // (move + edge-resize, cross-track drop), click-to-seek, and a red playhead.

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Play, Pause, SkipBack, SkipForward, Scissors, Copy, Trash2, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -10,7 +11,7 @@ import { useFrame } from "../lib/frame-store";
 // Transport bar under the preview: clip ops, play/pause, time readout, zoom.
 // The time readout subscribes to the external frame-store directly so playback
 // tick re-renders are scoped to this leaf — the orchestrator stays static.
-export function Transport({
+export const Transport = memo(function Transport({
   duration,
   fps,
   playing,
@@ -86,7 +87,7 @@ export function Transport({
       </div>
     </div>
   );
-}
+});
 
 function Tbtn({
   children,

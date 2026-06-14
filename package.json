@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test",
     "smoke": "E2E_BASE_URL=http://localhost:4005 vitest run scripts/e2e/smoke.test.ts"
   },
   "dependencies": {
