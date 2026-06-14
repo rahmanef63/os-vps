@@ -16,10 +16,12 @@ without a VPS or any credentials.
 ## Before you open a PR
 
 ```bash
-pnpm typecheck && pnpm lint && pnpm build
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 
-All three must be green. There is no CI — these are the gates.
+All four must be green. There is no CI — these are the gates. `pnpm test`
+runs the vitest suite (unit + integration); `pnpm smoke` runs the e2e smoke
+test against a local server.
 
 ## Conventions (the short version)
 

@@ -25,6 +25,8 @@ export function GlyphPick({
             type="button"
             variant="ghost"
             size="icon"
+            aria-label={`Glyph ${g}`}
+            aria-pressed={value === g}
             onClick={() => onChange(g)}
             className={cn(
               "grid size-9 place-items-center rounded-lg border bg-muted p-0 text-muted-foreground",

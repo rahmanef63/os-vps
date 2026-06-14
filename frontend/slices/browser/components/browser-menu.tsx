@@ -67,7 +67,7 @@ export function BrowserMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-7" title="Menu">
+        <Button variant="ghost" size="icon" className="size-7" title="Menu" aria-label="Browser menu">
           <MoreVertical />
         </Button>
       </DropdownMenuTrigger>

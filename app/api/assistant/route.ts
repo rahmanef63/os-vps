@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { requireSession } from "@/lib/auth/require-session";
+import { getSession } from "@/lib/auth/require-session";
 import { resolveApiKey, resolveModel } from "@/lib/config/store";
+import { rateLimited } from "@/lib/host/rate-limit";
 
 // SSE streaming chat for the "Alfa" assistant. BYOK: the Anthropic key comes
 // from the owner's host config file, falling back to the server env. Auth-gated
@@ -14,6 +15,13 @@ import { resolveApiKey, resolveModel } from "@/lib/config/store";
 // client sends each turn — this route is stateless.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Burst guard. Owner-only endpoint with BYOK billing, so this is a runaway-loop
+// tripwire (not anti-abuse): a buggy client polling a tool_result loop or a stuck
+// retry would otherwise quietly burn the owner's Anthropic budget. 30 req/min is
+// well above any real human interaction rate.
+const ASSISTANT_MAX = 30;
+const ASSISTANT_WINDOW_MS = 60_000;
 
 const SYSTEM = [
   "You are Alfa, the assistant inside Topside — a web cockpit for a headless VPS.",
@@ -58,7 +66,18 @@ function toAnthropic(messages: InMsg[]): Anthropic.MessageParam[] {
 }
 
 export async function POST(req: Request) {
-  if (!(await requireSession())) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return Response.json({ error: "unauthorized" }, { status: 401 });
+
+  // Per-session bucket so two browsers on different approved devices each get
+  // their own quota. Falls back to "anon" only when the typed payload is missing
+  // a device_id (shouldn't happen — getSession() already rejects those).
+  if (rateLimited(`assistant:${session.device_id ?? "anon"}`, ASSISTANT_MAX, ASSISTANT_WINDOW_MS)) {
+    return Response.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(ASSISTANT_WINDOW_MS / 1000)) } },
+    );
+  }
 
   let body: { messages?: InMsg[]; tools?: Tool[] };
   try {

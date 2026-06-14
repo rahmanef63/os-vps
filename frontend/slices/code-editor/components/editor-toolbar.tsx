@@ -34,6 +34,7 @@ export function EditorToolbar({
         variant="ghost"
         size="icon"
         title="Open Explorer"
+        aria-label="Open Explorer"
         onClick={onOpenExplorer}
         className={cn(
           "size-7 place-items-center rounded-md p-0 text-[#9aa0aa] hover:bg-[#2a2a30]",

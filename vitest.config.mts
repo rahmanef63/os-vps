@@ -13,6 +13,7 @@ export default defineConfig({
   },
   test: {
     include: [
+      "app/**/*.test.{ts,tsx}",
       "frontend/slices/**/*.test.{ts,tsx}",
       "lib/**/*.test.{ts,tsx}",
       "scripts/e2e/**/*.test.{ts,tsx}",

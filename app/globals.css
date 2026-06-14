@@ -228,9 +228,23 @@ body {
   --shell-icon-radius: 50%;
 }
 /* OS reduced-motion: collapse durations to ~instant. 1ms (not 0) so animationend
-   still fires — the window close/minimize finalize on that event. */
+   still fires — the window close/minimize finalize on that event. Scoped narrowly
+   so the global rule never accidentally freezes a drag/snap transition that the
+   shell store relies on (those are inline `transition:none` during gesture). */
 @media (prefers-reduced-motion: reduce) {
   [data-shell] { --shell-dur-fast: 1ms; --shell-dur: 1ms; --shell-dur-slow: 1ms; }
+  /* Non-essential motion: toasts, dialog/sheet/drawer/popover enter-exit, the
+     spotlight palette, app-launcher, and tailwindcss-animate `animate-in`
+     utilities (data-state driven). The window geometry glide (`.win-geo`) and
+     the wallpaper blob keyframes are intentionally excluded — wallpaper drift
+     is decorative-only but the canvas Starfield disables itself when the
+     hook reads `matchMedia("(prefers-reduced-motion: reduce)")`. */
+  [data-state="open"], [data-state="closed"],
+  .animate-in, .animate-out,
+  [class*="fade-in"], [class*="slide-in"], [class*="zoom-in"] {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
 }
 
 /* Window lifecycle motion (macOS + Windows). Open on mount; close/minimize via a

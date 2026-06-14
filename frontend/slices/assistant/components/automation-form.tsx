@@ -127,13 +127,13 @@ export function AutomationForm({
                   />
                 </div>
                 <div className="flex flex-none flex-col gap-1">
-                  <Button variant="ghost" size="icon" className="size-5" disabled={i === 0} onClick={() => move(i, -1)}>
+                  <Button variant="ghost" size="icon" aria-label="Move step up" className="size-5" disabled={i === 0} onClick={() => move(i, -1)}>
                     <ArrowUp className="size-3" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="size-5" disabled={i === steps.length - 1} onClick={() => move(i, 1)}>
+                  <Button variant="ghost" size="icon" aria-label="Move step down" className="size-5" disabled={i === steps.length - 1} onClick={() => move(i, 1)}>
                     <ArrowDown className="size-3" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="size-5 text-destructive" onClick={() => del(i)}>
+                  <Button variant="ghost" size="icon" aria-label="Delete step" className="size-5 text-destructive" onClick={() => del(i)}>
                     <X className="size-3" />
                   </Button>
                 </div>

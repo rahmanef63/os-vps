@@ -25,13 +25,23 @@ export function ToastHost() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="pointer-events-none absolute right-3.5 top-9 z-[1000] flex flex-col items-end gap-2">
+    // The stack itself is the live region so SR clients hear toasts that mount
+    // after page load. Each toast also gets a role so the announcement uses the
+    // right politeness (errors interrupt; everything else queues politely).
+    <div
+      role="region"
+      aria-label="Notifications"
+      className="pointer-events-none absolute right-3.5 top-9 z-[1000] flex flex-col items-end gap-2"
+    >
       {toasts.map((t) => {
         const Icon = toneIcon[t.tone];
+        const isError = t.tone === "error";
         return (
           <div
             key={t.id}
-            role="status"
+            role={isError ? "alert" : "status"}
+            aria-live={isError ? "assertive" : "polite"}
+            aria-atomic="true"
             className="glass animate-in fade-in slide-in-from-top-2 pointer-events-auto flex max-w-[300px] items-center gap-2.5 rounded-[11px] border border-border px-3.5 py-2.5 text-[12.5px] font-medium shadow-xl duration-200"
             style={{ background: "var(--glass-menu)" }}
           >

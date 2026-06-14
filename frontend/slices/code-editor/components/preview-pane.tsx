@@ -35,6 +35,7 @@ export function PreviewPane({ path, code }: { path: string; code: string }) {
           variant="ghost"
           size="icon"
           title="Re-run preview"
+          aria-label="Re-run preview"
           onClick={() => setNonce((n) => n + 1)}
           className="ml-auto size-6 rounded p-0 text-[#9aa0aa] hover:bg-[#2a2a30] hover:text-white [@media(pointer:coarse)]:size-8"
         >

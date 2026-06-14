@@ -49,6 +49,7 @@ export function TabStrip({
               type="button"
               variant="ghost"
               size="icon"
+              aria-label={`Close ${baseName(p)}`}
               onClick={(e) => closeTab(p, e)}
               // Coarse pointers: 36px hit area (glyph stays 12px); the min-h-9 tab
               // row grows ~3px to wrap it — taller touch tabs, no clipping.
@@ -68,6 +69,7 @@ export function TabStrip({
         variant="ghost"
         size="icon"
         title="New file"
+        aria-label="New file"
         onClick={onNew}
         className="grid h-auto w-8 shrink-0 place-items-center rounded-none p-0 text-[#9aa0aa] hover:bg-[#1b1b20]"
       >

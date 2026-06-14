@@ -44,6 +44,16 @@ export function OsRoot() {
     <AppearanceProvider>
       <QuicklinksProvider>
         <A11yCommands />
+        {/* Skip-link: first focusable element on the page so keyboard users
+            can bypass the menu bar/dock and land on the shell surface. Hidden
+            until focused (`focus:not-sr-only`). Target id="main-content" is
+            set on the desktop surface root in appshell/components/desktop.tsx. */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[2000] focus:rounded-md focus:bg-foreground focus:px-3 focus:py-2 focus:text-background focus:outline-2 focus:outline-ring"
+        >
+          Skip to main content
+        </a>
         <AuthGate>
           <OsApiProvider>
             <Shell />

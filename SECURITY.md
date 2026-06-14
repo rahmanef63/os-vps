@@ -55,6 +55,36 @@ the issue violates. Expect a reply within a week (solo maintainer).
 - CSRF/clickjacking that triggers exec/fs actions cross-origin despite the
   `SameSite=Strict` cookie + `Sec-Fetch-Site` proxy check + `frame-ancestors`.
 
+## Rotating the BYOK Anthropic key
+
+The Anthropic API key for the Alfa assistant is owner-supplied (BYOK) and lives
+**only** on the server in `~/.os-vps/config.json` — it is never embedded in the
+client bundle and never returned by any `/api` route. To rotate:
+
+1. Stop the app (`systemctl stop os-vps` or your runner equivalent).
+2. Edit `~/.os-vps/config.json` and replace the `anthropicApiKey` value.
+3. Restart. The next assistant request picks up the new key on its first call
+   to `resolveApiKey()` — no client-side cache to clear.
+
+## Audit log retention
+
+The append-only JSONL trail at `~/.os-vps/audit.log` (or `$OS_AUDIT_LOG`) grows
+unbounded. Operators handling regulated data (e.g. GDPR data-minimisation
+duties) should rotate it. Example `logrotate(8)` snippet:
+
+```
+/home/<user>/.os-vps/audit.log {
+  size 1M
+  rotate 4
+  compress
+  missingok
+  copytruncate
+}
+```
+
+`copytruncate` is required because the app keeps the file open via the
+append chain in `lib/host/audit.ts`.
+
 ## HSTS
 
 The app does **not** emit `Strict-Transport-Security` itself — app-layer HSTS

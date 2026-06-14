@@ -95,7 +95,7 @@ export function AiPanel() {
       {err && <p className="px-3 pb-1 text-[11px] text-destructive">{err}</p>}
       <form className="flex shrink-0 items-center gap-1.5 border-t border-border p-2" onSubmit={(e) => { e.preventDefault(); send(draft); }}>
         <Input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Tell the AI what to do…" disabled={busy} className="h-8 text-xs" />
-        <Button type="submit" size="icon" className="size-8 shrink-0" disabled={busy || !draft.trim()}>
+        <Button type="submit" size="icon" aria-label="Send AI request" className="size-8 shrink-0" disabled={busy || !draft.trim()}>
           {busy ? <Loader2 className="size-4 animate-spin" /> : <CornerDownLeft className="size-4" />}
         </Button>
       </form>
