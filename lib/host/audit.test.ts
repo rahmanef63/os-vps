@@ -63,24 +63,18 @@ describe("audit() append-only JSONL", () => {
     });
   });
 
-  // REALITY: audit() is fire-and-forget (mkdir + appendFile, no serialization
-  // queue). All entries land + each line is a valid JSON object, but ORDER is
-  // best-effort under concurrent in-flight calls. We pin "no losses, no
-  // interleaved bytes" rather than strict ordering.
-  it("does not lose entries or interleave bytes under bursty calls", async () => {
+  // audit() now chains writes onto a single serialized promise queue, so even
+  // bursty parallel callers land in STRICT submission order — the forensic
+  // trail reads the way callers expect, without each caller needing to await.
+  it("preserves strict submission order under bursty calls", async () => {
     const N = 25;
+    // Fire-and-forget burst — no awaits between calls.
     for (let i = 0; i < N; i++) audit({ action: "exec.run", detail: `n=${i}` });
     await waitForLines(N);
     const lines = await readLines();
     expect(lines).toHaveLength(N);
-    const details = new Set<string>();
-    lines.forEach((line) => {
-      const obj = JSON.parse(line); // bytes never interleaved → still parseable
-      details.add(obj.detail);
-    });
-    // Every distinct detail value present, no losses.
-    expect(details.size).toBe(N);
-    for (let i = 0; i < N; i++) expect(details.has(`n=${i}`)).toBe(true);
+    const details = lines.map((line) => JSON.parse(line).detail);
+    expect(details).toEqual(Array.from({ length: N }, (_, i) => `n=${i}`));
   });
 
   it("preserves order under strictly sequential awaited calls", async () => {

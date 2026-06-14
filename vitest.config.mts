@@ -12,7 +12,11 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["frontend/slices/**/*.test.{ts,tsx}", "lib/**/*.test.{ts,tsx}"],
+    include: [
+      "frontend/slices/**/*.test.{ts,tsx}",
+      "lib/**/*.test.{ts,tsx}",
+      "scripts/e2e/**/*.test.{ts,tsx}",
+    ],
     environment: "node",
   },
 });

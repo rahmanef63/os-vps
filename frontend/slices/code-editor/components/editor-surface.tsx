@@ -1,7 +1,7 @@
 "use client";
 // audit-allow-hex: VS-Code-dark editor chrome palette is the slice's design, not themable tokens.
 
-import { useMemo, useRef, type UIEvent } from "react";
+import { useDeferredValue, useMemo, useRef, type UIEvent } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { highlight, type Lang } from "../lib/highlight";
@@ -43,7 +43,15 @@ export function EditorSurface({
   const preRef = useRef<HTMLPreElement>(null);
   const gutRef = useRef<HTMLDivElement>(null);
 
-  const html = useMemo(() => highlight(value, lang), [value, lang]);
+  // Defer the highlight pass: the textarea + caret update on the latest
+  // `value` synchronously while React tokenises a slightly-stale snapshot
+  // off the critical path. Pairs with the LRU in highlight.ts so bursty
+  // edits (and undo/redo) reuse cached HTML instead of re-tokenizing.
+  const deferredValue = useDeferredValue(value);
+  const html = useMemo(
+    () => highlight(deferredValue, lang),
+    [deferredValue, lang],
+  );
   const lineCount = useMemo(() => value.split("\n").length, [value]);
 
   const syncScroll = (e: UIEvent<HTMLTextAreaElement>) => {

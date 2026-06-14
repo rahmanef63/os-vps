@@ -93,9 +93,27 @@ export async function readAuditTail(opts?: { prefix?: string; limit?: number }):
     .reverse();
 }
 
-// Fire-and-forget. A failed audit write must never break the action it records,
-// but it is logged to stderr so a broken trail is at least visible in journald.
-export function audit(entry: AuditEntry): void {
+// Internal: serialize writes onto a single chained promise so bursty parallel
+// callers land in submission order. The chain NEVER rejects (each link
+// swallows + logs its own failure), otherwise one bad write would poison every
+// subsequent audit call for the lifetime of the process.
+let _writeChain: Promise<void> = Promise.resolve();
+
+async function writeLine(line: string): Promise<void> {
+  const file = auditPath();
+  try {
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    await fs.appendFile(file, line, { mode: 0o600 });
+  } catch (e) {
+    console.error("[audit] write failed:", e instanceof Error ? e.message : e);
+  }
+}
+
+// Append an audit entry. Returns a promise that resolves AFTER this entry's
+// write completes (or fails — failures are swallowed; the trail is best-effort
+// and must never break the caller). Callers may fire-and-forget the returned
+// promise; ordering across concurrent callers is preserved via _writeChain.
+export function audit(entry: AuditEntry): Promise<void> {
   const line =
     JSON.stringify({
       ts: new Date().toISOString(),
@@ -106,9 +124,6 @@ export function audit(entry: AuditEntry): void {
       ok: entry.ok ?? true,
       detail: trunc(entry.detail, 256),
     }) + "\n";
-  const file = auditPath();
-  void fs
-    .mkdir(path.dirname(file), { recursive: true })
-    .then(() => fs.appendFile(file, line, { mode: 0o600 }))
-    .catch((e) => console.error("[audit] write failed:", e instanceof Error ? e.message : e));
+  _writeChain = _writeChain.then(() => writeLine(line));
+  return _writeChain;
 }
