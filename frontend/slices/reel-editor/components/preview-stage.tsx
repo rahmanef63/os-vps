@@ -5,26 +5,28 @@ import { cn } from "@/lib/utils";
 import { type Composition } from "../lib/mock-timeline";
 import type { MediaCache } from "../lib/media-cache";
 import { drawFrame } from "../lib/draw";
+import { useFrame } from "../lib/frame-store";
 
 // Real-time preview. A single <canvas> at the comp's native resolution is the
 // SAME draw path the exporter uses (drawFrame), so the preview is a faithful
 // proof of the render. Real videos are kept in sync with the playhead via the
 // shared MediaCache; CSS scales the fixed-resolution canvas into the stage box.
+// Subscribes to the external frame-store directly so the orchestrator slice
+// doesn't re-render on every playback tick — only this canvas does.
 export function PreviewStage({
   comp,
-  frame,
   playing,
   monitor,
   cache,
   align = "center",
 }: {
   comp: Composition;
-  frame: number;
   playing: boolean;
   monitor: boolean;
   cache: MediaCache;
   align?: "center" | "left";
 }) {
+  const frame = useFrame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tick, setTick] = useState(0);
   const portrait = comp.h > comp.w;

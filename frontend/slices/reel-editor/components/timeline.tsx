@@ -16,17 +16,31 @@ import {
 import { ClipBlock } from "./clip-block";
 import { TrackHead } from "./track-head";
 import { type ClipDragMode } from "../lib/use-clip-drag";
+import { useFrame } from "../lib/frame-store";
 
 const TH = 36;
 const LABEL = 120;
 
 export type DragState = { id: string; mode: ClipDragMode; startX: number; start: number; len: number };
 
+// Playhead is isolated so the timeline's lanes/ticks/clip blocks do NOT
+// re-render on every rAF tick — only this thin red line + caret do.
+function Playhead({ zoom }: { zoom: number }) {
+  const frame = useFrame();
+  return (
+    <div
+      className="pointer-events-none absolute bottom-0 top-6 z-10 w-0.5 bg-[var(--ve-playhead,#ff3b30)]"
+      style={{ left: LABEL + frame * zoom }}
+    >
+      <span className="absolute -left-1.5 -top-px h-2 w-3 rounded-b-sm bg-[var(--ve-playhead,#ff3b30)]" />
+    </div>
+  );
+}
+
 // Multi-track timeline: zoomable ruler, lanes with draggable clip blocks
 // (move + edge-resize, cross-track drop), click-to-seek, and a red playhead.
 export function Timeline({
   comp,
-  frame,
   zoom,
   selectedId,
   dropTrack,
@@ -39,7 +53,6 @@ export function Timeline({
   onTrackMove,
 }: {
   comp: Composition;
-  frame: number;
   zoom: number;
   selectedId: string | null;
   dropTrack: string | null;
@@ -177,12 +190,7 @@ export function Timeline({
             </div>
           ))}
 
-          <div
-            className="pointer-events-none absolute bottom-0 top-6 z-10 w-0.5 bg-[var(--ve-playhead,#ff3b30)]"
-            style={{ left: LABEL + frame * zoom }}
-          >
-            <span className="absolute -left-1.5 -top-px h-2 w-3 rounded-b-sm bg-[var(--ve-playhead,#ff3b30)]" />
-          </div>
+          <Playhead zoom={zoom} />
         </div>
       </div>
     </div>

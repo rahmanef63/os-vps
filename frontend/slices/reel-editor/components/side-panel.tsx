@@ -13,12 +13,14 @@ import { type PanelMode } from "./toolbar";
 import { ClipProps } from "./clip-props";
 import { CompProps } from "./comp-props";
 import { AiPanel, type AiMessage } from "./ai-panel";
+import { useFrame } from "../lib/frame-store";
 
 // Right side panel: AI assistant, selected-clip props, or composition props.
+// Subscribes to the external frame-store locally — only this panel + ClipProps
+// re-render per playback tick (for the keyframe diamond), not the orchestrator.
 export function SidePanel({
   mode,
   comp,
-  frame,
   selected,
   aiLog,
   apply,
@@ -30,7 +32,6 @@ export function SidePanel({
 }: {
   mode: PanelMode;
   comp: Composition;
-  frame: number;
   selected: Clip | null;
   aiLog: AiMessage[];
   apply: (fn: (c: Composition) => Composition, commit?: boolean) => void;
@@ -40,6 +41,7 @@ export function SidePanel({
   onDelete: () => void;
   onAi: (text: string) => void;
 }) {
+  const frame = useFrame();
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
       {mode === "ai" ? (

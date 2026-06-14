@@ -9,6 +9,7 @@ import { moveTrack } from "./lib/composition";
 import { saveDraft } from "./lib/draft";
 import { getSettings } from "./lib/settings";
 import { useReelActions } from "./lib/use-reel-actions";
+import { getFrame, setFrame, subscribeFrame } from "./lib/frame-store";
 import { SettingsDialog } from "./components/settings-dialog";
 import { MediaCache } from "./lib/media-cache";
 import { type PanelMode } from "./components/toolbar";
@@ -30,7 +31,6 @@ const HELLO: AiMessage = {
 // history, drag, keyboard, and AI subsystems to the panels.
 export default function ReelEditor() {
   const { comp, apply, undo, redo, canUndo, canRedo } = useHistory();
-  const [frame, setFrame] = useState(30);
   const [playing, setPlaying] = useState(false);
   const [sel, setSel] = useState<string | null>("c-intro");
   const [zoom, setZoom] = useState(3.2);
@@ -49,11 +49,10 @@ export default function ReelEditor() {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef(frame);
-  // Latest-ref mirror for drag handlers (post-render, per react-hooks/refs).
-  useEffect(() => {
-    frameRef.current = frame;
-  });
+  // Latest-ref mirror of the external frame-store for drag handlers (read
+  // without subscribing → no re-render on tick).
+  const frameRef = useRef(getFrame());
+  useEffect(() => subscribeFrame(() => { frameRef.current = getFrame(); }), []);
 
   const selected = useMemo(() => comp.clips.find((c) => c.id === sel) ?? null, [comp.clips, sel]);
   const { dropTrack, begin } = useClipDrag(comp, apply, zoom, frameRef);
@@ -76,7 +75,9 @@ export default function ReelEditor() {
     return () => clearTimeout(t);
   }, [comp]);
 
-  // Playback loop: advance the playhead at the comp frame rate, loop at the end.
+  // Playback loop: writes go to the EXTERNAL frame-store, so only the leaf
+  // subscribers (preview/transport/timeline-playhead/clip-props) re-render
+  // per tick — NOT this whole orchestrator.
   useEffect(() => {
     if (!playing) return;
     let last = performance.now();
@@ -84,7 +85,7 @@ export default function ReelEditor() {
     const loop = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      const nf = frameRef.current + dt * comp.fps;
+      const nf = getFrame() + dt * comp.fps;
       setFrame(nf >= comp.duration ? 0 : nf);
       raf = requestAnimationFrame(loop);
     };
@@ -149,7 +150,6 @@ export default function ReelEditor() {
 
         <ReelPanes
           comp={comp}
-          frame={frame}
           playing={playing}
           monitor={monitor}
           cache={cache}
@@ -164,7 +164,6 @@ export default function ReelEditor() {
           showPanel={showPanel}
           compact={compact}
           panelSheet={panelSheet}
-          setFrame={setFrame}
           setPlaying={setPlaying}
           setMonitor={setMonitor}
           setZoom={setZoom}

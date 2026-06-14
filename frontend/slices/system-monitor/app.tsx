@@ -2,8 +2,13 @@
 
 import { Activity, AlertCircle, Loader2, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { usePublishInspector, useOsApi } from "./lib/host";
+import {
+  usePublishInspector,
+  useOsApi,
+  useResponsive,
+  ResponsiveToolbar,
+  type ToolbarItem,
+} from "./lib/host";
 import { AppFrame } from "./components/host-frame";
 import { GaugeGrid } from "./components/gauge-grid";
 import { GlassPanel } from "./components/glass-panel";
@@ -16,6 +21,7 @@ import { fmtGiBPair, fmtMBs, fmtPct } from "./lib/format";
 // Default export so os-shell can lazy-load it as a window app.
 export default function SystemMonitor() {
   const api = useOsApi();
+  const { isMobile } = useResponsive();
   const { stats, procs, cpuSeries, netSeries, gpu, error, refresh } = useStatsHistory();
 
   usePublishInspector(
@@ -64,24 +70,34 @@ export default function SystemMonitor() {
   }
 
   const lastNet = netSeries[netSeries.length - 1] ?? 0;
+  // Toolbar actions live as data; ResponsiveToolbar collapses non-primary items
+  // into a ⋯ menu on compact form factors. Refresh stays primary (always inline).
+  const toolbarItems: ToolbarItem[] = [
+    { id: "refresh", label: "Refresh", icon: RotateCw, onClick: refresh, primary: true },
+  ];
+  const chipLabel = isMobile
+    ? `${stats.cpu.cores}c`
+    : `${stats.cpu.cores} cores · ${api.mode}`;
 
   return (
-    <AppFrame>
-      <ScrollArea className="h-full">
+    <AppFrame
+      header={
+        <header className="flex items-center justify-between gap-2 px-3 py-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Activity className="size-4 shrink-0 text-primary" />
+            <h2 className="truncate text-sm font-semibold">System Monitor</h2>
+            <span className="ml-1 shrink-0 rounded-full bg-[color:var(--inset)] px-2 py-0.5 font-mono text-[10px] text-[color:var(--text-dim)]">
+              {chipLabel}
+            </span>
+          </div>
+          <ResponsiveToolbar items={toolbarItems} />
+        </header>
+      }
+    >
       <div
         className="space-y-3.5 p-4"
         style={MONITOR_VARS as React.CSSProperties}
       >
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold">System Monitor</h2>
-          </div>
-          <span className="rounded-full bg-[color:var(--inset)] px-2 py-0.5 font-mono text-[10px] text-[color:var(--text-dim)]">
-            {stats.cpu.cores} cores · {api.mode}
-          </span>
-        </header>
-
         <GaugeGrid stats={stats} gpu={gpu} />
 
         <div className="grid grid-cols-2 gap-3 @max-[440px]:grid-cols-1">
@@ -97,7 +113,6 @@ export default function SystemMonitor() {
           <ProcessTable processes={procs} />
         </GlassPanel>
       </div>
-      </ScrollArea>
     </AppFrame>
   );
 }

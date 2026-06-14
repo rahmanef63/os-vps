@@ -5,6 +5,7 @@ import { Eraser, PaintBucket, Crop, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEditor } from "../../lib/store";
+import { snapshotCanvas } from "../../lib/snapshot";
 
 type Box = { x: number; y: number; w: number; h: number };
 type Handle = "move" | "nw" | "ne" | "sw" | "se";
@@ -43,17 +44,18 @@ export function SelectionOverlay({ onDone }: { onDone: () => void }) {
   };
   const end = () => (drag.current = null);
 
-  const regionOp = (op: (ctx: CanvasRenderingContext2D) => void) => {
+  const regionOp = async (op: (ctx: CanvasRenderingContext2D) => void) => {
     if (!paint) return;
     const c = canvasFor(paint.id, doc.width, doc.height);
     const ctx = c.getContext("2d");
     if (!ctx) return;
-    const before = c.toDataURL();
+    const before = await snapshotCanvas(c);
     ctx.save();
     op(ctx);
     ctx.restore();
     stageRef.current?.draw();
-    recordPaint(paint.id, before, c.toDataURL());
+    const after = await snapshotCanvas(c);
+    recordPaint(paint.id, before, after);
   };
   const clear = () => regionOp((ctx) => ctx.clearRect(box.x, box.y, box.w, box.h));
   const fill = () => regionOp((ctx) => { ctx.fillStyle = brush.color; ctx.fillRect(box.x, box.y, box.w, box.h); });

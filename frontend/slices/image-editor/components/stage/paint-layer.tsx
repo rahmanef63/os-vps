@@ -7,6 +7,7 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import { useEditor } from "../../lib/store";
 import type { Layer } from "../../lib/types";
 import { blendToGCO, shadowProps } from "../../lib/konva-helpers";
+import { snapshotCanvas } from "../../lib/snapshot";
 
 // A paint layer: a Konva.Image backed by an offscreen <canvas> the brush/eraser
 // draw onto. Painting is active only when the brush/eraser tool is selected AND
@@ -62,11 +63,12 @@ export function PaintLayer({
     ref.current?.getLayer()?.batchDraw();
   }
 
-  const start = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+  const start = async (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!painting) return;
     e.cancelBubble = true;
     // Snapshot pixels BEFORE the stroke so the whole stroke is one undo step.
-    strokeBefore.current = canvas.toDataURL();
+    // Blob+ObjectURL keeps RAM bounded; history revokes on eviction.
+    strokeBefore.current = await snapshotCanvas(canvas);
     drawing.current = true;
     last.current = null;
     const pt = e.target.getRelativePointerPosition();
@@ -77,9 +79,10 @@ export function PaintLayer({
     const pt = e.target.getRelativePointerPosition();
     if (pt) strokeTo(pt.x, pt.y);
   };
-  const end = () => {
+  const end = async () => {
     if (drawing.current && strokeBefore.current) {
-      recordPaint(layer.id, strokeBefore.current, canvas.toDataURL());
+      const after = await snapshotCanvas(canvas);
+      recordPaint(layer.id, strokeBefore.current, after);
     }
     strokeBefore.current = null;
     drawing.current = false;

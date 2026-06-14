@@ -5,6 +5,7 @@ import { Rect } from "react-konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEditor } from "../../lib/store";
 import { maskKey } from "../../lib/mask";
+import { snapshotCanvas } from "../../lib/snapshot";
 
 // Transparent full-doc surface that captures brush strokes onto the SELECTED
 // layer's mask while mask-editing. Brush HIDES (erases mask alpha), Eraser
@@ -36,10 +37,10 @@ export function MaskSurface({ layerId }: { layerId: string }) {
     last.current = { x, y };
   };
 
-  const start = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+  const start = async (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!active) return;
     e.cancelBubble = true;
-    before.current = canvas.toDataURL();
+    before.current = await snapshotCanvas(canvas);
     drawing.current = true;
     last.current = null;
     const pt = e.target.getRelativePointerPosition();
@@ -50,8 +51,11 @@ export function MaskSurface({ layerId }: { layerId: string }) {
     const pt = e.target.getRelativePointerPosition();
     if (pt) strokeTo(pt.x, pt.y);
   };
-  const end = () => {
-    if (drawing.current && before.current) recordPaint(maskKey(layerId), before.current, canvas.toDataURL());
+  const end = async () => {
+    if (drawing.current && before.current) {
+      const after = await snapshotCanvas(canvas);
+      recordPaint(maskKey(layerId), before.current, after);
+    }
     before.current = null;
     drawing.current = false;
     last.current = null;

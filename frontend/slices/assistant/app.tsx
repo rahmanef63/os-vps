@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { AppFrame } from "@/features/os-shell";
 import { Tabs, TabsList, TabsTrigger } from "./components/tabs";
 import { usePublishInspector } from "./lib/host";
 import { useAIStore } from "./lib/store";
@@ -71,22 +72,34 @@ export default function Assistant() {
     return <AutomationForm auto={form.item} store={store} onClose={() => setForm(null)} />;
   }
 
+  // AppFrame gives the assistant a consistent scaffold: optional toolbar slot
+  // for non-chat tabs (the chat tab embeds its own switcher row), and an
+  // @container body for child reflow. `safeArea={false}` because each child
+  // pane (ChatPanel composer, LibraryGrid/AutomationView padding) already
+  // honors --sai-bottom — adding it again at the frame level would double-pad.
   return (
-    <div className="flex h-full flex-col bg-background">
-      {tab !== "chat" ? (
-        <div className="flex items-center overflow-x-auto border-b border-border bg-card/40 px-3 py-2 [scrollbar-width:none]">
-          {/* flex-1 spacer, not justify-end: end-aligned overflow in a scroll row
-              is unreachable on the start side. The spacer collapses to 0 when the
-              tabs overflow, so they left-align and every tab stays scrollable. */}
-          <div className="flex-1" />
-          <TabBar tab={tab} setTab={setTab} />
-        </div>
-      ) : null}
-
+    <AppFrame
+      className="bg-background"
+      safeArea={false}
+      toolbar={
+        tab !== "chat" ? (
+          <div className="flex items-center overflow-x-auto bg-card/40 px-3 py-2 [scrollbar-width:none]">
+            {/* flex-1 spacer, not justify-end: end-aligned overflow in a scroll
+                row is unreachable on the start side. The spacer collapses to 0
+                when the tabs overflow, so they left-align and stay scrollable. */}
+            <div className="flex-1" />
+            <TabBar tab={tab} setTab={setTab} />
+          </div>
+        ) : undefined
+      }
+      bodyClassName={
+        tab === "chat" ? "overflow-hidden" : "flex flex-col overflow-hidden"
+      }
+    >
       {/* ChatPanel stays MOUNTED across tab switches (hidden via CSS) so the
           live stream + messages survive — unmounting it mid-stream would wipe
           state and orphan the `for await` into a dead component. */}
-      <div className={tab === "chat" ? "flex min-h-0 flex-1 flex-col" : "hidden"}>
+      <div className={tab === "chat" ? "flex h-full min-h-0 flex-col" : "hidden"}>
         <ChatPanel
           ref={chatRef}
           agent={store.activeAgent}
@@ -127,7 +140,7 @@ export default function Assistant() {
           onEdit={(it) => setForm({ kind: "automation", item: it })}
         />
       ) : null}
-    </div>
+    </AppFrame>
   );
 }
 

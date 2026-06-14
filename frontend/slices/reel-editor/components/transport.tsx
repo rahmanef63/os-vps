@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { fmtFrame } from "../lib/mock-timeline";
+import { useFrame } from "../lib/frame-store";
 
 // Transport bar under the preview: clip ops, play/pause, time readout, zoom.
+// The time readout subscribes to the external frame-store directly so playback
+// tick re-renders are scoped to this leaf — the orchestrator stays static.
 export function Transport({
-  frame,
   duration,
   fps,
   playing,
@@ -23,7 +25,6 @@ export function Transport({
   onZoom,
   onToggleMonitor,
 }: {
-  frame: number;
   duration: number;
   fps: number;
   playing: boolean;
@@ -38,6 +39,7 @@ export function Transport({
   onZoom: (z: number) => void;
   onToggleMonitor: () => void;
 }) {
+  const frame = useFrame();
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-white/10 bg-black/35 px-4 py-2 text-white">
       <div className="flex items-center gap-1">

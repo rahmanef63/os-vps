@@ -14,14 +14,16 @@ import { LayoutCanvas } from "./layout-canvas";
 import { FilesPane } from "./files-pane";
 import { CompactPanes } from "./compact-panes";
 import { findLayout } from "../lib/layout";
+import { setFrame } from "../lib/frame-store";
 
 // Builds the position-agnostic panes (preview / properties / timeline / files)
 // and arranges them: wide = config-driven resizable split tree (LayoutCanvas)
 // per the chosen workspace preset; compact (narrow pane — mobile shell OR a
 // narrow desktop window) = preview stacked over a tabbed lower region.
+// Frame is read from the external frame-store INSIDE the leaf panes that need
+// it, so this orchestrator does NOT re-render on every rAF tick during playback.
 export function ReelPanes({
   comp,
-  frame,
   playing,
   monitor,
   cache,
@@ -36,7 +38,6 @@ export function ReelPanes({
   showPanel,
   compact,
   panelSheet,
-  setFrame,
   setPlaying,
   setMonitor,
   setZoom,
@@ -56,7 +57,6 @@ export function ReelPanes({
   addMedia,
 }: {
   comp: Composition;
-  frame: number;
   playing: boolean;
   monitor: boolean;
   cache: MediaCache;
@@ -72,7 +72,6 @@ export function ReelPanes({
   /** Narrow pane (mobile shell OR a narrow desktop window) — container-derived. */
   compact: boolean;
   panelSheet: boolean;
-  setFrame: (f: number) => void;
   setPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setMonitor: React.Dispatch<React.SetStateAction<boolean>>;
   setZoom: (z: number) => void;
@@ -93,9 +92,8 @@ export function ReelPanes({
 }) {
   const previewCol = (
     <div className="flex h-full min-w-0 flex-1 flex-col bg-[var(--ve-stage,#0c0d10)]">
-      <PreviewStage comp={comp} frame={frame} playing={playing} monitor={monitor} cache={cache} />
+      <PreviewStage comp={comp} playing={playing} monitor={monitor} cache={cache} />
       <Transport
-        frame={frame}
         duration={comp.duration}
         fps={comp.fps}
         playing={playing}
@@ -116,7 +114,6 @@ export function ReelPanes({
     <SidePanel
       mode={m}
       comp={comp}
-      frame={frame}
       selected={selected}
       aiLog={aiLog}
       apply={apply}
@@ -130,7 +127,6 @@ export function ReelPanes({
   const timeline = (
     <Timeline
       comp={comp}
-      frame={frame}
       zoom={zoom}
       selectedId={sel}
       dropTrack={dropTrack}

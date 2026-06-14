@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
 import { IS_DEMO } from "@/lib/demo";
-import { AppFrame, usePublishInspector, toast } from "@/features/os-shell";
+import {
+  AppFrame,
+  MasterDetail,
+  useResponsive,
+  usePublishInspector,
+  toast,
+} from "@/features/os-shell";
 import { DevicesPanel } from "@/features/auth";
 import { SettingsTabs, SECTIONS, type SectionId } from "./components/nav";
 import { AppearanceSection } from "./components/appearance-section";
@@ -15,9 +21,9 @@ import { ServerSection } from "./components/server-section";
 import { BrowserSection } from "./components/browser-section";
 import { AboutSection } from "./components/about-section";
 
-// System Settings layout: a top tab strip (every section visible at a glance,
-// scrolls horizontally on narrow windows) over one scrolling section pane.
-// Same on desktop + mobile — no master/detail drill-down.
+// System Settings layout: on desktop a top tab strip (every section visible at
+// a glance, scrolls horizontally on narrow windows) over one scrolling section
+// pane; on mobile a MasterDetail drill-down (section list ↔ section pane).
 function SectionBody({ id }: { id: SectionId }) {
   switch (id) {
     case "appearance":
@@ -64,11 +70,52 @@ function SectionDetail({ id }: { id: SectionId }) {
   );
 }
 
+// Compact nav: vertical section list (master pane). Tapping a row drills the
+// MasterDetail into the section content; the back arrow returns to this list.
+function SectionList({
+  active,
+  onSelect,
+}: {
+  active: SectionId | null;
+  onSelect: (id: SectionId) => void;
+}) {
+  return (
+    <nav role="tablist" aria-label="Settings sections" className="flex flex-col p-2">
+      {SECTIONS.map(({ id, label, blurb, icon: Icon }) => {
+        const on = id === active;
+        return (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onSelect(id)}
+            className={`flex min-h-11 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] font-medium leading-tight transition-colors ${on ? "bg-primary/15 text-foreground" : "text-muted-foreground hover:bg-accent"}`}
+          >
+            <Icon className="size-4 shrink-0" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{label}</span>
+              <span className="block truncate text-[11px] font-normal text-muted-foreground">
+                {blurb}
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 // Default export so os-shell can lazy-load it as a window app.
 export default function OsSettings() {
   const { tweaks } = useAppearance();
+  const { isMobile } = useResponsive();
   const [model, setModel] = useState("default");
-  const [active, setActive] = useState<SectionId>("appearance");
+  // On mobile we start on the section list (no selection drilled in); desktop
+  // tabs always show a selected pane. `null` = list view, an id = detail view.
+  const [active, setActive] = useState<SectionId | null>(
+    isMobile ? null : "appearance",
+  );
   const serverTarget = effectiveServerTarget(tweaks.server);
 
   useEffect(() => {
@@ -105,15 +152,33 @@ export default function OsSettings() {
     [tweaks.theme, tweaks.preset, tweaks.device, tweaks.fontScale, tweaks.wallpaper, tweaks.wallpaperImage, tweaks.server.mode, serverTarget?.label, model],
   );
 
+  // Mobile: MasterDetail drill-down (section list → tap → section pane → back).
+  // Desktop: the historical top tab strip — every section visible at a glance.
+  if (isMobile) {
+    return (
+      <AppFrame>
+        <MasterDetail
+          master={<SectionList active={active} onSelect={setActive} />}
+          detail={active ? <SectionDetail id={active} /> : null}
+          hasSelection={active !== null}
+          onBack={() => setActive(null)}
+          backLabel="Settings"
+          masterClassName="w-full"
+        />
+      </AppFrame>
+    );
+  }
+
+  const desktopActive: SectionId = active ?? "appearance";
   return (
     <AppFrame
       toolbar={
         <div className="bg-sidebar/40">
-          <SettingsTabs active={active} onSelect={setActive} />
+          <SettingsTabs active={desktopActive} onSelect={setActive} />
         </div>
       }
     >
-      <SectionDetail id={active} />
+      <SectionDetail id={desktopActive} />
     </AppFrame>
   );
 }
