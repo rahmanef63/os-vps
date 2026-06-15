@@ -1,6 +1,8 @@
 "use client";
 
 import { createElement } from "react";
+// TODO: refactor through barrel — app-store barrel doesn't re-export glyph helpers yet
+// eslint-disable-next-line no-restricted-imports
 import { glyphIcon } from "@/features/app-store/lib/glyph";
 import { cn } from "@/lib/utils";
 

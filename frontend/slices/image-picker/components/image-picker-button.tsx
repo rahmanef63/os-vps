@@ -12,7 +12,7 @@ import * as React from "react";
 import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ImageValue, ImageSourceProps } from "../types";
-import { ImagePickerDialog } from "./ImagePickerDialog";
+import { ImagePickerDialog } from "./image-picker-dialog";
 
 interface Props extends ImageSourceProps {
   onChange: (img: ImageValue) => void;

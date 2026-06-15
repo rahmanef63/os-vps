@@ -8,6 +8,8 @@ import { Segmented } from "@/components/ui/segmented";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+// TODO: refactor through barrel — app-store barrel doesn't re-export glyph helpers yet
+// eslint-disable-next-line no-restricted-imports
 import { GLYPH_KEYS } from "@/features/app-store/lib/glyph";
 import { createApp } from "@/features/app-store";
 import { AppFrame, usePublishInspector } from "@/features/os-shell";

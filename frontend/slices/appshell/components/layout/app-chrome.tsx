@@ -1,5 +1,17 @@
 "use client";
 
+/**
+ * app-chrome — internal layout blocks (AppHeader, AppSidebar, AppInspector)
+ * composed by AppFrame.
+ *
+ * Consumers: use AppFrame (appshell/primitives/app-frame.tsx) at the app slice
+ * level. AppFrame supplies the @container scaffolding + safe-area padding +
+ * header/toolbar/footer slots; the chrome pieces here render the regions
+ * (top toolbar, side sheets/rails) inside those slots.
+ *
+ * Don't import these pieces directly from app slices — go through AppFrame.
+ */
+
 import { type ReactNode } from "react";
 import { Drawer as Vaul } from "vaul";
 import {

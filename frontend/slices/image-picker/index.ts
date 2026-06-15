@@ -5,9 +5,9 @@
  *  Openverse by default, Unsplash when the server holds a key). ImageBanner is
  *  the optional reposition-able band (page cover / profile header / hero). */
 
-export { ImagePickerButton } from "./components/ImagePickerButton";
-export { ImagePickerDialog } from "./components/ImagePickerDialog";
-export { ImageBanner } from "./components/ImageBanner";
+export { ImagePickerButton } from "./components/image-picker-button";
+export { ImagePickerDialog } from "./components/image-picker-dialog";
+export { ImageBanner } from "./components/image-banner";
 
 export { parseImage, isCssImage, isUrlImage, imageRef } from "./lib/parseImage";
 export { imageStyle } from "./lib/imageStyle";

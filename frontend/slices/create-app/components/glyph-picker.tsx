@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: refactor through barrel — app-store barrel doesn't re-export glyph helpers yet
+// eslint-disable-next-line no-restricted-imports
 import { GLYPH_KEYS, glyphIcon } from "@/features/app-store/lib/glyph";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

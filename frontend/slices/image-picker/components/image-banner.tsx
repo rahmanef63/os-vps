@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import type { ImageValue, ImageField, ImageSourceProps } from "../types";
 import { parseImage } from "../lib/parseImage";
 import { imageStyle } from "../lib/imageStyle";
-import { ImagePickerDialog } from "./ImagePickerDialog";
+import { ImagePickerDialog } from "./image-picker-dialog";
 
 interface Props extends ImageSourceProps {
   image: ImageField;

@@ -11,10 +11,10 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { ImageValue, ImageSourceProps } from "../types";
-import { GalleryTab } from "./image-picker/GalleryTab";
-import { UploadTab } from "./image-picker/UploadTab";
-import { LinkTab } from "./image-picker/LinkTab";
-import { UnsplashTab } from "./image-picker/UnsplashTab";
+import { GalleryTab } from "./image-picker/gallery-tab";
+import { UploadTab } from "./image-picker/upload-tab";
+import { LinkTab } from "./image-picker/link-tab";
+import { UnsplashTab } from "./image-picker/unsplash-tab";
 
 type Tab = "gallery" | "upload" | "link" | "unsplash";
 

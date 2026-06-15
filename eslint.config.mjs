@@ -33,6 +33,17 @@ const config = [
       // creep without blocking shipping. Comments/blank lines don't count so
       // documented files aren't punished. /code-review still picks up warns.
       "max-lines": ["warn", { max: 220, skipBlankLines: true, skipComments: true }],
+      // Cross-slice deep imports skip the barrel, leaking internal layout. Warn
+      // (not error) so legacy violators don't block ship — flag for refactor
+      // through @/features/<slug>. Use inline disable + TODO for known legacy.
+      "no-restricted-imports": ["warn", {
+        patterns: [
+          {
+            group: ["@/features/*/components/*", "@/features/*/lib/*", "@/features/*/hooks/*"],
+            message: "Cross-slice imports must use the barrel (@/features/<slug>), not deep paths.",
+          },
+        ],
+      }],
     },
   },
 ];
