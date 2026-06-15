@@ -2,7 +2,10 @@
 // (fs/exec/sys) is LOCAL: os-vps runs as a host process, so it touches the
 // filesystem and spawns commands directly. No external agent. Bounds + auth
 // live in paths.ts and the route's verifyAuth() gate.
-export { listDir, readFile, writeFile, makeDir, remove, move, copy, uploadInto, searchFs, usage, statReadable, fileStream, mimeFor } from "./fs";
+export { listDir, readFile, writeFile, makeDir, remove, move, copy, searchFs, usage, statReadable, fileStream, mimeFor } from "./fs";
+export { uploadInto, resolveUploadDest, streamFileInto } from "./fs-upload";
+export { parseMultipart, boundaryFromContentType, UploadTooLargeError } from "./multipart";
+export type { MultipartPart } from "./multipart";
 export { runCommand } from "./exec";
 export { openPty, attachPty, writePty, resizePty, closePty, hasPty } from "./pty";
 export { stats, processes } from "./sys";

@@ -28,7 +28,9 @@ const nextConfig = {
     // proxy.ts clones request bodies; the default clone cap is 10MB, which
     // silently truncated large /api/v1/fs/upload payloads. Raise it so big
     // media uploads land intact (proxy* is the Next 16 name of the option).
-    proxyClientMaxBodySize: "500mb",
+    // Kept just above the upload route's 200 MiB running cap (which streams to
+    // disk and returns 413 past it) so the route — not the proxy — owns rejection.
+    proxyClientMaxBodySize: "256mb",
     // Tree-shake heavy icon/radix barrels — keeps the OS shell bundle lean.
     optimizePackageImports: [
       "lucide-react",

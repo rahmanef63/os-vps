@@ -8,13 +8,10 @@ import { HostError } from "./host-error";
 import {
   assertNotRoot,
   isSensitivePath,
-  isUnderRoot,
   resolveReadable,
   resolveRoots,
   safeWritePath,
 } from "./paths";
-
-const MAX_UPLOAD = 100 * 1024 * 1024; // 100 MiB per file
 
 export async function listDir(requested: string, includeHidden = true): Promise<FsList> {
   const real = await resolveReadable(requested || "~");
@@ -98,37 +95,6 @@ export async function copy(from: string, to: string): Promise<void> {
   const src = await safeWritePath(from, true);
   const dest = await safeWritePath(to, false);
   await fs.cp(src, dest, { recursive: true });
-}
-
-// Binary-safe batch upload into an EXISTING dir (within WRITE roots). Each item's
-// relPath may carry folders ("imgs/a.png") — intermediate dirs are created. Path
-// segments are sanitised (no "", ".", ".."), so an item can't escape `dest`.
-export async function uploadInto(
-  dest: string,
-  files: { relPath: string; data: Uint8Array }[],
-): Promise<{ written: number; failed: string[] }> {
-  const destReal = await safeWritePath(dest, true);
-  if (!(await fs.stat(destReal)).isDirectory()) throw new HostError("Destination is not a directory");
-
-  const failed: string[] = [];
-  let written = 0;
-  for (const { relPath, data } of files) {
-    const segs = relPath.split("/").map((s) => s.trim()).filter((s) => s && s !== "." && s !== "..");
-    if (!segs.length) { failed.push(relPath); continue; }
-    if (data.byteLength > MAX_UPLOAD) { failed.push(`${relPath} (too large)`); continue; }
-    const full = path.join(destReal, ...segs);
-    if (!isUnderRoot(full, destReal)) { failed.push(relPath); continue; }
-    try {
-      await fs.mkdir(path.dirname(full), { recursive: true });
-      const tmp = `${full}.tmp-${process.pid}`;
-      await fs.writeFile(tmp, data, { mode: 0o644 });
-      await fs.rename(tmp, full);
-      written++;
-    } catch {
-      failed.push(relPath);
-    }
-  }
-  return { written, failed };
 }
 
 // Folder name search under a READ-root dir (default ~/projects). Depth/result
