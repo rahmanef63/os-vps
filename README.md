@@ -123,7 +123,7 @@ solves one piece. This stitches the common ones into a single mobile-first pane.
 pnpm install
 cp .env.example .env.local      # set OS_LOGIN_PASSWORD + OS_SESSION_SECRET (openssl rand -hex 32)
 pnpm build
-pnpm start                      # serves on :3000 (or PORT)
+pnpm start                      # serves on :3000 (PORT=4005 pnpm start in prod)
 
 # approve the device that will log in (id shown on the login screen):
 node scripts/approve-device.js <deviceId> "my phone"
@@ -176,10 +176,15 @@ See [`.env.example`](./.env.example) for every variable. Key ones:
 | `SESSION_EXPIRY_HOURS` | `24` | Session lifetime |
 | `OS_FS_READ_ROOTS` | `~:~/projects` | Colon-separated readable roots |
 | `OS_FS_WRITE_ROOTS` | `~:~/projects` | Colon-separated writable roots |
+| `OS_FS_ALLOW_SENSITIVE` | unset | `1` to lift the credential-file denylist (`.ssh`, `.aws`, etc.) — discouraged |
 | `OS_EXEC_ALLOW_DESTRUCTIVE` | unset | `1` to allow catastrophic commands |
+| `OS_TRUSTED_PROXY_HOPS` | `1` | Reverse-proxy hops in front (2 = Cloudflare→nginx→app) so per-IP rate limits read the right hop |
 | `OS_AUDIT_LOG` | `~/.os-vps/audit.log` | Audit trail path |
+| `OS_PREFS_PATH` | `~/.os-vps/prefs.json` | Synced UI prefs (theme, layout) |
 | `OS_BROWSER_URL` / `OS_BROWSER_SECRET` | unset | Enable the remote Browser app |
+| `OS_AGENT_TOKEN` | unset | Bearer token scoped to `/api/v1/browser/*` only (no fs/exec/term access) |
 | `OS_UNSPLASH_ACCESS_KEY` | unset | Unsplash key for the image picker's Stock tab (default: keyless Openverse) |
+| `NEXT_PUBLIC_OS_DEMO` | unset | `1` forces mock-only demo mode (no host access, no auth) |
 
 ## Stack
 
@@ -197,9 +202,11 @@ project easy to extend and its pieces reusable:
   `os-shell/shell.manifest.ts` declares the brand, the app list and the
   enabled features. **Adding an app = one slice + one manifest entry** — dock,
   launcher, search, URL routing and windowing pick it up with no surface edits.
-- **Shell features are slices too.** Search, inspector, notifications,
-  control-center, widgets and settings are independent `shell-*` slices that
-  contribute through the manifest, not hardcoded into the shell.
+- **Shell features are pluggable units.** Search, inspector, notifications,
+  control-center, widgets, clipboard, share, quick-look, shortcut-help and
+  lock-screen each live under `appshell/features/<feat>/` and mount via
+  `defineFeature` into a named `<Slot>` — contributed through the manifest, not
+  hardcoded into the shell.
 - **Apps talk to the host through seams.** Each app's only coupling is a small
   `lib/host.ts` (filesystem adapter, inspector bus, editor handoffs). Swap the
   seam and the same app runs anywhere — several apps (image editor, video
@@ -219,13 +226,21 @@ slice index: [docs/SLICE-CATALOG.md](./docs/SLICE-CATALOG.md).
 | [TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) | Error conditions + fixes (login, deploy, files, exec, browser, AI, service) |
 | [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | The AppShell framework, slices, seams, routing |
 | [SLICE-CATALOG.md](./docs/SLICE-CATALOG.md) | Every slice in the repo and what it does |
+| [CHANGELOG.md](./docs/CHANGELOG.md) | Chronological deltas per work batch |
+| [AUDIT-2026-06-14.md](./docs/AUDIT-2026-06-14.md) · [SCORECARD-2026-06-14.md](./docs/SCORECARD-2026-06-14.md) | Independent audit findings + score trajectory |
 
 ## Status
 
 Personal tool, alpha. Auth and FS jail are implemented and the host layer is
 bounded, but it has **not** had a third-party security audit. Use accordingly.
 
-- **Quality gates**: typecheck · lint · 280+ vitest tests · build. See `docs/SCORECARD-2026-06-14.md` for the full audit + score trajectory.
+- **Quality gates**: typecheck · lint · 290+ vitest tests · build, all enforced by
+  a pre-push hook. See [docs/SCORECARD-2026-06-14.md](./docs/SCORECARD-2026-06-14.md)
+  for the full audit + score trajectory.
+- **Ops**: `GET /api/health` returns `{status, buildId, uptime, version}` for
+  liveness probes; `instrumentation.ts` routes framework errors into the audit
+  log; `scripts/post-deploy-smoke.sh` catches chunk/MIME drift after a restart.
+  Backup + logrotate guidance in [docs/INSTALL.md](./docs/INSTALL.md).
 
 ## License
 
