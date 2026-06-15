@@ -7,6 +7,24 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-06-15 — upload-DoS P0 closed (independent QA loop)
+
+An independent QA `/loop` rated os-vps and shipped the one **P0 a parallel audit
+session missed** — an authenticated DoS in `/api/v1/fs/upload`. Both on `origin/main`:
+
+- **`b4b90c5`** — `fs/upload` no longer buffers every multipart part into RAM
+  (`req.formData()` OOM-kills the host process that *is* the cockpit). New
+  `lib/host/multipart.ts` streaming parser + `lib/host/fs-upload.ts` spool-to-tmp
+  with backpressure + atomic rename within write-root bounds; `proxyClientMaxBodySize`
+  500mb → 256mb.
+- **`4ddc70f`** — cap **raw** pulled bytes (oversized preamble/header could still
+  grow the buffer unbounded) + `lib/host/multipart.test.ts` (6 tests incl. both
+  bypass vectors). `tsc` clean, vitest 293 passing.
+
+**Not redeployed** — `pnpm build` + `sudo systemctl restart os-vps.service` to
+activate. See `HANDOFF-2026-06-15.md` for full context **and** the
+concurrent-session collision lesson (run ONE session on os-vps at a time).
+
 ## Where things stand (2026-06-11) — recovery anchor
 
 Four rounds shipped to `main` today, all green (typecheck + lint + vitest 162 +
