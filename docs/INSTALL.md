@@ -112,7 +112,7 @@ WorkingDirectory=/home/youruser/os-vps
 EnvironmentFile=/home/youruser/os-vps/.env.local
 Environment=PORT=4005
 Environment=HOSTNAME=0.0.0.0
-ExecStart=/usr/bin/npm run start -- --hostname 0.0.0.0 --port 4005
+ExecStart=/usr/bin/pnpm start --hostname 0.0.0.0 --port 4005
 Restart=always
 RestartSec=5
 MemoryMax=3G
@@ -129,6 +129,12 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now os-vps.service
 journalctl -u os-vps -f        # watch logs
 ```
+
+`pnpm start` runs the `start` script from `package.json` (`next start`). The
+project is pnpm-only — corepack is enabled in step 0 — so don't substitute
+`npm`/`yarn`: lockfile drift defeats the audit trail. Verify pnpm is on PATH
+where systemd looks for it (`which pnpm` → adjust `ExecStart=` accordingly,
+e.g. `/usr/local/bin/pnpm` on most distros).
 
 **Graceful shutdown**: add to the `[Service]` block:
 

@@ -155,6 +155,73 @@ describe("safeWritePath bounds", () => {
   });
 });
 
+// Adversarial fuzz cases against the read/write jail. Each input must be
+// REJECTED — these are the shapes a malicious caller might try to smuggle
+// through realpath + bounds checks. Documented gaps (if any) are noted inline.
+describe("FS jail fuzz — adversarial inputs", () => {
+  it("rejects ../ traversal that escapes via the home alias", async () => {
+    useRoots(readRoot, writeRoot);
+    // ~/../../etc/passwd ends up outside any read root on a normal box.
+    await expect(resolveReadable("~/../../../../../etc/passwd")).rejects.toThrow(
+      /outside readable roots|credential|sensitive/i,
+    );
+  });
+
+  it("rejects a path containing a NUL byte (Node throws on the syscall)", async () => {
+    useRoots(readRoot, writeRoot);
+    // POSIX path APIs reject \0 — the jail inherits that for free, but pin it
+    // so a refactor that pre-normalizes the input can't accidentally strip it.
+    await expect(resolveReadable(`${readRoot}/safe\0/../../outside/secret.txt`)).rejects.toThrow();
+  });
+
+  it("rejects a write through a symlink whose target sits outside the write root", async () => {
+    // wlink → outside/secret.txt was wired up in beforeAll().
+    useRoots(readRoot, writeRoot);
+    await expect(safeWritePath(path.join(writeRoot, "wlink"), true)).rejects.toThrow(
+      /outside writable roots/i,
+    );
+  });
+
+  it("treats URL-encoded ../ as a literal filename (NOT decoded)", async () => {
+    useRoots(readRoot, writeRoot);
+    // The FS API takes a literal path. `..%2f` is just a basename — realpath
+    // resolves it inside the read root and the file simply does not exist.
+    // Either rejects with ENOENT-style OR resolves inside the root; what it
+    // MUST NOT do is escape. Assert the reject (ENOENT) for the unit case.
+    await expect(resolveReadable(`${readRoot}/..%2fetc/passwd`)).rejects.toThrow();
+  });
+
+  it("rejects an extremely long path (>4096 bytes) at the OS layer", async () => {
+    useRoots(readRoot, writeRoot);
+    const giant = `${readRoot}/${"a".repeat(5000)}`;
+    // ENAMETOOLONG from realpath — the bound check never even fires, which is
+    // fine: rejection is rejection. Pinned so a future "soft" path resolver
+    // doesn't silently truncate + then bypass the bounds check.
+    await expect(resolveReadable(giant)).rejects.toThrow();
+  });
+
+  it("normalizes double-slashes inside a legal root (path.resolve collapses them)", async () => {
+    useRoots(readRoot, writeRoot);
+    // // is benign — POSIX collapses it. Pin the behavior so the bounds check
+    // doesn't get fooled by a //-prefixed UNC-looking path on Linux.
+    await expect(resolveReadable(`${readRoot}//inside.txt`)).resolves.toBe(
+      path.join(readRoot, "inside.txt"),
+    );
+  });
+
+  it("refuses to modify the write root itself even via assertNotRoot", async () => {
+    useRoots(readRoot, writeRoot);
+    await expect(assertNotRoot(writeRoot)).rejects.toThrow(/root directory/i);
+  });
+
+  it("rejects ../ traversal on writes that lands in a sibling outside the root", async () => {
+    useRoots(readRoot, writeRoot);
+    await expect(safeWritePath(`${writeRoot}/../inside.txt`, true)).rejects.toThrow(
+      /outside writable roots/i,
+    );
+  });
+});
+
 describe("assertNotRoot", () => {
   it("refuses to modify a write root itself but allows its children", async () => {
     useRoots(readRoot, writeRoot);

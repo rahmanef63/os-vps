@@ -26,8 +26,15 @@ async function get(path: string, init?: RequestInit): Promise<Response> {
   }
 }
 
-describe.skipIf(skip)("smoke @ E2E_BASE_URL", () => {
-  it("GET /api/auth/me returns 200 or 401 — never crashes", async () => {
+// The describe label is the skip reason the user sees in the vitest report when
+// E2E_BASE_URL is unset — it tells them WHY the suite is skipped + how to opt
+// in, instead of a silent "(skipped)" with no breadcrumb.
+describe.skipIf(skip)(
+  skip
+    ? "[smoke] SKIPPED — set E2E_BASE_URL=http://host:port to enable live deploy probe"
+    : `[smoke] live deploy probe @ ${BASE}`,
+  () => {
+  it.skipIf(skip)("GET /api/auth/me returns 200 or 401 — never crashes", async () => {
     const res = await get("/api/auth/me");
     expect([200, 401]).toContain(res.status);
     // Body should be JSON-parseable regardless of auth state.
@@ -35,7 +42,7 @@ describe.skipIf(skip)("smoke @ E2E_BASE_URL", () => {
     expect(() => JSON.parse(text)).not.toThrow();
   });
 
-  it("GET /api/version returns JSON with buildId", async () => {
+  it.skipIf(skip)("GET /api/version returns JSON with buildId", async () => {
     const res = await get("/api/version");
     expect(res.status).toBe(200);
     const body = (await res.json()) as { buildId?: unknown };
@@ -43,14 +50,14 @@ describe.skipIf(skip)("smoke @ E2E_BASE_URL", () => {
     expect((body.buildId as string).length).toBeGreaterThan(0);
   });
 
-  it("GET /api/v1/sys/cpu without auth returns 401 (gate working)", async () => {
+  it.skipIf(skip)("GET /api/v1/sys/cpu without auth returns 401 (gate working)", async () => {
     const res = await get("/api/v1/sys/cpu");
     // Auth gate is healthy when an unauthenticated probe returns 401.
     // Accept 403 too in case the gate evolves to "forbidden".
     expect([401, 403]).toContain(res.status);
   });
 
-  it("a referenced _next/static chunk serves with correct MIME", async () => {
+  it.skipIf(skip)("a referenced _next/static chunk serves with correct MIME", async () => {
     // Discover a real chunk URL from the rendered shell so we don't hardcode
     // a hash. The home page is HTML and always references >=1 _next/static
     // chunk. Catches the classic stale-CDN chunk 404 / wrong MIME bug.
@@ -68,4 +75,5 @@ describe.skipIf(skip)("smoke @ E2E_BASE_URL", () => {
       : "javascript";
     expect(ct.toLowerCase()).toContain(expected);
   });
-});
+  },
+);

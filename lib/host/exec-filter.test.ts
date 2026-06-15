@@ -68,6 +68,57 @@ describe("destructiveReason allows benign commands", () => {
   });
 });
 
+// Adversarial fuzz — encoded / chained / indirect variants of the catastrophic
+// commands the regex set is meant to catch. Each MUST trip the guard.
+// Documented gaps below are real (filed as the regex limits); each is a
+// finding for the next pass, not a test failure today.
+describe("destructiveReason — adversarial encodings", () => {
+  it("blocks rm with re-ordered flags (`rm -r -f /`)", () => {
+    expect(destructiveReason("rm -r -f /")).toMatch(/rm -rf on \//);
+  });
+
+  it("blocks rm with extra whitespace padding around args", () => {
+    expect(destructiveReason("  rm   -rf    /  ")).toMatch(/rm -rf on \//);
+  });
+
+  it("blocks shutdown reached via `sudo`", () => {
+    expect(destructiveReason("sudo shutdown -h now")).toMatch(/shutdown/);
+  });
+
+  it("blocks tab-separated rm args (whitespace class catches \\t)", () => {
+    expect(destructiveReason("rm\t-rf\t/")).toMatch(/rm -rf on \//);
+  });
+
+  it("blocks rm via leading-backslash escape (`\\rm -rf /` — \\b still matches)", () => {
+    // bash treats `\rm` as the literal rm (alias bypass). The regex anchors
+    // on `\b` which the backslash satisfies as a non-word char, so the guard
+    // still trips — this is good news, pin it so a future refactor knows.
+    expect(destructiveReason("\\rm -rf /")).toMatch(/rm -rf on \//);
+  });
+
+  // KNOWN GAPS — documented so the next hardening pass knows where to focus.
+  // These slip past the current regex set. Not catastrophic in isolation
+  // because the cockpit is owner-only AND the operator must be aware enough
+  // to wrap a destructive cmd in shell trickery — but real polish targets.
+  // Each `it.fails` PASSES the suite when the assertion fails (Vitest spec),
+  // so when these are fixed the suite turns RED — a built-in regression alarm.
+  it.fails("GAP: chained `;` form — `/` followed by `;` slips past `\\/(?:\\s|$|\\*)`", () => {
+    expect(destructiveReason("echo hi; rm -rf /; echo bye")).toMatch(/rm -rf on \//);
+  });
+
+  it.fails("GAP: subshell form — `/` followed by `)` slips past `\\/(?:\\s|$|\\*)`", () => {
+    expect(destructiveReason("(rm -rf /) &")).toMatch(/rm -rf on \//);
+  });
+
+  it.fails("GAP: `bash -c \"rm -rf /\"` — `/` followed by `\"` slips past", () => {
+    expect(destructiveReason('bash -c "rm -rf /"')).toMatch(/rm -rf on \//);
+  });
+
+  it.fails("GAP: variable-expansion form `HOME=/ rm -rf \"$HOME\"` — no literal `/` after -rf", () => {
+    expect(destructiveReason('HOME=/ rm -rf "$HOME"')).toMatch(/rm -rf on \//);
+  });
+});
+
 describe("runCommand", () => {
   it("refuses a destructive command with code 126 and never spawns", async () => {
     const res = await runCommand("rm -rf /");

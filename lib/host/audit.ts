@@ -66,6 +66,23 @@ function trunc(s: string | undefined, max = 512): string | undefined {
   return s.length > max ? s.slice(0, max) + "…" : s;
 }
 
+// Clamp meta values defensively: a caller could pass an unbounded string (a
+// user-supplied URL, a stack-trace fragment), and one bloated meta would
+// torpedo the whole forensic line. Scalars pass through; strings cap at 256;
+// anything else is dropped (the type already forbids it, but defense in depth).
+function clampMeta(
+  meta: Record<string, string | number | boolean> | undefined,
+): Record<string, string | number | boolean> | undefined {
+  if (!meta) return undefined;
+  const out: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(meta)) {
+    if (typeof v === "string") out[k] = v.length > 256 ? v.slice(0, 256) + "…" : v;
+    else if (typeof v === "number" || typeof v === "boolean") out[k] = v;
+    // any other type: silently drop
+  }
+  return out;
+}
+
 export interface AuditRecord {
   ts?: string;
   action: string;
@@ -122,7 +139,8 @@ async function writeLine(line: string): Promise<void> {
 export function audit(entry: AuditEntry): Promise<void> {
   // Drop `meta` from the serialized line when it's empty so existing greps that
   // assume a fixed-shape record don't suddenly see `"meta":{}` everywhere.
-  const hasMeta = entry.meta && Object.keys(entry.meta).length > 0;
+  const clamped = clampMeta(entry.meta);
+  const hasMeta = clamped && Object.keys(clamped).length > 0;
   const line =
     JSON.stringify({
       ts: new Date().toISOString(),
@@ -132,7 +150,7 @@ export function audit(entry: AuditEntry): Promise<void> {
       target: trunc(entry.target),
       ok: entry.ok ?? true,
       detail: trunc(entry.detail, 256),
-      ...(hasMeta ? { meta: entry.meta } : {}),
+      ...(hasMeta ? { meta: clamped } : {}),
     }) + "\n";
   _writeChain = _writeChain.then(() => writeLine(line));
   return _writeChain;

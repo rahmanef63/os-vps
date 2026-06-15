@@ -78,6 +78,7 @@ export async function* parseMultipart(
   let buf: Bytes = new Uint8Array(0);
   let done = false;
   let total = 0; // running bytes across all part bodies (the cap subject)
+  let pulled = 0; // RAW bytes read from the stream — the security backstop
 
   async function pull(): Promise<boolean> {
     if (done) return false;
@@ -86,6 +87,11 @@ export async function* parseMultipart(
       done = true;
       return false;
     }
+    // Cap the RAW stream here, not just part bodies: a malicious preamble or
+    // header block (no boundary/CRLFCRLF) would otherwise grow `buf` unbounded
+    // and OOM the host before any part-body counter runs.
+    pulled += value.length;
+    if (pulled > limit) throw new UploadTooLargeError(limit);
     buf = concat(buf, value);
     return true;
   }

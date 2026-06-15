@@ -99,6 +99,21 @@ describe("audit() append-only JSONL", () => {
     expect(obj.detail.length).toBeLessThan(obj.target.length);
   });
 
+  it("clamps oversized meta string values so one bad caller can't bloat the log", async () => {
+    const big = "y".repeat(1000);
+    audit({ action: "exec.run", meta: { url: big, code: 7, ok: true } });
+    await waitForLines(1);
+    const obj = JSON.parse((await readLines())[0]);
+    // String clamped at 256 + ellipsis (≤259 chars).
+    expect(typeof obj.meta.url).toBe("string");
+    expect(obj.meta.url.length).toBeLessThanOrEqual(259);
+    expect(obj.meta.url.length).toBeLessThan(big.length);
+    expect(obj.meta.url.endsWith("…")).toBe(true);
+    // Non-string scalars untouched.
+    expect(obj.meta.code).toBe(7);
+    expect(obj.meta.ok).toBe(true);
+  });
+
   it("creates the log directory if missing (mkdir recursive)", async () => {
     // Point at a deeper, not-yet-existing nested path.
     const deep = path.join(path.dirname(logFile), "a", "b", "c", "audit.log");
