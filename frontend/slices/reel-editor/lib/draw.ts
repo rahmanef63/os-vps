@@ -21,16 +21,6 @@ function bgGradient(ctx: CanvasRenderingContext2D, w: number, h: number, src?: s
   return g;
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-}
-
 // Cover-fit an image/video element into the comp frame (mirrors object-fit:cover).
 function drawCover(
   ctx: CanvasRenderingContext2D,
@@ -128,7 +118,9 @@ export function drawClip(
     lg.addColorStop(0, "#ffffff");
     lg.addColorStop(1, "#cfd6e6");
     ctx.fillStyle = lg;
-    roundRect(ctx, x, y, side, side, side * 0.24);
+    ctx.beginPath();
+    ctx.roundRect(x, y, side, side, side * 0.24);
+    ctx.closePath();
     ctx.fill();
     ctx.fillStyle = "#7a5cff";
     ctx.font = `900 ${Math.round(side * 0.34)}px system-ui, sans-serif`;

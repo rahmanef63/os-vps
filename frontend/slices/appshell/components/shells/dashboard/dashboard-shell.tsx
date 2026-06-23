@@ -8,7 +8,7 @@
    UrlSync deep links work here and open windows (with their payloads) carry over
    intact when switching to the macOS/Windows/mobile shells. */
 import { useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useUrlHome } from "../../../hooks/use-url-home";
 import { LayoutDashboard, Home, Activity, Search } from "lucide-react";
 import { registerShell } from "../../../registry/shells";
 import { useShellConfig } from "../../../registry/shell-config";
@@ -39,13 +39,7 @@ function DashboardShell() {
   // pathname they were made at, so the derivation wins again when the URL
   // actually changes — no effect-driven setState.
   const { routing } = useShellConfig();
-  const pathname = usePathname();
-  const urlSlug = pathname.split("/").filter(Boolean)[0];
-  const urlIsApp =
-    routing !== false && !!urlSlug && allApps.some((a) => (a.slug ?? a.id) === urlSlug);
-  const [homeChoice, setHomeChoice] = useState<{ key: string; home: boolean } | null>(null);
-  const home = homeChoice?.key === pathname ? homeChoice.home : !urlIsApp;
-  const setHome = (h: boolean) => setHomeChoice({ key: pathname, home: h });
+  const { home, setHome } = useUrlHome(allApps, routing);
 
   // The pane shows the FOCUSED window — fall back to the newest non-minimized
   // one (`order` is append-only and doesn't track focus).

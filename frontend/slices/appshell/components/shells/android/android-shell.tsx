@@ -11,7 +11,7 @@
    `calc(var(--android-nav) + var(--sai-bottom))`. */
 import { Button } from "@/components/ui/button";
 import { useRef, useState, type CSSProperties } from "react";
-import { usePathname } from "next/navigation";
+import { useUrlHome } from "../../../hooks/use-url-home";
 import { Search, ChevronLeft, Bot } from "lucide-react";
 import { useApps } from "../../../lib/registry";
 import { usePullDown } from "../../../hooks/use-pull-down";
@@ -41,12 +41,7 @@ function AndroidShell() {
   // user gestures override, keyed to the pathname they were made at — covers
   // initial deep links AND back/forward without effect-driven setState.
   const { routing } = useShellConfig();
-  const pathname = usePathname();
-  const urlSlug = pathname.split("/").filter(Boolean)[0];
-  const urlIsApp = routing !== false && !!urlSlug && apps.some((a) => (a.slug ?? a.id) === urlSlug);
-  const [homeChoice, setHomeChoice] = useState<{ key: string; home: boolean } | null>(null);
-  const home = homeChoice?.key === pathname ? homeChoice.home : !urlIsApp;
-  const setHome = (h: boolean) => setHomeChoice({ key: pathname, home: h });
+  const { home, setHome } = useUrlHome(apps, routing);
 
   const dockable = apps.filter((a) => !a.noDock);
   const pinned = dockable.filter((a) => a.pinned);

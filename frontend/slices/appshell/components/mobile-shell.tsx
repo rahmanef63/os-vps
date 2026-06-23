@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useUrlHome } from "../hooks/use-url-home";
 import { Button } from "@/components/ui/button";
 import { useApps } from "../lib/registry";
 import { useWindowOrder, useFocused, useWindow } from "../hooks/use-shell";
@@ -40,13 +40,7 @@ export function MobileShell() {
   // UrlSync (manifest.routing): opted out, the URL never names an app, so the
   // grid-first default + gesture overrides behave exactly as before.
   const { routing } = useShellConfig();
-  const pathname = usePathname();
-  const urlSlug = pathname.split("/").filter(Boolean)[0];
-  const urlIsApp =
-    routing !== false && !!urlSlug && apps.some((a) => (a.slug ?? a.id) === urlSlug);
-  const [homeChoice, setHomeChoice] = useState<{ key: string; home: boolean } | null>(null);
-  const home = homeChoice?.key === pathname ? homeChoice.home : !urlIsApp;
-  const setHome = (h: boolean) => setHomeChoice({ key: pathname, home: h });
+  const { home, setHome } = useUrlHome(apps, routing);
 
   // The visible app is the FOCUSED window (front-most) — fall back to the newest
   // non-minimized one. `order` is append-only and doesn't track focus.

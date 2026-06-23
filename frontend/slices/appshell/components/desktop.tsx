@@ -5,6 +5,7 @@ import { Monitor, Smartphone, Grid3x3, Minimize2, Maximize2, X } from "lucide-re
 import { useResponsive } from "../responsive/use-responsive";
 import { useWindowOrder, useWindowsMap } from "../hooks/use-shell";
 import { stackByZ } from "../lib/store";
+import { inEditable } from "../lib/use-focused-hotkey";
 import { usePersistLayout } from "../hooks/use-persist-layout";
 import { useOverviewKey } from "../hooks/use-overview-key";
 import { MenuBar } from "./menu-bar";
@@ -93,13 +94,6 @@ function useSpotlightHotkey() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-}
-
-// True when focus is in a text field — chord hotkeys that collide with editor
-// bindings (⌘I = italic, ⌘+Arrow = word-select) must stand down there.
-function inEditable(el: EventTarget | null): boolean {
-  const t = el as HTMLElement | null;
-  return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
 }
 
 // ⌘I / Ctrl+I toggles the AI Inspector — but not while typing (⌘I is italic in

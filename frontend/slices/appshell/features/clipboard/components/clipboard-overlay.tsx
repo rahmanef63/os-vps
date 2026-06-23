@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   clearClips,
   copyClip,
+  inEditable,
   removeClip,
   setClipboardOpen,
   startClipboardCapture,
@@ -15,11 +16,6 @@ import {
   useClipboardOpen,
   useClips,
 } from "@/features/appshell";
-
-function inEditable(el: EventTarget | null): boolean {
-  const t = el as HTMLElement | null;
-  return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
-}
 
 // ⌘⇧V clipboard history — pinned entries stick, click copies back to the
 // system clipboard. Capture (document copy/cut) starts with this feature.

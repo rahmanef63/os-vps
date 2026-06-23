@@ -5,15 +5,11 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   closeQuickLook,
+  inEditable,
   previewerFor,
   toggleQuickLook,
   useQuickLook,
 } from "@/features/appshell";
-
-function inEditable(): boolean {
-  const el = document.activeElement as HTMLElement | null;
-  return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
-}
 
 // Space toggles the preview for the published target (never while typing);
 // Escape closes. Centered glass panel — previewer renders the body.
