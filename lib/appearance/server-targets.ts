@@ -57,11 +57,11 @@ export function effectiveServerTarget(server: ServerConfig, demo = false): Serve
   );
 }
 
-export function serverModeForTarget(target: ServerTarget | null): ServerConfig["mode"] {
+function serverModeForTarget(target: ServerTarget | null): ServerConfig["mode"] {
   return target?.kind === "local" ? "live" : "mock";
 }
 
-export function nextSshTargetId(targets: ServerTarget[]): string {
+function nextSshTargetId(targets: ServerTarget[]): string {
   let n = 2;
   let id = "ssh-2";
   const ids = new Set(targets.map((target) => target.id));

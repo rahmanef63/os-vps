@@ -21,8 +21,6 @@ import { useFrame } from "../lib/frame-store";
 const TH = 36;
 const LABEL = 120;
 
-export type DragState = { id: string; mode: ClipDragMode; startX: number; start: number; len: number };
-
 // Playhead is isolated so the timeline's lanes/ticks/clip blocks do NOT
 // re-render on every rAF tick — only this thin red line + caret do.
 // React.memo'd because parent re-renders on clip changes; zoom is the only prop

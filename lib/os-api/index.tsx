@@ -6,11 +6,7 @@ import { useAppearance } from "@/lib/appearance";
 import { IS_DEMO } from "@/lib/demo";
 import { MockAdapter } from "./mock-adapter";
 import { HttpAdapter } from "./http-adapter";
-import type { OsApi, OsApiConfig } from "./types";
-
-export function makeApi(cfg: OsApiConfig): OsApi {
-  return cfg.mode === "live" ? HttpAdapter(cfg) : MockAdapter();
-}
+import type { OsApi } from "./types";
 
 // Same-origin URL for raw file bytes (image/video/audio/pdf). Demo media lives
 // in /demo-media/* as static public assets (served with no host/auth — works in

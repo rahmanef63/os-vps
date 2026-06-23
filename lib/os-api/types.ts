@@ -22,4 +22,4 @@ export type {
   OsApi,
 } from "@/features/appshell";
 
-export type OsApiConfig = { mode: "mock" | "live"; url?: string; token?: string };
+export type OsApiConfig = { mode: "mock" | "live"; url?: string };

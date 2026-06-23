@@ -140,7 +140,6 @@ export default function AppStore() {
                 {filter === "Featured" && featured && !query && (
                   <FeaturedCard
                     app={featured}
-                    busy={install.busy === featured.appId}
                     onToggle={install.toggle}
                   />
                 )}
@@ -155,7 +154,6 @@ export default function AppStore() {
                       <StoreAppCard
                         key={app.appId}
                         app={app}
-                        busy={install.busy === app.appId}
                         onToggle={install.toggle}
                       />
                     ))}

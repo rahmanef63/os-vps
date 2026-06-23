@@ -189,6 +189,3 @@ export const setKeyframe = (c: Composition, id: string, k: KfProp, t: number, v:
   const clip = c.clips.find((cl) => cl.id === id);
   return setKeyTrack(c, id, k, upsertKey(clip?.kf?.[k], t, v));
 };
-
-export const tracksByKind = (c: Composition, kind: TrackKind) =>
-  c.tracks.filter((t) => t.kind === kind);

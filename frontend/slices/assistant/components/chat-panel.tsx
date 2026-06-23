@@ -45,7 +45,6 @@ export function ChatPanel({
   ref,
 }: {
   agent: Agent;
-  onSwitchAgent: () => void;
   switcher: React.ReactNode;
   ref?: Ref<ChatHandle>;
 }) {

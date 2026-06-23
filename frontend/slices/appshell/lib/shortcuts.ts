@@ -30,10 +30,6 @@ export function registerShortcuts(source: string, list: ShortcutHint[]): () => v
   };
 }
 
-export function listShortcuts(): ShortcutHint[] {
-  return hints;
-}
-
 export function useShortcuts(): ShortcutHint[] {
   return useSyncExternalStore(
     (cb) => {

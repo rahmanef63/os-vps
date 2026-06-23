@@ -11,7 +11,7 @@ import { ToolOptionsBar } from "./components/tool-options-bar";
 import { SidePanel } from "./components/side-panel";
 import { MobileShell } from "./components/mobile-shell";
 import { useKeyboard } from "./hooks/use-keyboard";
-import { useIsMobile } from "./hooks/use-is-mobile";
+import { useIsMobile } from "@/features/appshell";
 import type { Doc } from "./lib/types";
 import type { EditorApi } from "./image-editor";
 

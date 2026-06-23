@@ -10,7 +10,7 @@ import { useSyncExternalStore } from "react";
 // everything else, so disabling it would be a lock-out.
 
 const KEY = "os-vps:disabled";
-export const MANDATORY = new Set<string>(["app-store"]);
+const MANDATORY = new Set<string>(["app-store"]);
 
 let ids: string[] | null = null;
 const subs = new Set<() => void>();

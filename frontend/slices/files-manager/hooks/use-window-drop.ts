@@ -23,5 +23,3 @@ export function useWindowDrop(dnd: UseDnd, path: string) {
   };
   return { dragActive, onDragOver, onDragLeave, onDrop };
 }
-
-export type UseWindowDrop = ReturnType<typeof useWindowDrop>;

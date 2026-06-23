@@ -8,7 +8,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import type { ExecResult } from "@/lib/os-api/types";
 import { HostError } from "./host-error";
-import { homeDir, isUnderRoot, writeRootList } from "./paths";
+import { homeDir, isUnderRoot, resolveWriteRoots } from "./paths";
 import { childEnv } from "./child-env";
 
 const TIMEOUT_MS = 30_000;
@@ -61,15 +61,7 @@ export async function resolveCwd(requested?: string): Promise<string> {
   } catch {
     return home; // cwd gone → fall back home rather than fail the command
   }
-  const roots = await Promise.all(
-    writeRootList().map(async (r) => {
-      try {
-        return await fs.realpath(r);
-      } catch {
-        return path.resolve(r);
-      }
-    }),
-  );
+  const roots = await resolveWriteRoots();
   return roots.some((r) => isUnderRoot(real, r)) ? real : home;
 }
 

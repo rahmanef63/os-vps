@@ -3,9 +3,7 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-// TODO: refactor through barrel — appshell barrel doesn't expose viewport-window yet
-// eslint-disable-next-line no-restricted-imports
-import { useViewportWindow } from "@/features/appshell/lib/use-viewport-window";
+import { useViewportWindow } from "../../../lib/use-viewport-window";
 import { type Command } from "../lib";
 
 // Past this many results we switch to a windowed render: at ~44px per row

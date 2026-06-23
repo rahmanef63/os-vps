@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { RATIOS, FRAME_RATES } from "../lib/composition";
 import { type Composition } from "../lib/mock-timeline";
+import { Field } from "./clip-ui";
 
 const clampDim = (n: number) => Math.max(16, Math.min(4096, Math.round(n)));
 
@@ -119,14 +120,5 @@ function NumBox({ value, onCommit }: { value: number; onCommit: (n: number) => v
       onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
       className="h-7 w-16 rounded-md border border-border bg-secondary px-2 text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
     />
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-semibold text-muted-foreground">{label}</span>
-      {children}
-    </label>
   );
 }

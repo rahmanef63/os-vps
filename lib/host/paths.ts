@@ -105,6 +105,12 @@ async function realRoots(list: string[]): Promise<string[]> {
   );
 }
 
+// Realpath-resolved WRITE roots — shared by safeWritePath/assertNotRoot here and
+// exec.ts's cwd bounds, so the realpath-fallback strategy lives in one place.
+export async function resolveWriteRoots(): Promise<string[]> {
+  return realRoots(writeRootList());
+}
+
 // READ: "/" is the filesystem root (browse-anywhere if a read root allows it);
 // "~"/"" = home. Resolves symlinks, then asserts inside a read root.
 export async function resolveReadable(requested: string): Promise<string> {

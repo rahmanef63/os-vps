@@ -77,9 +77,6 @@ export function loadAutosave(): Project | null {
   }
 }
 
-// Konva stage redraw shim (stage may be null before mount).
-export const redrawStage = (stage: Konva.Stage | null) => stage?.draw();
-
 // Save/restore the editable project, factored out of the store to keep it lean.
 export function useProjectIO(deps: {
   doc: Doc;

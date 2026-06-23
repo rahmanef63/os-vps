@@ -103,7 +103,6 @@ export default function Assistant() {
         <ChatPanel
           ref={chatRef}
           agent={store.activeAgent}
-          onSwitchAgent={() => {}}
           switcher={
             <>
               <AgentSwitcher store={store} onNew={() => setForm({ kind: "agent" })} />

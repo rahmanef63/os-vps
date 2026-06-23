@@ -99,7 +99,7 @@ export const CATALOG: CatalogApp[] = [
 ];
 
 // Row shape of the persisted app registry.
-export type CatalogRow = {
+type CatalogRow = {
   appId: string;
   installed: boolean;
 };

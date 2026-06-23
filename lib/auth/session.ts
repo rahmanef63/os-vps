@@ -28,14 +28,11 @@ export interface SessionPayload {
 
 function base64urlEncode(input: string | Buffer): string {
   const buf = typeof input === "string" ? Buffer.from(input, "utf8") : input;
-  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+  return buf.toString("base64url");
 }
 
 function base64urlDecode(input: string): Buffer {
-  const padded = input.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = padded.length % 4;
-  const paddedStr = pad ? padded + "=".repeat(4 - pad) : padded;
-  return Buffer.from(paddedStr, "base64");
+  return Buffer.from(input, "base64url");
 }
 
 export function signSession(payload: SessionPayload, secret: string): string {

@@ -35,7 +35,6 @@ export function useFiles(initialPath?: string) {
   const [usage, setUsage] = useState<FsUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [clip, setClip] = useState<Clipboard | null>(null);
-  const reloadRef = useRef(0);
   const [reload, setReload] = useState(0);
 
   const refresh = useCallback(() => setReload((n) => n + 1), []);
@@ -88,7 +87,6 @@ export function useFiles(initialPath?: string) {
       setError(null);
       try {
         await run();
-        reloadRef.current += 1;
         setReload((n) => n + 1);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);

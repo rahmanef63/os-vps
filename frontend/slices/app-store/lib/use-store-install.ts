@@ -13,31 +13,25 @@ import type { SystemEntry } from "./system-catalog";
 // Returns the toggles cards bind to, the busy id (per-card spinner), the
 // pending entries (drive the dialogs), and the confirm callbacks.
 export function useStoreInstall(off: Set<string>) {
-  const [busy, setBusy] = useState<string | null>(null);
   const [pendingApp, setPendingApp] = useState<CatalogApp | null>(null);
   const [pendingSystem, setPendingSystem] = useState<SystemEntry | null>(null);
 
-  const doInstall = useCallback(async (app: CatalogApp, nextInstalled: boolean) => {
-    setBusy(app.appId);
-    try {
-      setInstalled({
-        appId: app.appId,
-        installed: nextInstalled,
-        title: app.title,
-        glyph: app.glyph,
-        gradient: app.gradient,
-        runtime: app.runtime,
-        entry: app.entry,
-      });
-    } finally {
-      setBusy(null);
-    }
+  const doInstall = useCallback((app: CatalogApp, nextInstalled: boolean) => {
+    setInstalled({
+      appId: app.appId,
+      installed: nextInstalled,
+      title: app.title,
+      glyph: app.glyph,
+      gradient: app.gradient,
+      runtime: app.runtime,
+      entry: app.entry,
+    });
   }, []);
 
   const toggle = useCallback(
     (app: CatalogApp) => {
       if (app.installed) setPendingApp(app);
-      else void doInstall(app, true);
+      else doInstall(app, true);
     },
     [doInstall],
   );
@@ -53,7 +47,7 @@ export function useStoreInstall(off: Set<string>) {
   );
 
   const confirmUninstallApp = useCallback(() => {
-    if (pendingApp) void doInstall(pendingApp, false);
+    if (pendingApp) doInstall(pendingApp, false);
     setPendingApp(null);
   }, [doInstall, pendingApp]);
 
@@ -63,7 +57,6 @@ export function useStoreInstall(off: Set<string>) {
   }, [pendingSystem]);
 
   return {
-    busy,
     pendingApp,
     pendingSystem,
     toggle,

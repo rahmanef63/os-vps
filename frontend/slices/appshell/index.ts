@@ -10,6 +10,8 @@ export { QuicklinkIcon } from "./components/quicklink-icon";
 // single-pane shells (e.g. the Dashboard shell) so apps mount identically.
 export { WindowContent as AppHost } from "./components/window-content";
 export { AppRegistryProvider, useApp, useApps } from "./lib/registry";
+// Shared viewport virtualization primitive (files-manager list, spotlight, grids).
+export { computeViewportWindow, useViewportWindow, type ViewportWindow } from "./lib/use-viewport-window";
 // Window lifecycle + the shell-UI actions feature slices drive (search,
 // inspector, control-center read these instead of reaching into the store).
 export {

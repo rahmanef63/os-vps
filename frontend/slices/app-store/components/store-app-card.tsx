@@ -15,11 +15,9 @@ import type { CatalogApp } from "../lib/store-catalog";
 // (hover-revealed) — live state is driven by the merged catalog prop.
 export function StoreAppCard({
   app,
-  busy,
   onToggle,
 }: {
   app: CatalogApp;
-  busy: boolean;
   onToggle: (app: CatalogApp) => void;
 }) {
   const [hover, setHover] = useState(false);
@@ -55,7 +53,6 @@ export function StoreAppCard({
           <Button
             size="sm"
             variant={app.installed ? "secondary" : "default"}
-            disabled={busy}
             onClick={() => onToggle(app)}
             className={cn(
               "shrink-0",

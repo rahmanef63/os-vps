@@ -11,11 +11,9 @@ import type { CatalogApp } from "../lib/store-catalog";
 // the grid cards.
 export function FeaturedCard({
   app,
-  busy,
   onToggle,
 }: {
   app: CatalogApp;
-  busy: boolean;
   onToggle: (app: CatalogApp) => void;
 }) {
   return (
@@ -40,7 +38,6 @@ export function FeaturedCard({
           <Button
             size="sm"
             variant="secondary"
-            disabled={busy}
             onClick={() => onToggle(app)}
             className="mt-3 text-foreground"
           >

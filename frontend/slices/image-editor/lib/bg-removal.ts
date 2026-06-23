@@ -14,9 +14,7 @@ export async function removeImageBackground(
   const { removeBackground } = await import("@imgly/background-removal");
   const blob = await removeBackground(src, {
     output: { format: "image/png" },
-    progress: onProgress
-      ? (key: string, current: number, total: number) => onProgress(key, current, total)
-      : undefined,
+    progress: onProgress,
   });
   return blobToDataURL(blob);
 }

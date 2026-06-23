@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { text } from "node:stream/consumers";
 import { verifyAuth } from "@/lib/agent/server";
 import { getSessionActor } from "@/lib/auth/require-session";
 import {
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
       if (part.filename === undefined) {
         // Plain text field (dest). Buffer it (tiny) and resolve the target dir.
         if (part.name === "dest") {
-          dest = (await readText(part.body)).trim();
+          dest = (await text(part.body)).trim();
           if (dest) destReal = await resolveUploadDest(dest);
         } else {
           await drainPart(part.body);
@@ -83,12 +84,6 @@ export async function POST(req: Request) {
     detail: `${written} written${failed.length ? `, ${failed.length} failed` : ""}`,
   });
   return NextResponse.json({ written, failed });
-}
-
-async function readText(body: AsyncIterable<Uint8Array>): Promise<string> {
-  const chunks: Uint8Array[] = [];
-  for await (const c of body) chunks.push(c);
-  return Buffer.concat(chunks).toString("utf8");
 }
 
 async function drainPart(body: AsyncIterable<Uint8Array>): Promise<void> {

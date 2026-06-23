@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useShellChat, type InspectorInfo, type ChatMessage } from "@/features/appshell";
 
-type Msg = { role: "user" | "assistant"; text: string };
-
 function errText(err: unknown): string {
   const code = err instanceof Error ? err.message : "";
   if (code === "no_api_key") return "No Anthropic key — add one in Settings → AI.";
@@ -20,7 +18,7 @@ function errText(err: unknown): string {
 // in what the user is looking at (the mock-os "AI mode" per app, made real).
 export function InspectorAI({ subject, info }: { appId: string; subject: string; info: InspectorInfo }) {
   const chat = useShellChat();
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [msgs, setMsgs] = useState<ChatMessage[]>([]);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
@@ -43,7 +41,7 @@ export function InspectorAI({ subject, info }: { appId: string; subject: string;
         "] Answer about THIS app/state.";
       const wire: ChatMessage[] = [
         { role: "user", text: ctx },
-        ...msgs.map((m) => ({ role: m.role, text: m.text })),
+        ...msgs,
         { role: "user", text: t },
       ];
       setMsgs((p) => [...p, { role: "user", text: t }, { role: "assistant", text: "" }]);

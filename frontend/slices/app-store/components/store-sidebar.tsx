@@ -11,8 +11,8 @@ import { CATEGORIES, type StoreCategory } from "../lib/store-catalog";
 // on/off toggles (system-catalog); the rest filter the curated install catalog.
 export type StoreFilter = "Featured" | StoreCategory | "Apps" | "Features";
 
-export const FILTERS: StoreFilter[] = ["Featured", ...CATEGORIES];
-export const SYSTEM_FILTERS: StoreFilter[] = ["Apps", "Features"];
+const FILTERS: StoreFilter[] = ["Featured", ...CATEGORIES];
+const SYSTEM_FILTERS: StoreFilter[] = ["Apps", "Features"];
 
 // Each category gets a representative glyph from the shared glyph map.
 const FILTER_GLYPH: Record<StoreCategory | "Featured", string> = {

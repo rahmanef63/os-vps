@@ -3,7 +3,6 @@
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { useApps } from "../lib/registry";
 import { useBrand } from "../registry/brand";
@@ -51,10 +50,6 @@ export function MenuBar() {
 
       <Menu label={appName} bold>
         <DropdownMenuItem disabled>About {appName}</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          Preferences… <DropdownMenuShortcut>⌘,</DropdownMenuShortcut>
-        </DropdownMenuItem>
       </Menu>
 
       {focusedApp?.menus?.length ? (

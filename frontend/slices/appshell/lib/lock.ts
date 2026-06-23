@@ -61,16 +61,6 @@ export function autoLockMinutes(): number | null {
   return Number.isFinite(v) && v > 0 ? v : null;
 }
 
-export function setAutoLockMinutes(min: number | null): void {
-  try {
-    if (min && min > 0) localStorage.setItem(KEY, String(min));
-    else localStorage.removeItem(KEY);
-  } catch {
-    /* ignore */
-  }
-  emit();
-}
-
 registerCommands("lock", [
   {
     id: "lock:now",

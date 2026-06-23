@@ -40,5 +40,3 @@ export function usePathHistory(start: string) {
     canForward: cursor < history.length - 1,
   };
 }
-
-export type UsePathHistory = ReturnType<typeof usePathHistory>;

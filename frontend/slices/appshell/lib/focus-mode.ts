@@ -33,10 +33,6 @@ export function setFocusMode(v: boolean): void {
   toast(v ? "Focus mode on — notifications go to the center silently" : "Focus mode off");
 }
 
-export function getFocusMode(): boolean {
-  return on;
-}
-
 export function toggleFocusMode(): void {
   setFocusMode(!on);
 }

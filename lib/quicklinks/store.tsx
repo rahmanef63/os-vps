@@ -37,8 +37,7 @@ type Ctx = {
 const QuicklinksContext = createContext<Ctx | null>(null);
 
 function newId(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID().slice(0, 8);
-  return Math.random().toString(36).slice(2, 10);
+  return crypto.randomUUID().slice(0, 8);
 }
 
 /** Drop anything that isn't a `{ id, title, url }` row of strings — one bad

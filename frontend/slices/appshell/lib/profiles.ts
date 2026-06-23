@@ -40,10 +40,6 @@ function commit(next: Record<string, SessionProfile>) {
   syncProfileCommands();
 }
 
-// Shell prefs come from the registry's validated store (SSOT) — never re-read
-// or re-default the `sv:shell` key here.
-const currentShellPrefs = (): ShellPrefs => getShellPrefs();
-
 export function saveProfile(name?: string): string {
   let n = name?.trim() ?? "";
   if (!n) {
@@ -51,7 +47,7 @@ export function saveProfile(name?: string): string {
     while (`Profile ${i}` in profiles) i++;
     n = `Profile ${i}`;
   }
-  commit({ ...profiles, [n]: { windows: serialize(), shell: currentShellPrefs() } });
+  commit({ ...profiles, [n]: { windows: serialize(), shell: getShellPrefs() } });
   toast(`Profile "${n}" saved`);
   return n;
 }

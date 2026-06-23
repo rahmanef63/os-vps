@@ -18,3 +18,5 @@ export { useApps, setInstalled, createApp, type AppRow } from "./lib/apps-store"
 // Owner's disabled built-ins/features (App Store → Apps/Features toggles). os-root
 // filters the manifest by it so disabled apps/features leave the shell entirely.
 export { useDisabledIds } from "./lib/enabled-store";
+// Shared glyph helpers (create-app icon picker/preview reuse the App Store set).
+export { GLYPH_KEYS, glyphIcon } from "./lib/glyph";

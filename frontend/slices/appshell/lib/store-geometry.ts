@@ -20,10 +20,6 @@ export function setChromeInsets(i: { top?: number; bottom?: number }) {
   topInset = i.top ?? TOPBAR;
   bottomInset = i.bottom ?? DOCK_RESERVE;
 }
-export function chromeInsets() {
-  return { top: topInset, bottom: bottomInset };
-}
-
 function viewport() {
   return { vw: window.innerWidth, vh: window.innerHeight };
 }

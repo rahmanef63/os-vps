@@ -13,7 +13,7 @@ const KEYS = {
   active: "alfa.activeAgent",
 } as const;
 
-const uid = () => Math.random().toString(36).slice(2, 9);
+const uid = () => crypto.randomUUID().slice(0, 8);
 
 function load<T>(key: string, fallback: T[]): T[] {
   if (typeof window === "undefined") return fallback.map((p) => ({ ...p }));

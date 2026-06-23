@@ -134,5 +134,3 @@ export class AudioGraph {
     this.dest = null;
   }
 }
-
-export { clamp };
