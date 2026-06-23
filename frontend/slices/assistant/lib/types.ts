@@ -43,7 +43,7 @@ export type Agent = {
   skills: string[];
 };
 
-export type AutomationStep = { tool: string; argText: string };
+export type AutomationStep = { tool: string; argText: string; id?: string };
 
 export type Automation = {
   id: string;

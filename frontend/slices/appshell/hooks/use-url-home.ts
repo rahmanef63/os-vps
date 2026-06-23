@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { AppDescriptor } from "../lib/types";
 
@@ -18,6 +18,9 @@ export function useUrlHome(apps: AppDescriptor[], routing?: boolean) {
     routing !== false && !!urlSlug && apps.some((a) => (a.slug ?? a.id) === urlSlug);
   const [homeChoice, setHomeChoice] = useState<{ key: string; home: boolean } | null>(null);
   const home = homeChoice?.key === pathname ? homeChoice.home : !urlIsApp;
-  const setHome = (h: boolean) => setHomeChoice({ key: pathname, home: h });
+  const setHome = useCallback(
+    (h: boolean) => setHomeChoice({ key: pathname, home: h }),
+    [pathname],
+  );
   return { home, setHome };
 }

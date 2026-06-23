@@ -33,9 +33,12 @@ export function AutomationForm({
   const [glyph, setGlyph] = useState(auto?.glyph ?? "sparkles");
   const [color, setColor] = useState(auto?.color ?? SKILL_COLORS[0]);
   const [agentId, setAgentId] = useState(auto?.agentId ?? store.activeAgentId);
-  const [steps, setSteps] = useState<AutomationStep[]>(auto?.steps ?? []);
+  const [steps, setSteps] = useState<AutomationStep[]>(() =>
+    (auto?.steps ?? []).map((s) => ({ ...s, id: s.id ?? crypto.randomUUID() })),
+  );
 
-  const addStep = (tid: string) => setSteps((s) => [...s, { tool: tid, argText: "" }]);
+  const addStep = (tid: string) =>
+    setSteps((s) => [...s, { tool: tid, argText: "", id: crypto.randomUUID() }]);
   const setArg = (i: number, v: string) =>
     setSteps((s) => s.map((x, j) => (j === i ? { ...x, argText: v } : x)));
   const move = (i: number, d: number) =>
@@ -108,7 +111,7 @@ export function AutomationForm({
             const t = toolById(s.tool);
             return (
               <div
-                key={i}
+                key={s.id}
                 className="flex items-start gap-2 rounded-lg border border-border bg-muted p-2.5"
               >
                 <span className="mt-1.5 w-4 text-right text-[11px] tabular-nums text-muted-foreground">

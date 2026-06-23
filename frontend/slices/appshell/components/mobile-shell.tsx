@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useUrlHome } from "../hooks/use-url-home";
 import { Button } from "@/components/ui/button";
 import { useApps } from "../lib/registry";
@@ -28,8 +28,10 @@ export function MobileShell() {
 
   // Dock = manifest-pinned apps (AppDescriptor.pinned — the generic shell never
   // hardcodes project app ids); falls back to the first 4 dockable apps.
-  const pinned = apps.filter((a) => a.pinned);
-  const dockApps = (pinned.length ? pinned : apps.filter((a) => !a.noDock)).slice(0, 4);
+  const dockApps = useMemo(() => {
+    const pinned = apps.filter((a) => a.pinned);
+    return (pinned.length ? pinned : apps.filter((a) => !a.noDock)).slice(0, 4);
+  }, [apps]);
 
   // URL → surface: a pathname naming an app slug shows the app pane (UrlSync
   // opens/focuses its window in the shared store; we only flip off the grid),
@@ -56,15 +58,21 @@ export function MobileShell() {
   // Resume-don't-duplicate (real-iOS): a home tap brings the existing window
   // forward; only a missing one spawns — multi apps get extra windows from
   // explicit affordances (dock hover "New Window" on desktop), not home taps.
-  const launch = (app: (typeof apps)[number]) => {
-    if (!focusApp(app.id)) openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
-    setSwitcher(false);
-    setHome(false);
-  };
-  const launchById = (appId: string) => {
-    const app = apps.find((a) => a.id === appId);
-    if (app) launch(app);
-  };
+  const launch = useCallback(
+    (app: (typeof apps)[number]) => {
+      if (!focusApp(app.id)) openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
+      setSwitcher(false);
+      setHome(false);
+    },
+    [setHome],
+  );
+  const launchById = useCallback(
+    (appId: string) => {
+      const app = apps.find((a) => a.id === appId);
+      if (app) launch(app);
+    },
+    [apps, launch],
+  );
   const resume = (id: string) => {
     restoreWindow(id);
     setSwitcher(false);
@@ -87,13 +95,17 @@ export function MobileShell() {
     setHome(false);
   };
 
-  const shellUI: ShellUI = {
-    controlCenterOpen: cc,
-    setControlCenterOpen: setCc,
-    openApp: launch,
-    openAppById: launchById,
-    quickAppIds: dockApps.map((a) => a.id),
-  };
+  const quickAppIds = useMemo(() => dockApps.map((a) => a.id), [dockApps]);
+  const shellUI = useMemo<ShellUI>(
+    () => ({
+      controlCenterOpen: cc,
+      setControlCenterOpen: setCc,
+      openApp: launch,
+      openAppById: launchById,
+      quickAppIds,
+    }),
+    [cc, launch, launchById, quickAppIds],
+  );
 
   return (
     <ShellUIProvider value={shellUI}>

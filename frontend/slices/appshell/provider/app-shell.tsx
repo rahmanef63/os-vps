@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, type ComponentType, type ReactNode } from "react";
 import { OsDesktop } from "../components/desktop";
 import { configureWindowTitle, startWindowTitleSync } from "../lib/window-title";
 import { AppRegistryProvider } from "../lib/registry";
@@ -44,16 +44,18 @@ export function AppShell({ manifest }: { manifest: ShellManifest }) {
   const providers = features
     .map((f) => f.provider)
     .filter((p): p is ComponentType<{ children: ReactNode }> => Boolean(p));
+  const shellConfig = useMemo(
+    () => ({
+      persistKey: manifest.persistKey ?? "appshell:layout",
+      routing: manifest.routing !== false,
+    }),
+    [manifest.persistKey, manifest.routing],
+  );
 
   return (
     <CapabilitiesProvider value={manifest.capabilities}>
       <BrandProvider brand={manifest.brand}>
-        <ShellConfigProvider
-          value={{
-            persistKey: manifest.persistKey ?? "appshell:layout",
-            routing: manifest.routing !== false,
-          }}
-        >
+        <ShellConfigProvider value={shellConfig}>
           <FeatureRegistryProvider features={features}>
             {/* Registry + responsive mount ABOVE the feature-provider seam so a
                 FeatureDescriptor.provider can call useApps()/useResponsive(). */}

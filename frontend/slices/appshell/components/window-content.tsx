@@ -3,6 +3,7 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import { useApp } from "../lib/registry";
+import { WindowErrorBoundary } from "./window-error-boundary";
 import type { AppProps } from "../lib/types";
 
 // Loads an app's lazy bundle into a window. We use a plain useState/useEffect
@@ -51,5 +52,9 @@ export function WindowContent({ app, payload, winId }: { app: string; payload?: 
     );
   }
 
-  return <Comp payload={payload} winId={winId} />;
+  return (
+    <WindowErrorBoundary key={app} app={app}>
+      <Comp payload={payload} winId={winId} />
+    </WindowErrorBoundary>
+  );
 }

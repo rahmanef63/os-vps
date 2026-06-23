@@ -39,9 +39,10 @@ export default function RootLayout({
         {/* Pre-hydration theme: AppearanceProvider applies tweaks in a
             post-hydration effect, which gave dark-theme users a light flash on
             every cold load. next/script with beforeInteractive runs before
-            first paint (html has suppressHydrationWarning for the attr swap)
-            AND lets us tighten CSP script-src — no `unsafe-inline` required
-            since the framework emits this with the route's nonce. */}
+            first paint (html has suppressHydrationWarning for the attr swap).
+            Note: the CSP (next.config.mjs) intentionally sets no script-src, so
+            this inline script is not nonce-gated — add a nonced script-src here
+            if that policy is ever tightened. */}
         <Script
           id="theme-noflash"
           strategy="beforeInteractive"

@@ -10,7 +10,7 @@
    height); every surface that must clear the bottom chrome pads with
    `calc(var(--android-nav) + var(--sai-bottom))`. */
 import { Button } from "@/components/ui/button";
-import { useRef, useState, type CSSProperties } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useUrlHome } from "../../../hooks/use-url-home";
 import { Search, ChevronLeft, Bot } from "lucide-react";
 import { useApps } from "../../../lib/registry";
@@ -43,8 +43,8 @@ function AndroidShell() {
   const { routing } = useShellConfig();
   const { home, setHome } = useUrlHome(apps, routing);
 
-  const dockable = apps.filter((a) => !a.noDock);
-  const pinned = dockable.filter((a) => a.pinned);
+  const dockable = useMemo(() => apps.filter((a) => !a.noDock), [apps]);
+  const pinned = useMemo(() => dockable.filter((a) => a.pinned), [dockable]);
   const topId =
     focused && !shellStore.getWindow(focused)?.minimized
       ? focused
@@ -53,18 +53,24 @@ function AndroidShell() {
   const showApp = !home && !!top;
   const activeApp = top ? apps.find((a) => a.id === top.app) : null;
 
-  const launch = (app: AppDescriptor) => {
-    // Resume-don't-duplicate (real-Android): a home/drawer tap brings the
-    // existing window forward; only a missing one spawns.
-    if (!focusApp(app.id)) openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
-    setDrawer(false);
-    setRecents(false);
-    setHome(false);
-  };
-  const launchById = (id: string) => {
-    const app = apps.find((a) => a.id === id);
-    if (app) launch(app);
-  };
+  const launch = useCallback(
+    (app: AppDescriptor) => {
+      // Resume-don't-duplicate (real-Android): a home/drawer tap brings the
+      // existing window forward; only a missing one spawns.
+      if (!focusApp(app.id)) openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
+      setDrawer(false);
+      setRecents(false);
+      setHome(false);
+    },
+    [setHome],
+  );
+  const launchById = useCallback(
+    (id: string) => {
+      const app = apps.find((a) => a.id === id);
+      if (app) launch(app);
+    },
+    [apps, launch],
+  );
   const goHome = () => {
     if (topId) minimizeWindow(topId);
     setHome(true);
@@ -87,13 +93,20 @@ function AndroidShell() {
     menu.open(e);
   };
 
-  const shellUI: ShellUI = {
-    controlCenterOpen: cc,
-    setControlCenterOpen: setCc,
-    openApp: launch,
-    openAppById: launchById,
-    quickAppIds: (pinned.length ? pinned : dockable.slice(0, 4)).map((a) => a.id),
-  };
+  const quickAppIds = useMemo(
+    () => (pinned.length ? pinned : dockable.slice(0, 4)).map((a) => a.id),
+    [pinned, dockable],
+  );
+  const shellUI = useMemo<ShellUI>(
+    () => ({
+      controlCenterOpen: cc,
+      setControlCenterOpen: setCc,
+      openApp: launch,
+      openAppById: launchById,
+      quickAppIds,
+    }),
+    [cc, launch, launchById, quickAppIds],
+  );
 
   return (
     <ShellUIProvider value={shellUI}>
