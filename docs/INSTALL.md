@@ -243,15 +243,24 @@ mismatch): `rm -rf .next && pnpm build && sudo systemctl restart os-vps.service`
 `GET /api/health` returns `{status, buildId, uptime, version}` with
 `Cache-Control: no-store`. Wire it into:
 
-**systemd**: add to the `[Service]` block of `os-vps.service`:
+**systemd watchdog** (implemented + live): the production unit keeps
+`Type=simple` (no readiness handshake → no startup race) plus:
 
-```
-WatchdogSec=30s
+```ini
+[Service]
+WatchdogSec=30
 NotifyAccess=all
 ```
 
-Then call `systemd-notify --pid=$$ WATCHDOG=1` inside a `setInterval` in a
-custom node wrapper. (Or use `Type=notify` with `sd-notify` — bigger refactor.)
+`instrumentation.ts` `register()` pings `WATCHDOG=1` every ~10 s via the
+`systemd-notify` binary — Node has no native AF_UNIX SOCK_DGRAM, and
+`NotifyAccess=all` is required because the ping comes from a child PID, not
+`main`. A wedged event loop that misses the 30 s deadline → systemd
+auto-restarts (catches hangs that `Restart=always`, crash-only, can't). All a
+no-op when `NOTIFY_SOCKET` is unset (dev / demo / CI).
+
+After editing the unit: `sudo systemctl daemon-reload && sudo systemctl restart os-vps.service`
+Verify: `systemctl show os-vps -p WatchdogUSec,NRestarts,ActiveState`
 
 **External monitor** (Uptime Kuma / Healthchecks.io / etc):
 
