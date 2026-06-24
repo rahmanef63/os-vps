@@ -20,6 +20,7 @@ export {
   BUILTIN_APPS,
 } from "./shell.manifest";
 export { topsideCapabilities } from "./capabilities";
+export { A11yCommands } from "./a11y-commands";
 // Dashboard shell now lives in the brand-free framework (appshell) and is
 // surfaced by the `export * from "@/features/appshell"` above (it self-registers
 // on import there). App slices that referenced DashboardShell via

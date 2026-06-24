@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/features/image-editor/ui/slider";
+import { EditorSlider as Slider } from "@/features/image-editor";
 import { toast } from "@/features/os-shell";
 import { loadSavePrefs, saveImageToHost, saveSavePrefs, type SaveFormat } from "../lib/save-image";
 

@@ -24,6 +24,19 @@
   --sai-bottom: env(safe-area-inset-bottom, 0px);
   --sai-left: env(safe-area-inset-left, 0px);
 
+  /* ── Shell z-index scale ────────────────────────────────────────────
+     Documented source of truth for the full-screen modal tier (consumed
+     as z-[var(--z-*)]). Window-tile (10–80) + shell-chrome (880–2000)
+     layers stay inline — their relative order is self-evident in context. */
+  --z-skip-link: 2000;
+  --z-quick-look: 8000;
+  --z-launcher: 8400;
+  --z-clipboard: 8500;
+  --z-share: 8600;
+  --z-shortcut-help: 8700;
+  --z-spotlight: 9000;
+  --z-lock-screen: 9500;
+
   /* Primary accent — darkened from #2f7bf6 (3.97:1 vs white) to #1f6df0
      (4.66:1) so primary buttons hit WCAG AA. Visual delta is minimal. */
   --accent: #1f6df0;

@@ -5,7 +5,21 @@
 import type { Instrumentation } from "next";
 
 export async function register() {
-  // No-op for now; reserved for future tracing init.
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  // systemd liveness: when the unit sets WatchdogSec, systemd exposes
+  // NOTIFY_SOCKET + WATCHDOG_USEC. Node has no native AF_UNIX SOCK_DGRAM
+  // (dgram is UDP-only), so we ping via the `systemd-notify` binary — which
+  // requires NotifyAccess=all in the unit, since the ping comes from a child
+  // PID, not main. A missed ping past WatchdogSec → systemd restarts us; this
+  // catches a wedged event loop that Restart=always (crash-only) can't.
+  // No-op in dev / demo / CI where NOTIFY_SOCKET is unset.
+  if (!process.env.NOTIFY_SOCKET) return;
+  const { execFile } = await import("node:child_process");
+  const usec = parseInt(process.env.WATCHDOG_USEC ?? "0", 10);
+  const intervalMs = usec > 0 ? Math.floor(usec / 2000) : 10_000; // half the deadline, in ms
+  const ping = () => execFile("systemd-notify", ["WATCHDOG=1"], () => {});
+  ping();
+  setInterval(ping, intervalMs).unref();
 }
 
 export const onRequestError: Instrumentation.onRequestError = async (

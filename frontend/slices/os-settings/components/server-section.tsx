@@ -14,7 +14,7 @@ import {
   type ServerTarget,
   type SshServerTarget,
 } from "@/lib/appearance";
-import { useOsApi } from "@/lib/os-api";
+import { useOsApi } from "@/features/os-shell";
 import { IS_DEMO } from "@/lib/demo";
 import { Section } from "./section";
 import { Row } from "./row";

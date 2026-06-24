@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import {
   AppShell,
+  A11yCommands,
   TOPSIDE_BRAND,
   TOPSIDE_FEATURES,
   TOPSIDE_PERSIST_KEY,
@@ -13,7 +14,6 @@ import {
 import { AppearanceProvider } from "@/lib/appearance";
 import { QuicklinksProvider } from "@/lib/quicklinks";
 import "@/features/os-shell/integrations"; // side-effect: lock guard + Quick Look + DnD wiring
-import { A11yCommands } from "@/features/os-shell/a11y-commands";
 import { OsApiProvider } from "@/lib/os-api";
 import { AuthGate } from "@/features/auth";
 import { useInstalledApps, useDisabledIds } from "@/features/app-store";
@@ -50,7 +50,7 @@ export function OsRoot() {
             set on the desktop surface root in appshell/components/desktop.tsx. */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[2000] focus:rounded-md focus:bg-foreground focus:px-3 focus:py-2 focus:text-background focus:outline-2 focus:outline-ring"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[var(--z-skip-link)] focus:rounded-md focus:bg-foreground focus:px-3 focus:py-2 focus:text-background focus:outline-2 focus:outline-ring"
         >
           Skip to main content
         </a>

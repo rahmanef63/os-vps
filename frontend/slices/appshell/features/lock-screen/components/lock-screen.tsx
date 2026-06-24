@@ -59,7 +59,7 @@ function LockCurtain() {
 
   return (
     <div
-      className="absolute inset-0 z-[9500] flex cursor-pointer flex-col items-center justify-center gap-3 bg-background/35 backdrop-blur-2xl"
+      className="absolute inset-0 z-[var(--z-lock-screen)] flex cursor-pointer flex-col items-center justify-center gap-3 bg-background/35 backdrop-blur-2xl"
       onClick={() => void requestUnlock()}
     >
       <div className="text-6xl font-light tracking-tight">

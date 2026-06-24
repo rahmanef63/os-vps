@@ -97,10 +97,16 @@ function SpotlightPanel() {
     return [...base, ...folderCmds];
   }, [commands, q, folderHits]);
 
-  // Focus after the open transition paints (mount = open).
+  // Focus the input after the open transition paints (mount = open), and on
+  // close return focus to whatever was focused before — so keyboard/AT users
+  // aren't dumped at the top of the document when Spotlight dismisses.
   useEffect(() => {
+    const prev = document.activeElement as HTMLElement | null;
     const id = requestAnimationFrame(() => inputRef.current?.focus());
-    return () => cancelAnimationFrame(id);
+    return () => {
+      cancelAnimationFrame(id);
+      prev?.focus?.();
+    };
   }, []);
 
   // Clamp the selection in render when results shrink — no clamp effect.
@@ -131,7 +137,7 @@ function SpotlightPanel() {
 
   return (
     <div
-      className="absolute inset-0 z-[9000] flex items-start justify-center bg-black/20 pt-[18vh]"
+      className="absolute inset-0 z-[var(--z-spotlight)] flex items-start justify-center bg-black/20 pt-[18vh]"
       onClick={close}
     >
       <div

@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test",
+    "check": "node scripts/check-cycles.mjs && node scripts/check-slices.mjs && node scripts/check-contrast.mjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm check",
     "smoke": "E2E_BASE_URL=http://localhost:4005 vitest run scripts/e2e/smoke.test.ts"
   },
   "dependencies": {
@@ -59,6 +60,7 @@
     "@types/node": "^22.19.20",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.7",
     "postcss": "^8.5.15",

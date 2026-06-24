@@ -40,7 +40,7 @@ export function ShortcutHelpOverlay() {
   if (!open) return null;
 
   return (
-    <div className="absolute inset-0 z-[8700] flex items-center justify-center bg-black/25" onClick={() => setShortcutHelpOpen(false)}>
+    <div className="absolute inset-0 z-[var(--z-shortcut-help)] flex items-center justify-center bg-black/25" onClick={() => setShortcutHelpOpen(false)}>
       <div className="glass max-h-[75vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-border p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <header className="mb-4 flex items-center gap-2">
           <Keyboard className="size-4 text-muted-foreground" />

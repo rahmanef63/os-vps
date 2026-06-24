@@ -41,7 +41,7 @@ export function AppLauncher() {
   return (
     <div
       className={cn(
-        "glass absolute inset-0 z-[8400] flex flex-col items-center justify-center bg-black/30 transition-opacity",
+        "glass absolute inset-0 z-[var(--z-launcher)] flex flex-col items-center justify-center bg-black/30 transition-opacity",
         open ? "opacity-100" : "pointer-events-none opacity-0",
       )}
       inert={!open}

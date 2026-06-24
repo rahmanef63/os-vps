@@ -47,7 +47,7 @@ function ShareSheetPanel({ payload }: { payload: unknown }) {
   }, [list, sel, payload]);
 
   return (
-    <div className="absolute inset-0 z-[8600] flex items-end justify-center bg-black/25 pb-[12vh]" onClick={closeShare}>
+    <div className="absolute inset-0 z-[var(--z-share)] flex items-end justify-center bg-black/25 pb-[12vh]" onClick={closeShare}>
       <div className="glass w-full max-w-sm overflow-hidden rounded-2xl border border-border shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <header className="flex items-center gap-2 border-b border-border px-4 py-2.5">
           <Share2 className="size-3.5 text-muted-foreground" />

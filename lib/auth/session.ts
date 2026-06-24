@@ -42,6 +42,20 @@ export function signSession(payload: SessionPayload, secret: string): string {
   return `${encodedPayload}.${base64urlEncode(hmac.digest())}`;
 }
 
+// Shape-guard the post-HMAC JSON. The cookie is already HMAC-verified above, so
+// this is defense-in-depth: it stops a malformed-but-somehow-signed payload (or
+// a future signing-code bug) from flowing a non-string device_id into the
+// approved-device lookup / audit trail as if it were a valid SessionPayload.
+function isSessionPayload(v: unknown): v is SessionPayload {
+  if (typeof v !== "object" || v === null) return false;
+  const o = v as Record<string, unknown>;
+  return (
+    typeof o.issued_at === "number" &&
+    typeof o.expires_at === "number" &&
+    (o.device_id === undefined || typeof o.device_id === "string")
+  );
+}
+
 export function verifySession(cookie: string, secret: string): SessionPayload | null {
   try {
     // Fail-closed: a missing/short signing key means anyone could forge a
@@ -60,8 +74,8 @@ export function verifySession(cookie: string, secret: string): SessionPayload | 
     // probe the expected signature's length via timing.
     if (!constantTimeEq(expectedSig, providedSig)) return null;
 
-    const payload: SessionPayload = JSON.parse(base64urlDecode(encodedPayload).toString("utf8"));
-    if (typeof payload.expires_at !== "number" || payload.expires_at <= Date.now()) return null;
+    const payload: unknown = JSON.parse(base64urlDecode(encodedPayload).toString("utf8"));
+    if (!isSessionPayload(payload) || payload.expires_at <= Date.now()) return null;
     return payload;
   } catch {
     return null;

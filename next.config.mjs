@@ -56,6 +56,11 @@ const nextConfig = {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
+          // Authenticated remote shell over HTTPS — refuse any plaintext leg so
+          // a MITM can't strip TLS and capture the session cookie before the
+          // redirect fires. 1 year. includeSubDomains omitted on purpose: not
+          // every rahmanef.com subdomain is HTTPS-only.
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           // The app is an authenticated remote shell — never allow it to be
           // framed (clickjacking on exec/fs buttons). CSP stays narrow on

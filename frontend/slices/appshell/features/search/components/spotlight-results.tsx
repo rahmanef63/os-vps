@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useViewportWindow } from "../../../lib/use-viewport-window";
@@ -39,6 +39,17 @@ export function ResultList({
   });
   const slice = enabled ? results.slice(win.start, win.end) : results;
   const baseIndex = enabled ? win.start : 0;
+  // Keep the active option scrolled into view (fixed row height) — covers both
+  // render paths and the virtualized case where aria-activedescendant could
+  // point at an off-slice row: nudging scrollTop re-renders the window to it.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const top = selIdx * SPOTLIGHT_ROW_HEIGHT;
+    if (top < el.scrollTop) el.scrollTop = top;
+    else if (top + SPOTLIGHT_ROW_HEIGHT > el.scrollTop + el.clientHeight)
+      el.scrollTop = top + SPOTLIGHT_ROW_HEIGHT - el.clientHeight;
+  }, [selIdx]);
   return (
     <ul
       ref={scrollRef}

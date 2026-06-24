@@ -40,7 +40,7 @@ export function InstallPrompt() {
   };
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[9000] flex justify-center px-4 [padding-bottom:var(--sai-bottom)]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[var(--z-spotlight)] flex justify-center px-4 [padding-bottom:var(--sai-bottom)]">
       <div className="glass pointer-events-auto flex items-center gap-2 rounded-2xl border border-border bg-card/90 px-3 py-2 shadow-[var(--shadow-win)]">
         <Download className="size-4 shrink-0 text-primary" />
         <span className="text-sm">Install Topside as an app</span>

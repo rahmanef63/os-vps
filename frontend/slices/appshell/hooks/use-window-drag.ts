@@ -32,14 +32,17 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
       const sx = e.clientX, sy = e.clientY;
       const ox = win.x, oy = win.y;
       let cx = sx, cy = sy, z: SnapZone | null = null;
+      // Live drag runs on `transform` (compositor-only, no per-frame layout);
+      // left/top stay frozen at win.x/win.y. dx/ndy hold the clamped delta so
+      // pointerup commits win.x+dx / win.y+ndy — NOT offsetLeft: transform never
+      // shifts the layout box, so offsetLeft would still read win.x and zero the drag.
+      let dx = 0, ndy = 0;
       const apply = () => {
         raf.current = 0;
-        const nx = ox + (cx - sx);
-        const ny = Math.max(32, oy + (cy - sy));
-        if (ref.current) {
-          ref.current.style.left = nx + "px";
-          ref.current.style.top = ny + "px";
-        }
+        dx = cx - sx;
+        // clamp the absolute top to >=32 (under the menu bar), then back out the delta
+        ndy = Math.max(32, oy + (cy - sy)) - oy;
+        if (ref.current) ref.current.style.transform = `translate3d(${dx}px, ${ndy}px, 0)`;
         z = snapZoneAt(cx, cy);
         setZone(z);
       };
@@ -50,18 +53,17 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
       const up = () => {
         cancelAnimationFrame(raf.current); raf.current = 0;
         setZone(null);
-        if (ref.current) ref.current.style.transition = ""; // restore the .win-geo glide
+        const el = ref.current;
+        if (el) { el.style.transform = ""; el.style.transition = ""; } // drop live transform; restore .win-geo glide
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
         if (z) snapWindow(id, z);
-        else if (ref.current) {
-          // offsetLeft/Top are relative to the desktop surface (the offset
-          // parent) — the same space win.x/win.y live in. getBoundingClientRect
-          // is viewport-relative and would add the surface's top offset each drop.
-          moveWindow(id, ref.current.offsetLeft, ref.current.offsetTop);
-        }
+        // Commit from the pointer delta in win-coords (the section-relative space
+        // win.x/win.y live in). NOT offsetLeft: the transform left the layout box
+        // at win.x, so offsetLeft would commit the original position.
+        else moveWindow(id, ox + dx, oy + ndy);
       };
-      window.addEventListener("pointermove", move);
+      window.addEventListener("pointermove", move, { passive: true });
       window.addEventListener("pointerup", up);
     },
     [id, ref],
@@ -106,7 +108,7 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
           resizeWindow(id, el.offsetWidth, el.offsetHeight);
         }
       };
-      window.addEventListener("pointermove", move);
+      window.addEventListener("pointermove", move, { passive: true });
       window.addEventListener("pointerup", up);
     },
     [id, ref],

@@ -35,7 +35,7 @@ export function QuickLookOverlay() {
 
   return (
     <div
-      className="absolute inset-0 z-[8000] flex items-center justify-center bg-black/30"
+      className="absolute inset-0 z-[var(--z-quick-look)] flex items-center justify-center bg-black/30"
       onClick={closeQuickLook}
     >
       <div

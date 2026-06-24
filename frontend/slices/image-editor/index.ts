@@ -39,3 +39,7 @@ export { useEditorCommands } from "./commands/use-editor-commands";
 export type { EditorCommand, AnthropicTool } from "./commands/types";
 export type { ToolInvocation, ToolOutcome } from "./commands/use-editor-commands";
 export { runEditorAgent } from "./lib/ai-agent";
+
+// Radix-based slider (array value + onValueChange) — distinct from the native
+// @/components/ui/slider. Exported so peer slices use it via the barrel.
+export { Slider as EditorSlider } from "./ui/slider";
