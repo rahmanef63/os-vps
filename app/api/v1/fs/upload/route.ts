@@ -8,6 +8,7 @@ import {
   boundaryFromContentType,
   invalidRequest,
   parseMultipart,
+  rateLimited,
   resolveUploadDest,
   streamFileInto,
   UploadTooLargeError,
@@ -15,6 +16,10 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Burst guard (same limiter as /exec/run); per-actor bucket. Bandwidth-heavy → tightest cap.
+const FS_UPLOAD_MAX = 20;
+const FS_UPLOAD_WINDOW_MS = 60_000;
 
 // Total request cap, enforced as a RUNNING counter across all parts BEFORE
 // buffering past it (the body never lands fully in RAM — each part streams to a
@@ -29,6 +34,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const actor = await getSessionActor();
+  if (rateLimited(`fs.upload:${actor ?? "anon"}`, FS_UPLOAD_MAX, FS_UPLOAD_WINDOW_MS)) {
+    audit({ action: "fs.upload", actor, ok: false, detail: "rate-limited" });
+    return NextResponse.json({ error: "Too many upload requests, slow down" }, { status: 429 });
+  }
 
   let boundary: string;
   try {

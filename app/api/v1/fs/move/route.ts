@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
 import { getSessionActor } from "@/lib/auth/require-session";
-import { apiError, audit, invalidRequest, move, readJson, requireString } from "@/lib/host";
+import { apiError, audit, invalidRequest, move, rateLimited, readJson, requireString } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
+
+// Burst guard (same limiter as /exec/run); per-actor, per-op bucket.
+const FS_MOVE_MAX = 120;
+const FS_MOVE_WINDOW_MS = 60_000;
 
 // os-rr POST /fs/move {from,to} → rename/move within WRITE roots.
 export async function POST(req: Request) {
@@ -11,6 +15,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const actor = await getSessionActor();
+  if (rateLimited(`fs.move:${actor ?? "anon"}`, FS_MOVE_MAX, FS_MOVE_WINDOW_MS)) {
+    audit({ action: "fs.move", actor, ok: false, detail: "rate-limited" });
+    return NextResponse.json({ error: "Too many move requests, slow down" }, { status: 429 });
+  }
   const body = await readJson(req);
   const from = requireString(body, "from");
   if (from === null) return invalidRequest("from");

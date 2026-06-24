@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
 import { getSessionActor } from "@/lib/auth/require-session";
-import { apiError, audit, invalidRequest, makeDir, readJson, requireString } from "@/lib/host";
+import { apiError, audit, invalidRequest, makeDir, rateLimited, readJson, requireString } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
+
+// Burst guard (same limiter as /exec/run); per-actor, per-op bucket.
+const FS_MKDIR_MAX = 120;
+const FS_MKDIR_WINDOW_MS = 60_000;
 
 // os-rr POST /fs/mkdir {path} → mkdir -p within WRITE roots.
 export async function POST(req: Request) {
@@ -11,6 +15,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const actor = await getSessionActor();
+  if (rateLimited(`fs.mkdir:${actor ?? "anon"}`, FS_MKDIR_MAX, FS_MKDIR_WINDOW_MS)) {
+    audit({ action: "fs.mkdir", actor, ok: false, detail: "rate-limited" });
+    return NextResponse.json({ error: "Too many mkdir requests, slow down" }, { status: 429 });
+  }
   const body = await readJson(req);
   const path = requireString(body, "path");
   if (path === null) return invalidRequest("path");

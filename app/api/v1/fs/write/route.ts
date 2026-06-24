@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/agent/server";
 import { getSessionActor } from "@/lib/auth/require-session";
-import { apiError, audit, invalidRequest, readJson, requireString, writeFile } from "@/lib/host";
+import { apiError, audit, invalidRequest, rateLimited, readJson, requireString, writeFile } from "@/lib/host";
 
 export const dynamic = "force-dynamic";
+
+// Burst guard (same limiter as /exec/run); per-actor, per-op bucket.
+const FS_WRITE_MAX = 120;
+const FS_WRITE_WINDOW_MS = 60_000;
 
 // os-rr POST /fs/write {path,content} → write within WRITE roots.
 export async function POST(req: Request) {
@@ -11,6 +15,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const actor = await getSessionActor();
+  if (rateLimited(`fs.write:${actor ?? "anon"}`, FS_WRITE_MAX, FS_WRITE_WINDOW_MS)) {
+    audit({ action: "fs.write", actor, ok: false, detail: "rate-limited" });
+    return NextResponse.json({ error: "Too many write requests, slow down" }, { status: 429 });
+  }
   const body = await readJson(req);
   const path = requireString(body, "path");
   if (path === null) return invalidRequest("path");

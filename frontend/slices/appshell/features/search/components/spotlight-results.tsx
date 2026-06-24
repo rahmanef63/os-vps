@@ -17,11 +17,13 @@ const SPOTLIGHT_ROW_HEIGHT = 44;
 // ones (>80 hits). Same DOM shape both paths so styling/keyboard nav behave
 // identically; only the slice + spacer change.
 export function ResultList({
+  id,
   results,
   selIdx,
   onHover,
   onPick,
 }: {
+  id: string;
   results: Command[];
   selIdx: number;
   onHover: (i: number) => void;
@@ -40,6 +42,9 @@ export function ResultList({
   return (
     <ul
       ref={scrollRef}
+      id={id}
+      role="listbox"
+      aria-label="Spotlight results"
       className="max-h-80 overflow-y-auto border-t border-border p-2"
     >
       {enabled ? (
@@ -87,10 +92,15 @@ function ResultRow({
   onPick: (i: number) => void;
 }) {
   return (
-    <li>
+    <li
+      id={`spotlight-option-${index}`}
+      role="option"
+      aria-selected={selected}
+    >
       <Button
         type="button"
         variant="ghost"
+        tabIndex={-1}
         onMouseMove={() => onHover(index)}
         onClick={() => onPick(index)}
         className={cn(

@@ -34,6 +34,7 @@ function SpotlightPanel() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const LISTBOX_ID = "spotlight-listbox";
 
   // Debounced folder search under ~/projects (live) — opens Files at the hit.
   // Results are state, but "no query → no hits" is derived below (stale hits
@@ -139,6 +140,12 @@ function SpotlightPanel() {
       >
         <input
           ref={inputRef}
+          role="combobox"
+          aria-label="Spotlight search"
+          aria-expanded={results.length > 0}
+          aria-controls={LISTBOX_ID}
+          aria-activedescendant={results.length > 0 ? `spotlight-option-${selIdx}` : undefined}
+          aria-autocomplete="list"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={onKey}
@@ -146,7 +153,7 @@ function SpotlightPanel() {
           className="w-full bg-transparent px-5 py-4 text-base outline-none placeholder:text-muted-foreground"
         />
         {results.length > 0 && (
-          <ResultList results={results} selIdx={selIdx} onHover={setSel} onPick={runAt} />
+          <ResultList id={LISTBOX_ID} results={results} selIdx={selIdx} onHover={setSel} onPick={runAt} />
         )}
         {results.length === 0 && (
           <p className="border-t border-border px-5 py-4 text-sm text-muted-foreground">
