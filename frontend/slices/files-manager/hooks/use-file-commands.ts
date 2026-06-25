@@ -2,12 +2,23 @@
 
 import { useCallback, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { openWindow, toast } from "@/features/os-shell";
-import { rawUrl, type FsEntry } from "../lib/host";
+import { rawUrl, zipUrl, type FsEntry } from "../lib/host";
 import { appForFile, mediaKind } from "../lib/icons";
 import { joinPath, parentPath } from "../lib/format";
 import { TRASH_PATH, type UseFiles } from "./use-files";
 import type { UseFileSelection } from "./use-file-selection";
 import type { ContextState } from "../lib/types";
+
+// Fire a same-origin download through a transient hidden anchor.
+function trigger(href: string, name: string) {
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = name;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
 // All user commands (open, clipboard, trash, keyboard) bound to the current fs
 // + selection. Keeps app.tsx focused on layout. `del` moves to Trash from a
@@ -71,29 +82,30 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
   const cut = useCallback((names: string[]) => fs.setClip({ mode: "cut", names, from: fs.path }), [fs]);
   const copy = useCallback((names: string[]) => fs.setClip({ mode: "copy", names, from: fs.path }), [fs]);
 
-  // Download a file's raw bytes via a hidden <a download> — the browser's native
-  // download manager handles progress (streaming a big file through JS just to
-  // draw a bar would buffer it all in RAM). Dirs aren't downloadable (no archive
-  // endpoint). The raw route is cookie-authed same-origin; demo serves
-  // /demo-media/* statically. A toast acknowledges the start (the click is
-  // fire-and-forget — there's no completion event from <a download>).
+  // Download via a hidden <a download> — the browser's native download manager
+  // owns the progress (streaming bytes through JS just to draw a bar would buffer
+  // it all in RAM). One plain file → its raw bytes; a folder or any multi-select
+  // → a streamed zip of everything (server runs the host `zip` binary). Both
+  // routes are cookie-authed same-origin. A toast acknowledges the start (the
+  // click is fire-and-forget — no completion event from <a download>).
   const download = useCallback(
-    (entry: FsEntry | null) => {
-      if (!entry) return;
-      if (entry.kind !== "file") {
-        toast("Folders can't be downloaded yet", { tone: "error" });
+    (names: string[]) => {
+      const items = names.filter(Boolean);
+      if (!items.length) return;
+      const entries = fs.entries ?? [];
+      const single =
+        items.length === 1 ? entries.find((e) => e.name === items[0]) ?? null : null;
+      if (single?.kind === "file") {
+        trigger(rawUrl(joinPath(fs.path, single.name)), single.name);
+        toast(`Downloading ${single.name}…`);
         return;
       }
-      const a = document.createElement("a");
-      a.href = rawUrl(joinPath(fs.path, entry.name));
-      a.download = entry.name;
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      toast(`Downloading ${entry.name}…`);
+      const dir = fs.path.split("/").filter(Boolean).pop() || "files";
+      const filename = items.length === 1 ? `${items[0]}.zip` : `${dir}.zip`;
+      trigger(zipUrl(fs.path, items, filename), filename);
+      toast(`Zipping ${items.length} item${items.length > 1 ? "s" : ""}…`);
     },
-    [fs.path],
+    [fs.path, fs.entries],
   );
   const del = useCallback(
     (names: string[]) => {

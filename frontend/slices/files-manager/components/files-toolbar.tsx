@@ -1,5 +1,5 @@
 import { type DragEvent } from "react";
-import { ChevronRight, PanelLeft, Plus, Upload, FolderUp, FileUp, LayoutGrid, List, ArrowUpDown, ClipboardPaste } from "lucide-react";
+import { ChevronRight, PanelLeft, Plus, Upload, Download, FolderUp, FileUp, LayoutGrid, List, ArrowUpDown, ClipboardPaste } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -32,6 +32,8 @@ export function FilesToolbar(props: {
   onUploadFolder: () => void;
   onPaste: () => void;
   onOpenSidebar: () => void;
+  selectedCount: number;
+  onDownload: () => void;
   dropTarget: string | null;
   onCrumbDragOver: (e: DragEvent, dest: string) => void;
   onCrumbDragLeave: (dest: string) => void;
@@ -98,6 +100,18 @@ export function FilesToolbar(props: {
         <Plus className="size-3.5" />
         <span className="@max-[430px]:hidden">New</span>
       </Button>
+      {props.selectedCount > 0 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1.5 px-2 text-xs [@media(pointer:coarse)]:h-9 [@media(pointer:coarse)]:min-w-9"
+          onClick={props.onDownload}
+          aria-label={`Download ${props.selectedCount} selected`}
+        >
+          <Download className="size-3.5" />
+          <span className="@max-[430px]:hidden">Download</span>
+        </Button>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="sm" className="h-7 gap-1.5 px-2 text-xs [@media(pointer:coarse)]:h-9 [@media(pointer:coarse)]:min-w-9">

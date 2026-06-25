@@ -17,6 +17,15 @@ export function rawUrl(path: string): string {
   return "/api/v1/fs/raw?path=" + encodeURIComponent(path);
 }
 
+// Same-origin URL for a streamed zip of `names` (basenames) inside `base` (the
+// current dir). Cookie-authed via the GET route → a hidden <a download> streams
+// it through the browser's download manager. No demo fallback (no host).
+export function zipUrl(base: string, names: string[], filename: string): string {
+  const p = new URLSearchParams({ base, name: filename });
+  for (const n of names) p.append("n", n);
+  return "/api/v1/fs/zip?" + p.toString();
+}
+
 // os-vps adapter injection: pick mock (default) ↔ live, then hand the concrete
 // api to the framework's HostApiProvider (which owns the context useOsApi reads).
 // Live talks to SAME-ORIGIN `/api/v1` route handlers (base url ""); the signed

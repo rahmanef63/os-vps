@@ -11,7 +11,7 @@ export * from "@/features/appshell";
 // into the stable barrel so app slices reach them via @/features/os-shell (a
 // legal peer alias) rather than @/lib/os-api directly. The OsApi port + hook
 // already flow through the appshell re-export above.
-export { rawUrl } from "@/lib/os-api";
+export { rawUrl, zipUrl } from "@/lib/os-api";
 export * from "@/lib/os-api/format";
 export {
   TOPSIDE_BRAND,

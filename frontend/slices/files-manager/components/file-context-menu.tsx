@@ -36,6 +36,7 @@ export function FileContextMenu({
   ctx,
   hasClipboard,
   inTrash,
+  downloadCount,
   onClose,
   onOpen,
   onRename,
@@ -51,6 +52,7 @@ export function FileContextMenu({
   ctx: ContextState;
   hasClipboard: boolean;
   inTrash: boolean;
+  downloadCount: number;
   onClose: () => void;
   onOpen: () => void;
   onRename: () => void;
@@ -104,7 +106,16 @@ export function FileContextMenu({
           { label: "Cut", shortcut: "⌘X", run: onCut },
           { label: "Copy", shortcut: "⌘C", run: onCopy },
           ...(hasClipboard ? [{ label: "Paste", shortcut: "⌘V", run: onPaste }] : []),
-          ...(ctx.entry.kind === "file" ? [{ label: "Download", run: onDownload }] : []),
+          // A single file downloads raw; folders / multi-select stream a zip.
+          {
+            label:
+              downloadCount > 1
+                ? `Download ${downloadCount} as Zip`
+                : ctx.entry.kind === "dir"
+                  ? "Download as Zip"
+                  : "Download",
+            run: onDownload,
+          },
         ],
         [
           {

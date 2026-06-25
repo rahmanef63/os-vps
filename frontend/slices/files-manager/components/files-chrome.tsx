@@ -17,6 +17,7 @@ type Dnd = ReturnType<typeof useDnd>;
 // Extracted from app.tsx purely to keep that file ≤200 LOC; no behavior change.
 export function FilesHeader({
   fs, cmd, dnd, view, sort, setView, setSort, openPicker, openFolderPicker, openSidebar, clearSel,
+  selectedCount, onDownload,
 }: {
   fs: Fs; cmd: Cmd; dnd: Dnd;
   view: ViewMode; sort: SortKey;
@@ -26,6 +27,8 @@ export function FilesHeader({
   openFolderPicker: () => void;
   openSidebar: () => void;
   clearSel: () => void;
+  selectedCount: number;
+  onDownload: () => void;
 }) {
   return (
     <>
@@ -46,6 +49,8 @@ export function FilesHeader({
         onUploadFolder={openFolderPicker}
         onPaste={fs.paste}
         onOpenSidebar={openSidebar}
+        selectedCount={selectedCount}
+        onDownload={onDownload}
         dropTarget={dnd.dropTarget}
         onCrumbDragOver={dnd.onDragOver}
         onCrumbDragLeave={dnd.onDragLeave}

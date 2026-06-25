@@ -103,6 +103,8 @@ export default function FilesManager({ payload }: AppProps) {
             openPicker={openPicker} openFolderPicker={openFolderPicker}
             openSidebar={() => setSidebarOpen(true)}
             clearSel={sel.clear}
+            selectedCount={sel.selected.size}
+            onDownload={() => cmd.download([...sel.selected])}
           />
         }
         footer={
@@ -163,7 +165,8 @@ export default function FilesManager({ payload }: AppProps) {
           onCut={() => cmd.cut(cmd.targets())}
           onCopy={() => cmd.copy(cmd.targets())}
           onPaste={fs.paste}
-          onDownload={() => cmd.download(cmd.ctx?.entry ?? null)}
+          downloadCount={cmd.targets().length}
+          onDownload={() => cmd.download(cmd.targets())}
           onDelete={() => cmd.del(cmd.targets())}
         />
       )}

@@ -20,6 +20,7 @@ export type AuditAction =
   | "fs.copy"
   | "fs.mkdir"
   | "fs.upload"
+  | "fs.zip"
   | "browser.navigate"
   | "browser.click"
   | "browser.type"

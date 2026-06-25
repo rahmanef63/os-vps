@@ -4,6 +4,7 @@
 // live in paths.ts and the route's verifyAuth() gate.
 export { listDir, readFile, writeFile, makeDir, remove, move, copy, searchFs, usage, statReadable, fileStream } from "./fs";
 export { uploadInto, resolveUploadDest, streamFileInto } from "./fs-upload";
+export { zipStream } from "./fs-zip";
 export { parseMultipart, boundaryFromContentType, UploadTooLargeError } from "./multipart";
 export type { MultipartPart } from "./multipart";
 export { runCommand } from "./exec";
