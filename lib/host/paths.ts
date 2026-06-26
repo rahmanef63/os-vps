@@ -55,6 +55,13 @@ const APP_DIR = (() => {
   }
 })();
 
+// The app's own dir (realpath'd). Exposed so the zip stream can force-strip its
+// `.env*` secrets when a PARENT of it is archived — `zip -r` recurses past the
+// per-name credential gate, so that one blind spot needs an explicit exclude.
+export function appDir(): string {
+  return APP_DIR;
+}
+
 // Defense-in-depth: high-value credential material in $HOME is blocked even
 // though the session belongs to the owner — a hijacked session shouldn't walk
 // away with SSH keys or shell history. Override with OS_FS_ALLOW_SENSITIVE=1

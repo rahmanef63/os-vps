@@ -30,14 +30,15 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const base = url.searchParams.get("base") ?? "";
   const names = url.searchParams.getAll("n");
+  const exclude = url.searchParams.getAll("x"); // heavy-dir basenames to skip (node_modules…)
   // Strip anything that could break out of the quoted Content-Disposition filename.
   const filename = (url.searchParams.get("name") || "archive.zip").replace(/[^\w.\-]+/g, "_");
   if (!base || !names.length)
     return NextResponse.json({ error: "base + n required" }, { status: 400 });
 
   try {
-    const stream = await zipStream(base, names);
-    audit({ action: "fs.zip", actor, target: base, ok: true, detail: `${names.length} items` });
+    const stream = await zipStream(base, names, exclude);
+    audit({ action: "fs.zip", actor, target: base, ok: true, detail: `${names.length} items, skip ${exclude.length}` });
     return new Response(Readable.toWeb(stream) as unknown as ReadableStream, {
       status: 200,
       headers: {

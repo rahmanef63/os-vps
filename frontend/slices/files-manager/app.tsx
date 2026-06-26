@@ -9,6 +9,7 @@ import { DropOverlay } from "./components/drop-overlay";
 import { FilesSidebar } from "./components/files-sidebar";
 import { FileView } from "./components/file-view";
 import { FileContextMenu } from "./components/file-context-menu";
+import { ZipDialog } from "./components/zip-dialog";
 import { UploadInput } from "./components/upload-input";
 import { FilesHeader, FilesFooter } from "./components/files-chrome";
 import { useFiles } from "./hooks/use-files";
@@ -170,6 +171,13 @@ export default function FilesManager({ payload }: AppProps) {
           onDelete={() => cmd.del(cmd.targets())}
         />
       )}
+      <ZipDialog
+        open={!!cmd.zipPrompt}
+        count={cmd.zipPrompt?.names.length ?? 0}
+        filename={cmd.zipPrompt?.filename ?? ""}
+        onClose={() => cmd.setZipPrompt(null)}
+        onConfirm={cmd.confirmZip}
+      />
       <UploadInput ref={uploadRef} onFiles={fs.upload} />
       <UploadInput ref={folderRef} onFiles={fs.upload} directory />
     </div>

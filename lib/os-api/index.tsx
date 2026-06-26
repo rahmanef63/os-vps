@@ -20,9 +20,15 @@ export function rawUrl(path: string): string {
 // Same-origin URL for a streamed zip of `names` (basenames) inside `base` (the
 // current dir). Cookie-authed via the GET route → a hidden <a download> streams
 // it through the browser's download manager. No demo fallback (no host).
-export function zipUrl(base: string, names: string[], filename: string): string {
+export function zipUrl(
+  base: string,
+  names: string[],
+  filename: string,
+  exclude: string[] = [],
+): string {
   const p = new URLSearchParams({ base, name: filename });
   for (const n of names) p.append("n", n);
+  for (const x of exclude) p.append("x", x);
   return "/api/v1/fs/zip?" + p.toString();
 }
 

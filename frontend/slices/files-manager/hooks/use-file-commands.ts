@@ -26,6 +26,8 @@ function trigger(href: string, name: string) {
 export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
   const [renaming, setRenaming] = useState<string | null>(null);
   const [ctx, setCtx] = useState<ContextState | null>(null);
+  // Pending zip awaiting the exclude-heavy-dirs dialog (folder/multi-dir only).
+  const [zipPrompt, setZipPrompt] = useState<{ names: string[]; filename: string } | null>(null);
   const inTrash = fs.path === TRASH_PATH;
 
   const go = useCallback(
@@ -84,10 +86,11 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
 
   // Download via a hidden <a download> — the browser's native download manager
   // owns the progress (streaming bytes through JS just to draw a bar would buffer
-  // it all in RAM). One plain file → its raw bytes; a folder or any multi-select
-  // → a streamed zip of everything (server runs the host `zip` binary). Both
-  // routes are cookie-authed same-origin. A toast acknowledges the start (the
-  // click is fire-and-forget — no completion event from <a download>).
+  // it all in RAM). One plain file → its raw bytes; pure multi-file → a streamed
+  // zip straight away; anything containing a FOLDER → open the exclude dialog first
+  // (heavy dirs like node_modules can dwarf the archive). All routes are cookie-
+  // authed same-origin. A toast acknowledges the start (the click is fire-and-forget
+  // — no completion event from <a download>).
   const download = useCallback(
     (names: string[]) => {
       const items = names.filter(Boolean);
@@ -102,10 +105,25 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
       }
       const dir = fs.path.split("/").filter(Boolean).pop() || "files";
       const filename = items.length === 1 ? `${items[0]}.zip` : `${dir}.zip`;
-      trigger(zipUrl(fs.path, items, filename), filename);
-      toast(`Zipping ${items.length} item${items.length > 1 ? "s" : ""}…`);
+      const hasDir = items.some((n) => entries.find((e) => e.name === n)?.kind === "dir");
+      if (!hasDir) {
+        trigger(zipUrl(fs.path, items, filename), filename);
+        toast(`Zipping ${items.length} item${items.length > 1 ? "s" : ""}…`);
+        return;
+      }
+      setZipPrompt({ names: items, filename });
     },
     [fs.path, fs.entries],
+  );
+  // Dialog confirmed → stream the zip, skipping the chosen heavy dirs.
+  const confirmZip = useCallback(
+    (exclude: string[]) => {
+      if (!zipPrompt) return;
+      trigger(zipUrl(fs.path, zipPrompt.names, zipPrompt.filename, exclude), zipPrompt.filename);
+      toast(`Zipping ${zipPrompt.names.length} item${zipPrompt.names.length > 1 ? "s" : ""}…`);
+      setZipPrompt(null);
+    },
+    [fs.path, zipPrompt],
   );
   const del = useCallback(
     (names: string[]) => {
@@ -173,7 +191,7 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
   );
 
   return {
-    renaming, setRenaming, ctx, setCtx, inTrash,
-    go, open, openPath, onContext, targets, cut, copy, del, download, emptyTrash, doRename, newFolder, onKey,
+    renaming, setRenaming, ctx, setCtx, inTrash, zipPrompt, setZipPrompt,
+    go, open, openPath, onContext, targets, cut, copy, del, download, confirmZip, emptyTrash, doRename, newFolder, onKey,
   };
 }
