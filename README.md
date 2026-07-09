@@ -242,6 +242,14 @@ bounded, but it has **not** had a third-party security audit. Use accordingly.
   log; `scripts/post-deploy-smoke.sh` catches chunk/MIME drift after a restart.
   Backup + logrotate guidance in [docs/INSTALL.md](./docs/INSTALL.md).
 
+## Related projects
+
+Part of the Rahman web-OS family:
+
+- **[Rahman OS](https://shell.rahmanef.com)** — manifest-driven desktop/mobile web-OS shell. ([`shell-rahmanef-com`](https://github.com/rahmanef63/shell-rahmanef-com))
+- **[belajar-with-rahmanef](https://study-with.rahmanef.com)** — learn AI through a browser web-OS desktop; charity project. ([`study-with-rahmanef-com`](https://github.com/rahmanef63/study-with-rahmanef-com))
+- **[Rahman Resources](https://resource.rahmanef.com)** — the slice & component library these UIs are built from. ([`resource-site`](https://github.com/rahmanef63/resource-site))
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
