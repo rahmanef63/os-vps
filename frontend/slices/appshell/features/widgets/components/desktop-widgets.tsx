@@ -1,14 +1,16 @@
 "use client";
 
 import { createElement } from "react";
-import { registerCommands, toast } from "@/features/appshell";
-import { WIDGET_META, getWidgetState, isWidgetOn, setWidgetsOn, toggleWidget, useWidgetState } from "../widget-registry";
+import { LayoutGrid } from "lucide-react";
+import { registerCommands, registerContextMenu, toast } from "@/features/appshell";
+import { getWidgetState, setPickerOpen, setWidgetsOn, useWidgetState } from "../widget-registry";
 import { WIDGET_RENDER } from "./widgets-defs";
+import { WidgetPicker } from "./widget-picker";
 
 // Desktop widgets — a glanceable, editable stack pinned to the wallpaper layer
-// (behind every window), macOS-Sonoma style. The master toggle + which widgets
-// show are palette-driven (below) and persist. ponytail: config via Spotlight
-// commands, no picker dialog yet — a proper picker + drag are a later slice.
+// (behind every window), macOS-Sonoma style. Which widgets show + their order
+// live in the widget-registry store; the WidgetPicker dialog edits them. Opened
+// from the palette or the desktop right-click menu.
 
 registerCommands("desktop-widgets", [
   {
@@ -22,29 +24,34 @@ registerCommands("desktop-widgets", [
       toast(next ? "Desktop widgets on" : "Desktop widgets off");
     },
   },
-  // One toggle per widget type, so the stack is an editable set from Spotlight.
-  ...WIDGET_META.map((w) => ({
-    id: `widgets:toggle:${w.id}`,
-    label: `Toggle ${w.title} widget`,
+  {
+    id: "widgets:configure",
+    label: "Configure desktop widgets",
     hint: "Widgets",
-    keywords: `desktop widget ${w.title}`,
-    run: () => {
-      toggleWidget(w.id);
-      toast(`${w.title} widget ${isWidgetOn(w.id) ? "added" : "removed"}`);
-    },
-  })),
+    keywords: "desktop widget picker add remove reorder",
+    run: () => setPickerOpen(true),
+  },
+]);
+
+// Desktop right-click → open the picker (macOS shell only — that's where the
+// widget stack + slot live).
+registerContextMenu("macos", () => [
+  { label: "Desktop widgets…", icon: LayoutGrid, onClick: () => setPickerOpen(true) },
 ]);
 
 export function DesktopWidgets() {
   const { on, enabled } = useWidgetState();
-  if (!on) return null;
-
   return (
-    <div className="pointer-events-none absolute right-4 top-12 z-[5] flex w-60 flex-col gap-3">
-      {enabled.map((id) => {
-        const Render = WIDGET_RENDER[id];
-        return Render ? createElement(Render, { key: id }) : null;
-      })}
-    </div>
+    <>
+      <WidgetPicker />
+      {on && (
+        <div className="pointer-events-none absolute right-4 top-12 z-[5] flex w-60 flex-col gap-3">
+          {enabled.map((id) => {
+            const Render = WIDGET_RENDER[id];
+            return Render ? createElement(Render, { key: id }) : null;
+          })}
+        </div>
+      )}
+    </>
   );
 }

@@ -81,3 +81,36 @@ export function toggleWidget(id: string) {
     : [...state.enabled, id];
   commit({ ...state, enabled });
 }
+
+export function moveWidget(id: string, dir: -1 | 1) {
+  const i = state.enabled.indexOf(id);
+  if (i === -1) return;
+  const j = i + dir;
+  if (j < 0 || j >= state.enabled.length) return;
+  const enabled = [...state.enabled];
+  [enabled[i], enabled[j]] = [enabled[j], enabled[i]];
+  commit({ ...state, enabled });
+}
+
+// Picker-dialog open flag — ephemeral (not persisted). Kept here so any surface
+// (palette command, desktop context menu) can open the picker.
+let pickerOpen = false;
+const pickerSubs = new Set<() => void>();
+
+export function setPickerOpen(v: boolean) {
+  pickerOpen = v;
+  pickerSubs.forEach((f) => f());
+}
+
+export function usePickerOpen(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      pickerSubs.add(cb);
+      return () => {
+        pickerSubs.delete(cb);
+      };
+    },
+    () => pickerOpen,
+    () => false,
+  );
+}
