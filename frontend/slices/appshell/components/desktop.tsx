@@ -11,6 +11,7 @@ import { useOverviewKey } from "../hooks/use-overview-key";
 import { MenuBar } from "./menu-bar";
 import { Dock } from "./dock";
 import { AppLauncher } from "./app-launcher";
+import { HotCorners } from "./hot-corners";
 import { Wallpaper } from "./wallpaper";
 import { MobileShell } from "./mobile-shell";
 import { Window } from "./window";
@@ -179,6 +180,7 @@ function DesktopChrome() {
       <AppSwitcher />
       <AppLauncher />
       <Dock onMissionControl={() => setOverview(true)} />
+      <HotCorners onMissionControl={() => setOverview(true)} />
       {overview && <WindowOverview onClose={() => setOverview(false)} label="Mission Control" />}
       <ShellContextMenu state={menu.state} onClose={menu.close} />
     </>

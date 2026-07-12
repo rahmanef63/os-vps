@@ -232,11 +232,11 @@ Update as phases land. (Nothing started yet — this is the baseline.)
 |---|---|---|
 | P0 Widget framework | ☐ not started | flagship; Phase C |
 | P1 Context-menu polish | ✅ done (2026-07-12) | portal→body + focus-first + Arrow nav + focus-restore + ARIA roles + 4-edge clamp. `appshell/components/shells/context-menu.tsx`. Fluent variant still optional/deferred. |
-| P1 Hot corners | ☐ not started | Phase A |
+| P1 Hot corners | ✅ done (2026-07-12) | `components/hot-corners.tsx`, mounted in macOS `DesktopChrome`. TR=Mission Control, BL=Spotlight, BR=Show desktop, 120ms dwell, z-901 over menu bar. |
 | P1 Marquee selection | ☐ not started | Phase B |
 | P2 Agent execution | ☐ not started | Phase D |
 | P2 Force-quit / sounds / HUD | ☐ not started | Phase E |
-| P3 MRU history | ☐ not started | Phase A |
+| P3 MRU history | ✅ done (2026-07-12) | `features/search/history.ts`; recently-run commands float to top of Spotlight when query is empty (stable sort keeps catalog order). |
 | P3 Theme quick-picker | ☐ not started | Phase A |
 | P3 Auto-lock | ☐ not started | Phase A |
 | P3 Thirds-tiling | ☐ not started | Phase E |

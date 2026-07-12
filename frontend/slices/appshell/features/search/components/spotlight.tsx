@@ -17,6 +17,7 @@ import {
 } from "@/features/appshell";
 
 import { matches, type Command } from "../lib";
+import { loadRecents, pushRecent } from "../history";
 import { ResultList } from "./spotlight-results";
 
 // The panel MOUNTS per open (and unmounts on close), so query/selection state
@@ -33,6 +34,8 @@ function SpotlightPanel() {
   const { theme, setTheme } = useShellAppearance();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
+  // Read MRU once per open (panel mounts on open), so recents refresh each time.
+  const [recents] = useState(loadRecents);
   const inputRef = useRef<HTMLInputElement>(null);
   const LISTBOX_ID = "spotlight-listbox";
 
@@ -87,7 +90,13 @@ function SpotlightPanel() {
   }, [apps, theme, setTheme, dynamic]);
 
   const results = useMemo(() => {
-    const base = commands.filter((c) => matches(q, c.keywords ? `${c.label} ${c.keywords}` : c.label));
+    let base = commands.filter((c) => matches(q, c.keywords ? `${c.label} ${c.keywords}` : c.label));
+    // Empty query → float recently-run commands to the top (recency order).
+    // Array.sort is stable, so non-recent commands keep their catalog order.
+    if (!q.trim() && recents.length) {
+      const rank = new Map(recents.map((id, i) => [id, i]));
+      base = [...base].sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity));
+    }
     const folderCmds: Command[] = folderHits.map((h) => ({
       id: h.id,
       label: h.label,
@@ -95,7 +104,7 @@ function SpotlightPanel() {
       run: h.run,
     }));
     return [...base, ...folderCmds];
-  }, [commands, q, folderHits]);
+  }, [commands, q, folderHits, recents]);
 
   // Focus the input after the open transition paints (mount = open), and on
   // close return focus to whatever was focused before — so keyboard/AT users
@@ -116,6 +125,7 @@ function SpotlightPanel() {
   const runAt = (i: number) => {
     const cmd = results[i];
     if (!cmd) return;
+    pushRecent(cmd.id);
     cmd.run();
     toast(cmd.app ? `Opened ${cmd.label}` : cmd.label);
     close();
