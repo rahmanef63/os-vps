@@ -226,7 +226,16 @@ Porting these would turn Topside back into a portfolio site and violate constrai
 
 ## 5. Progress tracker
 
-Update as phases land. (Nothing started yet — this is the baseline.)
+**Verification status (2026-07-12):** every shipped increment passes the static
+gates — `pnpm typecheck` + `pnpm lint` (the pre-push `sc-git ci` gate) + `pnpm
+build` — and the **full vitest suite is green (665 tests, 0 regressions)**, incl.
+a new `widget-registry.test.ts` covering the store (defaults/migration, toggle,
+reorder, edge no-ops). Each deploy was health-checked live (root 200, CSS chunk
+200 + `text/css`, no error-page markers). **Not yet done:** live *visual*
+interaction testing — blocked in the dev env (prod :4005 is auth-gated and the
+:4006 demo instance lives on the VPS, not this box). Eyeball on os.rahmanef.com:
+right-click the desktop → keyboard-nav the menu + "Desktop widgets…"; hot corners
+(TR/BL/BR); the widget picker toggle/reorder; empty-Spotlight recents order.
 
 | Item | Status | Notes |
 |---|---|---|
