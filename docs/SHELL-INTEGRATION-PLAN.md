@@ -107,6 +107,15 @@ non-editable cards. shell has a real registry with drag/resize/persistence and
 registry comment literally says it's "curated for the VPS OS, drive the OS from
 the wallpaper". Porting it *strengthens* the cockpit identity.
 
+**Source choice:** vendor from **shell** — its `glass-desktop` is the *curated
+13-widget VPS variant* (`lib/layout-store.ts`, free-move), already trimmed for a
+cockpit. The canonical rr registry (`resources/frontend/slices/glass-desktop`) is
+a **47-widget superset** with a different `use-layout` reflow-pack model — pull
+extra widget *families* from there later if breadth is wanted, but the shell
+variant is the right starting point. **Direction:** this is a shell→os-vps
+cherry-pick (sanctioned). Do **not** confuse it with lifting shell→rr, which is
+forbidden/destructive (the two glass-desktops diverged by purpose).
+
 **Plan:**
 1. Vendor `glass-desktop` as a new slice `frontend/slices/glass-desktop/`
    (barrel `@/features/glass-desktop`). It's the most self-contained shell slice
