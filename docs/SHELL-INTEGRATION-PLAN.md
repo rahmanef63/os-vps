@@ -231,7 +231,7 @@ Update as phases land. (Nothing started yet — this is the baseline.)
 | Item | Status | Notes |
 |---|---|---|
 | P0 Widget framework | ☐ not started | flagship; Phase C |
-| P1 Context-menu polish | ☐ not started | Phase A |
+| P1 Context-menu polish | ✅ done (2026-07-12) | portal→body + focus-first + Arrow nav + focus-restore + ARIA roles + 4-edge clamp. `appshell/components/shells/context-menu.tsx`. Fluent variant still optional/deferred. |
 | P1 Hot corners | ☐ not started | Phase A |
 | P1 Marquee selection | ☐ not started | Phase B |
 | P2 Agent execution | ☐ not started | Phase D |
