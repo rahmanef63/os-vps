@@ -247,7 +247,7 @@ right-click the desktop → keyboard-nav the menu + "Desktop widgets…"; hot co
 | P2 Force-quit / sounds / HUD | ☐ not started | Phase E |
 | P3 MRU history | ✅ done (2026-07-12) | `features/search/history.ts`; recently-run commands float to top of Spotlight when query is empty (stable sort keeps catalog order). |
 | P3 Theme quick-picker | ✅ done (2026-07-12) | `os-shell/theme-quick-picker.tsx` — Palette popover in the menu-bar status cluster (preset grid + swatches + Stock reset), mounted via the `menuBarStatus` slot as a **consumer feature** (keeps appshell brand-free; it can't import `@/lib/appearance`). |
-| P3 Auto-lock | ☐ not started | Phase A |
+| P3 Auto-lock | ✅ done (2026-07-12) | **Check result: os-vps already had a *better* lock mechanism than shell** (`lib/lock.ts` — guard-injectable idle auto-lock, `useLocked`/`requestUnlock`, lock-screen owns the timer) — it just lacked a config UI. Added `setAutoLockMinutes` + an `AutoLockRow` (Off/1/5/15/30 min Select) in Settings → Devices. |
 | P3 Thirds-tiling | ☐ not started | Phase E |
 | P4 Windows chrome extras | ☐ not started | Phase E (optional) |
 | Deferred: FE sidebar-tree | ⛔ deferred | constraint #2 |

@@ -13,6 +13,7 @@ import {
 } from "@/features/os-shell";
 import { DevicesPanel } from "@/features/auth";
 import { SettingsTabs, SECTIONS, type SectionId } from "./components/nav";
+import { AutoLockRow } from "./components/auto-lock-row";
 import { AppearanceSection } from "./components/appearance-section";
 import { ThemeSection } from "./components/theme-section";
 import { AiSection } from "./components/ai-section";
@@ -37,6 +38,7 @@ function SectionBody({ id }: { id: SectionId }) {
     case "devices":
       return (
         <div className="space-y-3">
+          <AutoLockRow />
           <DevicesPanel />
           <p className="text-[11px] leading-relaxed text-muted-foreground">
             Each browser is a device gated by password + approval. Approve a

@@ -61,6 +61,17 @@ export function autoLockMinutes(): number | null {
   return Number.isFinite(v) && v > 0 ? v : null;
 }
 
+/** Set the idle auto-lock timeout in minutes; null/≤0 turns it off. */
+export function setAutoLockMinutes(min: number | null): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    if (min && min > 0) localStorage.setItem(KEY, String(min));
+    else localStorage.removeItem(KEY);
+  } catch {
+    /* quota */
+  }
+}
+
 registerCommands("lock", [
   {
     id: "lock:now",
