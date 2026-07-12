@@ -242,12 +242,36 @@ right-click the desktop → keyboard-nav the menu + "Desktop widgets…"; hot co
 | P0 Widget framework | 🟡 in progress — slices 1–2 (2026-07-12) | Lazy path: **extend os-vps's own widgets feature**, not vendor shell's 5k-LOC glass-desktop. **Slice 1**: registry (`widget-registry.ts`) + persisted `{on,enabled[]}` store (legacy `sv:desktop-widgets` migrated) + Clock widget. **Slice 2**: `moveWidget` reorder + `WidgetPicker` dialog (`widget-picker.tsx`: toggle on/off, add/remove, up/down reorder) opened via palette "Configure desktop widgets" **and a desktop right-click entry** ("Desktop widgets…", reusing the polished context-menu registry). Deferred: free drag/resize, more widget types (needs the `useSystemStats` capability to gain uptime/net — it's `{cpu,mem,disk}` only today), mobile Today integration. |
 | P1 Context-menu polish | ✅ done (2026-07-12) | portal→body + focus-first + Arrow nav + focus-restore + ARIA roles + 4-edge clamp. `appshell/components/shells/context-menu.tsx`. Fluent variant still optional/deferred. |
 | P1 Hot corners | ✅ done (2026-07-12) | `components/hot-corners.tsx`, mounted in macOS `DesktopChrome`. TR=Mission Control, BL=Spotlight, BR=Show desktop, 120ms dwell, z-901 over menu bar. |
-| P1 Marquee selection | ☐ not started | Phase B |
-| P2 Agent execution | ☐ not started | Phase D |
-| P2 Force-quit / sounds / HUD | ☐ not started | Phase E |
+| P1 Marquee selection | ⏸ decision needed | Needs a selectable desktop layer (app-shortcuts) to select — bigger, medium risk (drifts toward desktop-icons). Not started; awaiting go-ahead. |
+| P2 Agent execution | ⏸ decision needed | High value (Alfa actually drives the host) but touches the **`lib/host` jail** — should not be built unsupervised. Awaiting go-ahead. |
+| P2 Force-quit / sounds / HUD | 🚫 ponytail: skip | Cosmetic parity, **YAGNI for a web VPS cockpit**: windows close fine via the close button / "Close all"; Control Center already has volume/brightness sliders; a headless VPS has no battery. Recommend not building unless explicitly wanted. |
 | P3 MRU history | ✅ done (2026-07-12) | `features/search/history.ts`; recently-run commands float to top of Spotlight when query is empty (stable sort keeps catalog order). |
 | P3 Theme quick-picker | ✅ done (2026-07-12) | `os-shell/theme-quick-picker.tsx` — Palette popover in the menu-bar status cluster (preset grid + swatches + Stock reset), mounted via the `menuBarStatus` slot as a **consumer feature** (keeps appshell brand-free; it can't import `@/lib/appearance`). |
 | P3 Auto-lock | ✅ done (2026-07-12) | **Check result: os-vps already had a *better* lock mechanism than shell** (`lib/lock.ts` — guard-injectable idle auto-lock, `useLocked`/`requestUnlock`, lock-screen owns the timer) — it just lacked a config UI. Added `setAutoLockMinutes` + an `AutoLockRow` (Off/1/5/15/30 min Select) in Settings → Devices. |
-| P3 Thirds-tiling | ☐ not started | Phase E |
-| P4 Windows chrome extras | ☐ not started | Phase E (optional) |
+| P3 Thirds-tiling | ⏸ decision needed | Touches the WM core (`store-geometry`); modest value. Not started. |
+| P4 Windows chrome extras | ⏸ optional | Windows-persona only (action-center/run-dialog/task-view/tray). Low priority. |
 | Deferred: FE sidebar-tree | ⛔ deferred | constraint #2 |
+
+---
+
+## 6. Session summary & recommendation (2026-07-12)
+
+**Shipped & live on os-vps (10 commits, all CI-green, full suite 665 tests / 0 regressions, fs-zip WIP untouched):**
+the plan + comparison table, then **Phase A in full** — context-menu polish (**klik kanan**),
+hot corners, Spotlight MRU, theme quick-picker, auto-lock — plus the **editable widget
+framework (slices 1–2: registry + persistence + Clock + picker dialog with reorder,
+reachable from Spotlight *and* right-click)** and a widget-store regression test. The two
+explicitly-named asks — **widget** and **klik kanan** — are delivered and regression-tested.
+
+**Recommendation on what's left (ponytail lens):**
+- **Skip (YAGNI):** force-quit dialog, OS sounds, HUD bezel — cosmetic parity that adds no
+  real utility to a VPS cockpit.
+- **Build only on explicit go-ahead (bigger / higher-risk):** widget drag-resize + more
+  widget types (needs the `useSystemStats` capability extended to uptime/net), thirds-tiling
+  (WM core), **real agent tool-execution (touches the `lib/host` jail)**, marquee + desktop
+  app-shortcuts, Windows-shell chrome.
+- **Always off the table:** anything in §4 (Convex/CMS/RBAC), and the file-explorer.
+
+**One open verification item:** live *visual* interaction testing (right-click nav, hot
+corners, the widget picker) — blocked in the dev env (auth wall + no local demo); eyeball
+on os.rahmanef.com per §5.
