@@ -1,28 +1,14 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { Cpu, HardDrive, MemoryStick } from "lucide-react";
-import { useSystemStats, registerCommands, toast } from "@/features/appshell";
-import { Bar, Card, Row, gb } from "./widget-cards";
+import { createElement } from "react";
+import { registerCommands, toast } from "@/features/appshell";
+import { WIDGET_META, getWidgetState, isWidgetOn, setWidgetsOn, toggleWidget, useWidgetState } from "../widget-registry";
+import { WIDGET_RENDER } from "./widgets-defs";
 
-// Desktop widgets — a glanceable stack pinned to the wallpaper layer (behind
-// every window), macOS-Sonoma style. Opt-in via the palette ("Toggle desktop
-// widgets"); preference persists.
-
-const KEY = "sv:desktop-widgets";
-
-let on = typeof localStorage !== "undefined" && localStorage.getItem(KEY) === "1";
-const subs = new Set<() => void>();
-
-function setOn(v: boolean) {
-  on = v;
-  try {
-    localStorage.setItem(KEY, v ? "1" : "0");
-  } catch {
-    /* ignore */
-  }
-  subs.forEach((f) => f());
-}
+// Desktop widgets — a glanceable, editable stack pinned to the wallpaper layer
+// (behind every window), macOS-Sonoma style. The master toggle + which widgets
+// show are palette-driven (below) and persist. ponytail: config via Spotlight
+// commands, no picker dialog yet — a proper picker + drag are a later slice.
 
 registerCommands("desktop-widgets", [
   {
@@ -31,40 +17,34 @@ registerCommands("desktop-widgets", [
     hint: "Widgets",
     keywords: "glance dashboard wallpaper stats",
     run: () => {
-      setOn(!on);
-      toast(on ? "Desktop widgets on" : "Desktop widgets off");
+      const next = !getWidgetState().on;
+      setWidgetsOn(next);
+      toast(next ? "Desktop widgets on" : "Desktop widgets off");
     },
   },
+  // One toggle per widget type, so the stack is an editable set from Spotlight.
+  ...WIDGET_META.map((w) => ({
+    id: `widgets:toggle:${w.id}`,
+    label: `Toggle ${w.title} widget`,
+    hint: "Widgets",
+    keywords: `desktop widget ${w.title}`,
+    run: () => {
+      toggleWidget(w.id);
+      toast(`${w.title} widget ${isWidgetOn(w.id) ? "added" : "removed"}`);
+    },
+  })),
 ]);
 
 export function DesktopWidgets() {
-  const enabled = useSyncExternalStore(
-    (cb) => {
-      subs.add(cb);
-      return () => {
-        subs.delete(cb);
-      };
-    },
-    () => on,
-    () => on,
-  );
-  const s = useSystemStats();
-  if (!enabled) return null;
+  const { on, enabled } = useWidgetState();
+  if (!on) return null;
 
   return (
     <div className="pointer-events-none absolute right-4 top-12 z-[5] flex w-60 flex-col gap-3">
-      <Card>
-        <Row icon={Cpu} label="CPU" value={s ? `${s.cpu.pct}%` : "—"} sub={s ? `${s.cpu.cores} cores` : ""} />
-        <Bar pct={s?.cpu.pct ?? 0} />
-      </Card>
-      <Card>
-        <Row icon={MemoryStick} label="Memory" value={s ? gb(s.mem.used) : "—"} sub={s ? `of ${gb(s.mem.total)}` : ""} />
-        <Bar pct={s ? (s.mem.used / s.mem.total) * 100 : 0} />
-      </Card>
-      <Card>
-        <Row icon={HardDrive} label="Storage" value={s ? gb(s.disk.used) : "—"} sub={s ? `of ${gb(s.disk.total)}` : ""} />
-        <Bar pct={s ? (s.disk.used / s.disk.total) * 100 : 0} />
-      </Card>
+      {enabled.map((id) => {
+        const Render = WIDGET_RENDER[id];
+        return Render ? createElement(Render, { key: id }) : null;
+      })}
     </div>
   );
 }

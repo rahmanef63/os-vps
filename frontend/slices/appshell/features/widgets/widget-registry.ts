@@ -1,0 +1,83 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
+
+// Editable desktop-widget set: a registry of widget TYPES + a persisted, ordered
+// list of which are enabled + a master on/off for the wallpaper-layer stack.
+// ponytail: enable/disable + order is the 80% "editable widgets" win; free
+// drag/resize + a picker dialog are a later slice — this file is the foundation.
+
+export type WidgetMeta = { id: string; title: string };
+
+// Metadata SSOT (kept separate from the render tree so the store never imports
+// components). widgets-defs.tsx maps these ids to render components.
+export const WIDGET_META: WidgetMeta[] = [
+  { id: "cpu", title: "CPU" },
+  { id: "mem", title: "Memory" },
+  { id: "disk", title: "Storage" },
+  { id: "clock", title: "Clock" },
+];
+
+const KEY = "os-vps:desktop-widgets"; // { on: boolean; enabled: string[] }
+const LEGACY_KEY = "sv:desktop-widgets"; // old "1"/"0" on-flag (pre-registry)
+const DEFAULT_ENABLED = ["cpu", "mem", "disk"];
+
+export type WidgetState = { on: boolean; enabled: string[] };
+
+function load(): WidgetState {
+  if (typeof localStorage === "undefined") return { on: false, enabled: DEFAULT_ENABLED };
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<WidgetState>;
+      const enabled = Array.isArray(p.enabled)
+        ? p.enabled.filter((id): id is string => typeof id === "string" && WIDGET_META.some((w) => w.id === id))
+        : DEFAULT_ENABLED;
+      return { on: !!p.on, enabled };
+    }
+    // Migrate the legacy on-flag so existing users keep their stack visible.
+    return { on: localStorage.getItem(LEGACY_KEY) === "1", enabled: DEFAULT_ENABLED };
+  } catch {
+    return { on: false, enabled: DEFAULT_ENABLED };
+  }
+}
+
+let state: WidgetState = load();
+const subs = new Set<() => void>();
+
+function commit(next: WidgetState) {
+  state = next;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* quota — best-effort */
+  }
+  subs.forEach((f) => f());
+}
+
+export function useWidgetState(): WidgetState {
+  return useSyncExternalStore(
+    (cb) => {
+      subs.add(cb);
+      return () => {
+        subs.delete(cb);
+      };
+    },
+    () => state,
+    () => state,
+  );
+}
+
+export const getWidgetState = (): WidgetState => state;
+export const isWidgetOn = (id: string): boolean => state.enabled.includes(id);
+
+export function setWidgetsOn(on: boolean) {
+  commit({ ...state, on });
+}
+
+export function toggleWidget(id: string) {
+  const enabled = state.enabled.includes(id)
+    ? state.enabled.filter((x) => x !== id)
+    : [...state.enabled, id];
+  commit({ ...state, enabled });
+}

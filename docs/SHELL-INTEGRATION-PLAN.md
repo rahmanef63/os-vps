@@ -230,7 +230,7 @@ Update as phases land. (Nothing started yet — this is the baseline.)
 
 | Item | Status | Notes |
 |---|---|---|
-| P0 Widget framework | ☐ not started | flagship; Phase C |
+| P0 Widget framework | 🟡 in progress — slice 1 (2026-07-12) | Chose the lazy path: **extend os-vps's own widgets feature**, not vendor shell's 5k-LOC glass-desktop. Slice 1 = registry (`widget-registry.ts`) + persisted enabled/order store (legacy `sv:desktop-widgets` migrated) + new Clock widget + per-widget palette toggles ("Toggle X widget"). Deferred to next slices: picker dialog, free drag/resize, more widget types (Quicklinks/Network/Theme-picker), mobile Today integration. |
 | P1 Context-menu polish | ✅ done (2026-07-12) | portal→body + focus-first + Arrow nav + focus-restore + ARIA roles + 4-edge clamp. `appshell/components/shells/context-menu.tsx`. Fluent variant still optional/deferred. |
 | P1 Hot corners | ✅ done (2026-07-12) | `components/hot-corners.tsx`, mounted in macOS `DesktopChrome`. TR=Mission Control, BL=Spotlight, BR=Show desktop, 120ms dwell, z-901 over menu bar. |
 | P1 Marquee selection | ☐ not started | Phase B |
