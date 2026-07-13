@@ -39,8 +39,10 @@ function load(): WidgetState {
         : DEFAULT_ENABLED;
       return { on: !!p.on, enabled };
     }
-    // Migrate the legacy on-flag so existing users keep their stack visible.
-    return { on: localStorage.getItem(LEGACY_KEY) === "1", enabled: DEFAULT_ENABLED };
+    // No saved state yet → default the stack ON so the desktop widgets are
+    // visible out of the box (macOS-Sonoma style; toggle off anytime). Respect a
+    // legacy explicit "off" so anyone who turned the old stack off keeps it off.
+    return { on: localStorage.getItem(LEGACY_KEY) !== "0", enabled: DEFAULT_ENABLED };
   } catch {
     return { on: false, enabled: DEFAULT_ENABLED };
   }

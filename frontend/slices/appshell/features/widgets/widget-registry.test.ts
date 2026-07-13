@@ -5,9 +5,9 @@ import { getWidgetState, moveWidget, setWidgetsOn, toggleWidget } from "./widget
 // in-memory state, which is exactly what these assertions exercise). Tests run
 // in file order and leave the store back at its default at the end.
 describe("widget-registry store", () => {
-  it("defaults to off with the system trio enabled", () => {
+  it("SSR/no-storage fallback is off; system trio enabled (browser defaults on)", () => {
     const s = getWidgetState();
-    expect(s.on).toBe(false);
+    expect(s.on).toBe(false); // node env has no localStorage → the SSR-safe fallback
     expect(s.enabled).toEqual(["cpu", "mem", "disk"]);
   });
 
