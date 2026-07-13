@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Clock as ClockIcon, Cpu, HardDrive, Link2, MemoryStick, Network, StickyNote, Timer } from "lucide-react";
 import { QuicklinkIcon, useQuickLinks, useSystemStats } from "@/features/appshell";
-import { Bar, Card, Row, gb } from "./widget-cards";
+import { Bar, Card, Row, Sparkline, gb } from "./widget-cards";
 
 const NOTES_KEY = "os-vps:widget:notes";
 
@@ -25,7 +25,7 @@ function CpuWidget() {
   return (
     <Card>
       <Row icon={Cpu} label="CPU" value={s ? `${s.cpu.pct}%` : "—"} sub={s ? `${s.cpu.cores} cores` : ""} />
-      <Bar pct={s?.cpu.pct ?? 0} />
+      <Sparkline data={s?.cpuHistory ?? []} max={100} />
     </Card>
   );
 }
@@ -144,6 +144,7 @@ function NetworkWidget() {
         value={s?.net ? `↓ ${s.net.rx.toFixed(1)}` : "—"}
         sub={s?.net ? `↑ ${s.net.tx.toFixed(1)} MB/s` : ""}
       />
+      <Sparkline data={s?.netHistory ?? []} />
     </Card>
   );
 }

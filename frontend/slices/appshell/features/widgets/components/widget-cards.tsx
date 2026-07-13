@@ -54,3 +54,21 @@ export function Bar({ pct }: { pct: number }) {
     </div>
   );
 }
+
+// A tiny inline SVG sparkline (filled area + line) — the "shell CPU graph" look
+// without a charting dep. `max` fixes the top of the scale (100 for %); omit to
+// auto-scale to the data. Reserves height while warming up (<2 points).
+export function Sparkline({ data, max }: { data: number[]; max?: number }) {
+  const W = 100, H = 32;
+  if (data.length < 2) return <div style={{ height: H }} />;
+  const hi = Math.max(max ?? 0, ...data, 1);
+  const xy = data.map((v, i) => [(i / (data.length - 1)) * W, H - (Math.max(0, v) / hi) * H] as const);
+  const line = xy.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const area = `0,${H} ${line} ${W},${H}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-8 w-full" aria-hidden>
+      <polyline points={area} fill="var(--primary)" opacity={0.14} stroke="none" />
+      <polyline points={line} fill="none" stroke="var(--primary)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}

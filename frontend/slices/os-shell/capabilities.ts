@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { effectiveServerTarget, selectServerTarget, useAppearance } from "@/lib/appearance";
 import { useOsApi } from "@/lib/os-api";
 import { IS_DEMO } from "@/lib/demo";
@@ -82,19 +82,27 @@ export const topsideCapabilities: ShellCapabilities = {
   useSystemStats: () => {
     const api = useOsApi();
     const [s, setS] = useState<SystemStats | null>(null);
+    // Rolling history for sparkline widgets — accumulated in the poll callback
+    // (not during render), so widgets read it instead of tracking it themselves.
+    const hist = useRef<{ cpu: number[]; net: number[] }>({ cpu: [], net: [] });
     useEffect(() => {
       let alive = true;
       const poll = async () => {
         try {
           const [sys, usage] = await Promise.all([api.sys.stats(), api.fs.usage()]);
-          if (alive)
-            setS({
-              cpu: { pct: Math.round(sys.cpu.pct), cores: sys.cpu.cores },
-              mem: { used: sys.mem.used, total: sys.mem.total },
-              disk: { used: usage.used, total: usage.total },
-              net: sys.net,
-              uptime: sys.uptime,
-            });
+          if (!alive) return;
+          const cpuPct = Math.round(sys.cpu.pct);
+          hist.current.cpu = [...hist.current.cpu.slice(-23), cpuPct];
+          if (sys.net) hist.current.net = [...hist.current.net.slice(-23), sys.net.rx + sys.net.tx];
+          setS({
+            cpu: { pct: cpuPct, cores: sys.cpu.cores },
+            mem: { used: sys.mem.used, total: sys.mem.total },
+            disk: { used: usage.used, total: usage.total },
+            net: sys.net,
+            uptime: sys.uptime,
+            cpuHistory: hist.current.cpu,
+            netHistory: hist.current.net,
+          });
         } catch {
           /* leave last value */
         }

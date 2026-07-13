@@ -45,6 +45,10 @@ export type SystemStats = {
   net?: { rx: number; tx: number };
   /** Host uptime in milliseconds (optional). */
   uptime?: number;
+  /** Rolling CPU% samples (newest last) for sparkline widgets (optional). */
+  cpuHistory?: number[];
+  /** Rolling net MB/s (rx+tx) samples for sparkline widgets (optional). */
+  netHistory?: number[];
 };
 
 // One turn of a scoped AI chat (shell-inspector). Matches the wire shape so a
