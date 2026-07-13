@@ -16,6 +16,8 @@ export const WIDGET_META: WidgetMeta[] = [
   { id: "mem", title: "Memory" },
   { id: "disk", title: "Storage" },
   { id: "clock", title: "Clock" },
+  { id: "net", title: "Network" },
+  { id: "uptime", title: "Uptime" },
   { id: "notes", title: "Notes" },
   { id: "quicklinks", title: "Quicklinks" },
 ];

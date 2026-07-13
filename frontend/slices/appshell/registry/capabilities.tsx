@@ -41,6 +41,10 @@ export type SystemStats = {
   cpu: { pct: number; cores: number };
   mem: { used: number; total: number };
   disk: { used: number; total: number };
+  /** Network throughput in MB/s (optional — hosts/shells may not report it). */
+  net?: { rx: number; tx: number };
+  /** Host uptime in milliseconds (optional). */
+  uptime?: number;
 };
 
 // One turn of a scoped AI chat (shell-inspector). Matches the wire shape so a

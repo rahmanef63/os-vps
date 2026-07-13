@@ -92,6 +92,8 @@ export const topsideCapabilities: ShellCapabilities = {
               cpu: { pct: Math.round(sys.cpu.pct), cores: sys.cpu.cores },
               mem: { used: sys.mem.used, total: sys.mem.total },
               disk: { used: usage.used, total: usage.total },
+              net: sys.net,
+              uptime: sys.uptime,
             });
         } catch {
           /* leave last value */

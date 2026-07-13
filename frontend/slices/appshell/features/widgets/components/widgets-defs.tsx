@@ -1,11 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock as ClockIcon, Cpu, HardDrive, Link2, MemoryStick, StickyNote } from "lucide-react";
+import { Clock as ClockIcon, Cpu, HardDrive, Link2, MemoryStick, Network, StickyNote, Timer } from "lucide-react";
 import { QuicklinkIcon, useQuickLinks, useSystemStats } from "@/features/appshell";
 import { Bar, Card, Row, gb } from "./widget-cards";
 
 const NOTES_KEY = "os-vps:widget:notes";
+
+// Inlined (appshell is brand-free — can't import @/lib/os-api/format).
+function fmtUptime(ms: number): string {
+  const sec = Math.floor(ms / 1000);
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  return d > 0 ? `${d}d ${h}h` : `${h}h`;
+}
 
 // Individual desktop-widget render components, keyed by id. Glanceable + non-
 // interactive (the desktop stack is pointer-events-none, behind windows). Each
@@ -117,11 +125,36 @@ function QuicklinksWidget() {
   );
 }
 
+function UptimeWidget() {
+  const s = useSystemStats();
+  return (
+    <Card>
+      <Row icon={Timer} label="Uptime" value={s?.uptime != null ? fmtUptime(s.uptime) : "—"} sub="" />
+    </Card>
+  );
+}
+
+function NetworkWidget() {
+  const s = useSystemStats();
+  return (
+    <Card>
+      <Row
+        icon={Network}
+        label="Network"
+        value={s?.net ? `↓ ${s.net.rx.toFixed(1)}` : "—"}
+        sub={s?.net ? `↑ ${s.net.tx.toFixed(1)} MB/s` : ""}
+      />
+    </Card>
+  );
+}
+
 export const WIDGET_RENDER: Record<string, () => React.ReactNode> = {
   cpu: CpuWidget,
   mem: MemWidget,
   disk: DiskWidget,
   clock: ClockWidget,
+  net: NetworkWidget,
+  uptime: UptimeWidget,
   notes: NotesWidget,
   quicklinks: QuicklinksWidget,
 };
