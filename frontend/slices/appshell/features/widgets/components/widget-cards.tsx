@@ -1,6 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Shared widget-card primitives — used by the mobile Today page AND the
 // desktop wallpaper-layer widget stack.
@@ -9,10 +10,12 @@ export function gb(bytes: number): string {
   return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
 }
 
-export function Card({ children }: { children: React.ReactNode }) {
+// className lets an interactive widget opt back into pointer events — the desktop
+// stack wrapper is pointer-events-none, so Notes/Quicklinks pass "pointer-events-auto".
+export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className="rounded-2xl border border-white/15 p-3.5 text-foreground backdrop-blur-xl"
+      className={cn("rounded-2xl border border-white/15 p-3.5 text-foreground backdrop-blur-xl", className)}
       style={{ background: "var(--glass-menu)" }}
     >
       {children}

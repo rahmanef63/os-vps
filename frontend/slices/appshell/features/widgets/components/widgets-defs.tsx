@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock as ClockIcon, Cpu, HardDrive, MemoryStick } from "lucide-react";
-import { useSystemStats } from "@/features/appshell";
+import { Clock as ClockIcon, Cpu, HardDrive, Link2, MemoryStick, StickyNote } from "lucide-react";
+import { QuicklinkIcon, useQuickLinks, useSystemStats } from "@/features/appshell";
 import { Bar, Card, Row, gb } from "./widget-cards";
+
+const NOTES_KEY = "os-vps:widget:notes";
 
 // Individual desktop-widget render components, keyed by id. Glanceable + non-
 // interactive (the desktop stack is pointer-events-none, behind windows). Each
@@ -58,9 +60,68 @@ function ClockWidget() {
   );
 }
 
+// Interactive widgets opt back into pointer events (the desktop stack is
+// pointer-events-none) so they can be typed in / clicked.
+function NotesWidget() {
+  const [text, setText] = useState(() =>
+    typeof localStorage !== "undefined" ? localStorage.getItem(NOTES_KEY) ?? "" : "",
+  );
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <StickyNote className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">Notes</span>
+      </div>
+      <textarea
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          try {
+            localStorage.setItem(NOTES_KEY, e.target.value);
+          } catch {
+            /* quota */
+          }
+        }}
+        placeholder="Jot something…"
+        className="h-24 w-full resize-none rounded-lg border border-white/10 bg-black/10 p-2 text-xs outline-none placeholder:text-muted-foreground"
+      />
+    </Card>
+  );
+}
+
+function QuicklinksWidget() {
+  const { items, open } = useQuickLinks();
+  if (!items.length) return null;
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <Link2 className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">Quicklinks</span>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {items.slice(0, 8).map((link) => (
+          <button
+            key={link.id}
+            type="button"
+            onClick={() => open(link)}
+            className="flex flex-col items-center gap-1 rounded-md p-1 hover:bg-white/10"
+          >
+            <span className="size-8">
+              <QuicklinkIcon link={link} />
+            </span>
+            <span className="max-w-[52px] truncate text-[9px] font-medium">{link.title}</span>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 export const WIDGET_RENDER: Record<string, () => React.ReactNode> = {
   cpu: CpuWidget,
   mem: MemWidget,
   disk: DiskWidget,
   clock: ClockWidget,
+  notes: NotesWidget,
+  quicklinks: QuicklinksWidget,
 };

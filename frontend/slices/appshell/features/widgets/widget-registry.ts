@@ -16,6 +16,8 @@ export const WIDGET_META: WidgetMeta[] = [
   { id: "mem", title: "Memory" },
   { id: "disk", title: "Storage" },
   { id: "clock", title: "Clock" },
+  { id: "notes", title: "Notes" },
+  { id: "quicklinks", title: "Quicklinks" },
 ];
 
 const KEY = "os-vps:desktop-widgets"; // { on: boolean; enabled: string[] }
