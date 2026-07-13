@@ -1,9 +1,18 @@
 "use client";
 
 import { createElement } from "react";
-import { LayoutGrid } from "lucide-react";
-import { registerCommands, registerContextMenu, toast } from "@/features/appshell";
-import { getWidgetState, setPickerOpen, setWidgetsOn, useWidgetState } from "../widget-registry";
+import { Check, LayoutGrid, Trash2 } from "lucide-react";
+import { ContextMenu, registerCommands, registerContextMenu, toast, useContextMenu, type MenuItem } from "@/features/appshell";
+import { cn } from "@/lib/utils";
+import {
+  getWidgetState,
+  setPickerOpen,
+  setWidgetSize,
+  setWidgetsOn,
+  toggleWidget,
+  useWidgetState,
+  type WidgetSize,
+} from "../widget-registry";
 import { WIDGET_RENDER } from "./widgets-defs";
 import { WidgetPicker } from "./widget-picker";
 
@@ -39,17 +48,50 @@ registerContextMenu("macos", () => [
   { label: "Desktop widgets…", icon: LayoutGrid, onClick: () => setPickerOpen(true) },
 ]);
 
+// Size → card width. Right edges align (parent is items-end), macOS-widget style.
+const SIZE_W: Record<WidgetSize, string> = { s: "w-44", m: "w-60", l: "w-72" };
+
+// One widget in the stack. Sized by its saved WidgetSize; right-click sets S/M/L
+// (current size checked), removes it, or opens the picker. pointer-events-auto so
+// the right-click lands on the widget, not the wallpaper below.
+function DesktopWidget({ id, size }: { id: string; size: WidgetSize }) {
+  const ctx = useContextMenu();
+  const Render = WIDGET_RENDER[id];
+  if (!Render) return null;
+  const items: MenuItem[] = [
+    { label: "Small", icon: size === "s" ? Check : undefined, onClick: () => setWidgetSize(id, "s") },
+    { label: "Medium", icon: size === "m" ? Check : undefined, onClick: () => setWidgetSize(id, "m") },
+    { label: "Large", icon: size === "l" ? Check : undefined, onClick: () => setWidgetSize(id, "l") },
+    { type: "sep" },
+    { label: "Remove widget", icon: Trash2, onClick: () => toggleWidget(id) },
+    { label: "Desktop widgets…", icon: LayoutGrid, onClick: () => setPickerOpen(true) },
+  ];
+  return (
+    // stopPropagation so the right-click opens THIS widget's menu, not the
+    // desktop-background menu it would otherwise bubble up to.
+    <div
+      className={cn("pointer-events-auto", SIZE_W[size])}
+      onContextMenu={(e) => {
+        e.stopPropagation();
+        ctx.open(e);
+      }}
+    >
+      {createElement(Render)}
+      <ContextMenu pos={ctx.pos} items={items} onClose={ctx.close} />
+    </div>
+  );
+}
+
 export function DesktopWidgets() {
-  const { on, enabled } = useWidgetState();
+  const { on, enabled, sizes } = useWidgetState();
   return (
     <>
       <WidgetPicker />
       {on && (
-        <div className="pointer-events-none absolute right-4 top-12 z-[5] flex w-60 flex-col gap-3">
-          {enabled.map((id) => {
-            const Render = WIDGET_RENDER[id];
-            return Render ? createElement(Render, { key: id }) : null;
-          })}
+        <div className="pointer-events-none absolute right-4 top-4 z-[5] flex flex-col items-end gap-3">
+          {enabled.map((id) => (
+            <DesktopWidget key={id} id={id} size={sizes[id] ?? "m"} />
+          ))}
         </div>
       )}
     </>

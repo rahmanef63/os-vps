@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getWidgetState, moveWidget, setWidgetsOn, toggleWidget } from "./widget-registry";
+import { getWidgetSize, getWidgetState, moveWidget, setWidgetsOn, setWidgetSize, toggleWidget } from "./widget-registry";
 
 // Store logic only (no localStorage in the node env — the module degrades to
 // in-memory state, which is exactly what these assertions exercise). Tests run
@@ -44,5 +44,16 @@ describe("widget-registry store", () => {
     const before = [...getWidgetState().enabled];
     moveWidget("does-not-exist", 1);
     expect(getWidgetState().enabled).toEqual(before);
+  });
+
+  it("setWidgetSize defaults to m, persists, and no-ops on the same value", () => {
+    expect(getWidgetSize("cpu")).toBe("m"); // default
+    setWidgetSize("cpu", "l");
+    expect(getWidgetSize("cpu")).toBe("l");
+    expect(getWidgetState().sizes.cpu).toBe("l");
+    const ref = getWidgetState();
+    setWidgetSize("cpu", "l"); // unchanged → no commit, same state object
+    expect(getWidgetState()).toBe(ref);
+    setWidgetSize("cpu", "m"); // restore default for store hygiene
   });
 });

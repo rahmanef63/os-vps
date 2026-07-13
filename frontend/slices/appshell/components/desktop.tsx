@@ -165,13 +165,16 @@ function DesktopChrome() {
   return (
     <>
       <MenuBar />
-      <Slot region="desktopWidgets" />
       <section
         className={cn("absolute inset-x-0 bottom-0 top-[30px] z-[10]", interactive && "pointer-events-none [&>*]:pointer-events-auto")}
-        // Only the empty desktop opens the menu — clicks inside an app window
-        // (which sit in child layers) keep their native right-click.
+        // Only the empty desktop opens the menu — clicks inside a child layer (an
+        // app window OR a desktop widget) keep their own right-click handling.
         onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e, baseItems); }}
       >
+        {/* Widgets first so they paint behind windows (z-[5] < window z-10+), yet
+            live INSIDE the section so their right-click hits the widget menu, not
+            the desktop menu it would otherwise bubble to from an outer layer. */}
+        <Slot region="desktopWidgets" />
         {stacked.map((id) => (
           <Window key={id} id={id} />
         ))}

@@ -41,15 +41,17 @@ function WindowsShell() {
   ];
   return (
     <>
-      <Slot region="desktopWidgets" />
       {/* The window layer also carries the desktop right-click (only when the
-          click lands on the bare section, not a window). When an interactive
-          live wallpaper is active it goes click-through so the wallpaper gets
-          empty-desktop clicks; windows stay interactive. */}
+          click lands on the bare section, not a window OR a desktop widget). When
+          an interactive live wallpaper is active it goes click-through so the
+          wallpaper gets empty-desktop clicks; windows stay interactive. */}
       <section
         className={cn("absolute inset-0 z-[10]", interactive && "pointer-events-none [&>*]:pointer-events-auto")}
         onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e, baseItems); }}
       >
+        {/* Widgets first: paint behind windows (z-[5] < z-10+) but sit inside the
+            section so their right-click opens the widget menu, not the desktop. */}
+        <Slot region="desktopWidgets" />
         {stacked.map((id) => (
           <Window key={id} id={id} variant="windows" />
         ))}

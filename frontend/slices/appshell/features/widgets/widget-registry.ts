@@ -9,6 +9,11 @@ import { useSyncExternalStore } from "react";
 
 export type WidgetMeta = { id: string; title: string };
 
+// Per-widget size (macOS-widget style S/M/L). Drives the card width in the
+// desktop stack; set from each widget's right-click menu. Default "m".
+export type WidgetSize = "s" | "m" | "l";
+const SIZES: WidgetSize[] = ["s", "m", "l"];
+
 // Metadata SSOT (kept separate from the render tree so the store never imports
 // components). widgets-defs.tsx maps these ids to render components.
 export const WIDGET_META: WidgetMeta[] = [
@@ -18,18 +23,30 @@ export const WIDGET_META: WidgetMeta[] = [
   { id: "clock", title: "Clock" },
   { id: "net", title: "Network" },
   { id: "uptime", title: "Uptime" },
+  { id: "calendar", title: "Calendar" },
+  { id: "tasks", title: "Tasks" },
   { id: "notes", title: "Notes" },
   { id: "quicklinks", title: "Quicklinks" },
 ];
 
-const KEY = "os-vps:desktop-widgets"; // { on: boolean; enabled: string[] }
+const KEY = "os-vps:desktop-widgets"; // { on, enabled[], sizes{} }
 const LEGACY_KEY = "sv:desktop-widgets"; // old "1"/"0" on-flag (pre-registry)
 const DEFAULT_ENABLED = ["cpu", "mem", "disk"];
 
-export type WidgetState = { on: boolean; enabled: string[] };
+export type WidgetState = { on: boolean; enabled: string[]; sizes: Record<string, WidgetSize> };
+
+// Keep only {id: valid-size} pairs — drops corrupt/legacy values.
+function cleanSizes(raw: unknown): Record<string, WidgetSize> {
+  if (!raw || typeof raw !== "object") return {};
+  const out: Record<string, WidgetSize> = {};
+  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (SIZES.includes(v as WidgetSize)) out[id] = v as WidgetSize;
+  }
+  return out;
+}
 
 function load(): WidgetState {
-  if (typeof localStorage === "undefined") return { on: false, enabled: DEFAULT_ENABLED };
+  if (typeof localStorage === "undefined") return { on: false, enabled: DEFAULT_ENABLED, sizes: {} };
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
@@ -37,14 +54,14 @@ function load(): WidgetState {
       const enabled = Array.isArray(p.enabled)
         ? p.enabled.filter((id): id is string => typeof id === "string" && WIDGET_META.some((w) => w.id === id))
         : DEFAULT_ENABLED;
-      return { on: !!p.on, enabled };
+      return { on: !!p.on, enabled, sizes: cleanSizes(p.sizes) };
     }
     // No saved state yet → default the stack ON so the desktop widgets are
     // visible out of the box (macOS-Sonoma style; toggle off anytime). Respect a
     // legacy explicit "off" so anyone who turned the old stack off keeps it off.
-    return { on: localStorage.getItem(LEGACY_KEY) !== "0", enabled: DEFAULT_ENABLED };
+    return { on: localStorage.getItem(LEGACY_KEY) !== "0", enabled: DEFAULT_ENABLED, sizes: {} };
   } catch {
-    return { on: false, enabled: DEFAULT_ENABLED };
+    return { on: false, enabled: DEFAULT_ENABLED, sizes: {} };
   }
 }
 
@@ -96,6 +113,13 @@ export function moveWidget(id: string, dir: -1 | 1) {
   const enabled = [...state.enabled];
   [enabled[i], enabled[j]] = [enabled[j], enabled[i]];
   commit({ ...state, enabled });
+}
+
+export const getWidgetSize = (id: string): WidgetSize => state.sizes[id] ?? "m";
+
+export function setWidgetSize(id: string, size: WidgetSize) {
+  if (getWidgetSize(id) === size) return;
+  commit({ ...state, sizes: { ...state.sizes, [id]: size } });
 }
 
 // Picker-dialog open flag — ephemeral (not persisted). Kept here so any surface

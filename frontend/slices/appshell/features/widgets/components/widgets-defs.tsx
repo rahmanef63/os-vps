@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Clock as ClockIcon, Cpu, HardDrive, Link2, MemoryStick, Network, StickyNote, Timer } from "lucide-react";
 import { QuicklinkIcon, useQuickLinks, useSystemStats } from "@/features/appshell";
 import { Bar, Card, Row, Sparkline, gb } from "./widget-cards";
+import { CalendarWidget, TasksWidget } from "./widgets-defs-apps";
 
 const NOTES_KEY = "os-vps:widget:notes";
 
@@ -156,6 +157,8 @@ export const WIDGET_RENDER: Record<string, () => React.ReactNode> = {
   clock: ClockWidget,
   net: NetworkWidget,
   uptime: UptimeWidget,
+  calendar: CalendarWidget,
+  tasks: TasksWidget,
   notes: NotesWidget,
   quicklinks: QuicklinksWidget,
 };
