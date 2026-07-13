@@ -7,7 +7,19 @@ import {
   spawnRect,
   clampRect,
   setChromeInsets,
+  cycleSnap,
 } from "./store-geometry";
+
+describe("cycleSnap", () => {
+  it("first press → half, then cycles ½ → ⅔ → ⅓ → ½ per side", () => {
+    expect(cycleSnap(undefined, "left")).toBe("left"); // unsnapped → half
+    expect(cycleSnap("left", "left")).toBe("l23");
+    expect(cycleSnap("l23", "left")).toBe("l13");
+    expect(cycleSnap("l13", "left")).toBe("left");
+    expect(cycleSnap("right", "right")).toBe("r23");
+    expect(cycleSnap("r13", "right")).toBe("right"); // wraps
+  });
+});
 
 // --- viewport constants used throughout ---
 const VW = 1280;

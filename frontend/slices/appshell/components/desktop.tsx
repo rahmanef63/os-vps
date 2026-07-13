@@ -16,7 +16,7 @@ import { Wallpaper } from "./wallpaper";
 import { MobileShell } from "./mobile-shell";
 import { Window } from "./window";
 import { Slot } from "../registry/feature-registry";
-import { toggleSpotlight, toggleInspector, snapWindow, toggleMaximize, minimizeWindow, minimizeAll, restoreWindow, closeAll, shellStore } from "../lib/store";
+import { toggleSpotlight, toggleInspector, snapWindow, cycleSnap, toggleMaximize, minimizeWindow, minimizeAll, restoreWindow, closeAll, shellStore } from "../lib/store";
 import { WindowOverview } from "./shells/window-overview";
 import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
@@ -128,8 +128,9 @@ function useWindowSnapKeys(enabled: boolean) {
       if (!win) return;
       e.preventDefault();
       switch (e.key) {
-        case "ArrowLeft": snapWindow(id, "left"); break;
-        case "ArrowRight": snapWindow(id, "right"); break;
+        // Cycle the tiling width on repeated presses: ½ → ⅔ → ⅓ → ½ …
+        case "ArrowLeft": snapWindow(id, cycleSnap(win.snapZone, "left")); break;
+        case "ArrowRight": snapWindow(id, cycleSnap(win.snapZone, "right")); break;
         case "ArrowUp": if (!win.maximized) toggleMaximize(id); break;
         case "ArrowDown": if (win.maximized) toggleMaximize(id); else minimizeWindow(id); break;
       }

@@ -5,7 +5,7 @@ import { GAP, workArea, spawnRect } from "./store-geometry";
 // store-snap; hydrate/serialize in store-persist.
 
 export { shellStore, stackByZ } from "./store-state";
-export { snapRect, snapZoneAt, GAP } from "./store-geometry";
+export { snapRect, snapZoneAt, GAP, cycleSnap } from "./store-geometry";
 export { applyChromeInsets, retileSnapped, snapWindow, onSnap } from "./store-snap";
 export { hydrate, hydrateBoot, serialize } from "./store-persist";
 
