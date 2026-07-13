@@ -18,6 +18,7 @@ import { Window } from "./window";
 import { Slot } from "../registry/feature-registry";
 import { toggleSpotlight, toggleInspector, snapWindow, cycleSnap, toggleMaximize, minimizeWindow, minimizeAll, restoreWindow, closeAll, shellStore } from "../lib/store";
 import { WindowOverview } from "./shells/window-overview";
+import { ForceQuitDialog } from "../features/force-quit/force-quit";
 import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
 import { ShellContextMenu, useShellContextMenu, type MenuItem } from "./shells/context-menu";
@@ -186,6 +187,7 @@ function DesktopChrome() {
       <Dock onMissionControl={() => setOverview(true)} />
       <HotCorners onMissionControl={() => setOverview(true)} />
       {overview && <WindowOverview onClose={() => setOverview(false)} label="Mission Control" />}
+      <ForceQuitDialog />
       <ShellContextMenu state={menu.state} onClose={menu.close} />
     </>
   );

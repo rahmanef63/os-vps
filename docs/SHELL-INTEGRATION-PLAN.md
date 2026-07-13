@@ -86,7 +86,7 @@ touches the file-explorer.
 | **P1** | Hot corners | Low | None | No |
 | **P1** | Marquee (rubber-band) selection | Low–Med | None (app-shortcut layer only) | No |
 | **P2** | Real agent tool-execution loop | Med | None | No |
-| **P2** | Force-quit dialog (⌥⌘⎋) | Low | Low | No |
+| **P2** | ✅ Force-quit dialog (⌥⌘⎋) — **shipped** (⌥⌘⎋ + palette, lists open windows, Force Quit) | Low | Low | No |
 | **P2** | OS sounds + HUD bezel | Low | None | No |
 | **P3** | Command-palette MRU history | Low | None | No |
 | **P3** | Theme quick-picker (toolbar) | Low | None | No |

@@ -17,6 +17,7 @@ import { Window } from "../../window";
 import { AppSwitcher } from "../../app-switcher";
 import { NotificationCenter } from "../../notification-center";
 import { WindowOverview } from "../window-overview";
+import { ForceQuitDialog } from "../../../features/force-quit/force-quit";
 import { ShellContextMenu, useShellContextMenu, type MenuItem } from "../context-menu";
 import { Taskbar, TASKBAR_H } from "./taskbar";
 import { SnapAssist } from "./snap-assist";
@@ -62,6 +63,7 @@ function WindowsShell() {
       <SnapAssist />
       <Taskbar onTaskView={() => setTaskView((v) => !v)} />
       {taskView && <WindowOverview onClose={() => setTaskView(false)} label="Task View" />}
+      <ForceQuitDialog />
       <ShellContextMenu state={menu.state} onClose={menu.close} />
     </>
   );
