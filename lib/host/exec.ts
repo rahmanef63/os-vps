@@ -10,6 +10,7 @@ import type { ExecResult } from "@/lib/os-api/types";
 import { HostError } from "./host-error";
 import { homeDir, isUnderRoot, resolveWriteRoots } from "./paths";
 import { childEnv } from "./child-env";
+import { matchDestructive } from "./destructive-patterns";
 
 const TIMEOUT_MS = 30_000;
 const MAX_OUTPUT = 1_000_000; // 1 MiB per stream
@@ -20,32 +21,13 @@ const MAX_OUTPUT = 1_000_000; // 1 MiB per stream
 // the actual server connection (vps vs local).
 const SHELL = process.platform === "win32" ? process.env.ComSpec || "cmd.exe" : "/bin/bash";
 
-// High-confidence catastrophic patterns. The owner has a full shell by design,
-// but these are commands that wreck the whole box and are almost never run on
-// purpose through a web cockpit — blocked unless OS_EXEC_ALLOW_DESTRUCTIVE=1.
-// Genuine disk surgery should go over SSH. `code: 126` = "command refused".
-const DESTRUCTIVE: { re: RegExp; why: string }[] = [
-  { re: /\brm\b(?:\s+-\S*)*\s+-\S*[rf]\S*\s+(?:--no-preserve-root\s+)?\/(?:\s|$|\*)/, why: "rm -rf on /" },
-  { re: /--no-preserve-root/, why: "rm --no-preserve-root" },
-  { re: /\bmkfs(?:\.\w+)?\b/, why: "mkfs (format a filesystem)" },
-  { re: /\bdd\b[^\n]*\bof=\/dev\/(?:sd|nvme|vd|xvd|disk|hd)/, why: "dd to a block device" },
-  { re: />\s*\/dev\/(?:sd|nvme|vd|xvd|hd)\w/, why: "redirect to a block device" },
-  { re: /:\s*\(\s*\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:/, why: "fork bomb" },
-  { re: /\b(?:chmod|chown)\b(?:\s+-\S*)*\s+-\S*R\S*\s+\S+\s+\/(?:\s|$)/, why: "recursive chmod/chown on /" },
-  // Power/service control: a cockpit-issued restart can kill the cockpit's own
-  // service (or the box) mid-request. status/list/start stay allowed.
-  { re: /\bsystemctl\b[^\n;|&]*\b(?:stop|restart|disable|mask|isolate|kill)\b/, why: "systemctl stop/restart/disable — manage services over SSH" },
-  { re: /\bservice\s+\S+\s+(?:stop|restart)\b/, why: "service stop/restart — manage services over SSH" },
-  { re: /\b(?:shutdown|reboot|poweroff|halt)\b/, why: "shutdown/reboot/poweroff" },
-  { re: /\binit\s+[06]\b/, why: "init 0/6" },
-  { re: /\bkill\s+(?:-(?:9|KILL|SIGKILL)\s+)?1(?:\s|$)/, why: "kill PID 1" },
-];
-
-// Returns the reason a command is refused, or null when it may run.
+// Returns the reason a command is refused, or null when it may run. The
+// catastrophic-command patterns live in the isomorphic `destructive-patterns`
+// module (shared with the assistant's approval card so it can flag a doomed
+// command before the human approves it); the env override stays server-side.
 export function destructiveReason(cmd: string): string | null {
   if (process.env.OS_EXEC_ALLOW_DESTRUCTIVE === "1") return null;
-  for (const d of DESTRUCTIVE) if (d.re.test(cmd)) return d.why;
-  return null;
+  return matchDestructive(cmd);
 }
 
 // Shared with the PTY manager (pty.ts): same write-root bound, same fall-home.

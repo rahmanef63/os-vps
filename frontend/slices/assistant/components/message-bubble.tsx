@@ -3,16 +3,32 @@
 import { Sparkles, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type ChatRole = "user" | "assistant";
+export type ChatRole = "user" | "assistant" | "tool";
+
+export type ToolStatus = "pending" | "running" | "ok" | "error" | "denied";
+
+// A host tool call surfaced in the transcript (rendered by ApprovalCard, not
+// MessageBubble). `danger` is the advisory destructive-pattern reason (exec.run).
+export type ToolCard = {
+  name: string;
+  effect: "read" | "mutate";
+  input: Record<string, unknown>;
+  status: ToolStatus;
+  result?: string;
+  danger?: string;
+};
 
 export type ChatMessage = {
   id: string;
   role: ChatRole;
-  text: string;
+  text?: string;
+  /** Present only on `role: "tool"` rows. */
+  tool?: ToolCard;
 };
 
 // One chat row: user messages align right (primary bubble), assistant messages
-// align left with a Sparkles avatar. All colour via theme tokens, never hex.
+// align left with a Sparkles avatar. Tool rows are routed to ApprovalCard by the
+// chat panel, so this only renders user/assistant. All colour via theme tokens.
 export function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
   return (

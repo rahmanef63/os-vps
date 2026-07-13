@@ -23,10 +23,12 @@ export const dynamic = "force-dynamic";
 const ASSISTANT_MAX = 30;
 const ASSISTANT_WINDOW_MS = 60_000;
 
+// App-neutral default. Callers with their own tool set (image editor, host
+// agent) pass a `system` override tailored to their tools + approval contract.
 const SYSTEM = [
   "You are Alfa, the assistant inside Topside — a web cockpit for a headless VPS.",
   "Be concise and direct. When tools are available, USE them to perform the user's request",
-  "rather than describing the steps. Call doc.inspect first if you need current state.",
+  "rather than describing the steps.",
   "Prefer one tool call at a time when later calls depend on earlier results.",
   "After the work is done, reply with a one-line confirmation. No meta-commentary.",
 ].join(" ");
@@ -79,7 +81,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { messages?: InMsg[]; tools?: Tool[] };
+  let body: { messages?: InMsg[]; tools?: Tool[]; system?: string };
   try {
     body = await req.json();
   } catch {
@@ -87,6 +89,7 @@ export async function POST(req: Request) {
   }
   const messages = toAnthropic((body.messages ?? []).slice(-40));
   if (messages.length === 0) return Response.json({ error: "empty" }, { status: 400 });
+  const sys = typeof body.system === "string" && body.system.trim() ? body.system.slice(0, 4000) : SYSTEM;
 
   const key = await resolveApiKey();
   const model = await resolveModel();
@@ -114,7 +117,7 @@ export async function POST(req: Request) {
           {
             model: model || "claude-opus-4-8",
             max_tokens: 4096,
-            system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+            system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
             messages,
             ...(tools ? { tools: tools as Anthropic.Tool[] } : {}),
           },

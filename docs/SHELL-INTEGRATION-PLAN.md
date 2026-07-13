@@ -63,7 +63,7 @@ Legend — **Better**: which repo's implementation is stronger today.
 | 16 | **Media / editors** | image-picker only (no editor) | **image-editor ~6.5k LOC + reel-editor ~6.4k LOC + viewer** | 🟢 **os-vps** | ✅ Keep — major os-vps asset |
 | 17 | **Keyboard shortcuts** | ⌘-bindings + Shortcuts reference app | **focus-scoped** hotkeys + cheat-sheet registry | ↔ tie | ✅ Keep (focus-scoping is better) |
 | 18 | **Mobile responsiveness** | iOS+Android+mobile-Dashboard chromes | same + DRY primitives (MasterDetail/AppFrame…) | ↔ tie | ✅ Keep (finish Phase-E adoption per `MOBILE-RESPONSIVE-PLAN.md`) |
-| 19 | **Assistant / AI** | **real agent loop** — `os` tools issue live tool-calls to drive the OS | streaming chat + AI Inspector, but **agentic layer is declarative-only** (executes nothing) | 🟢 **shell** | ⬇ **P2** — wire real tool execution (§2.3), reusing os-vps's existing tool catalog + Inspector |
+| 19 | **Assistant / AI** | real agent loop — `os` tools drive the OS, **no approval gate** (auto-executes) | **real host-tool agent** — Alfa runs fs/exec on the VPS via a lifted tool loop; **every mutation is approve-per-call** (exec shows exact cmd + destructive badge), LIVE/MOCK banner, over the existing jail+audit | 🟢 **os-vps** (safer — shell auto-executes) | ✅ **Shipped** v1 (fs + gated shell; delete/browser/pty deferred). Needs an Anthropic key (BYOK, Settings → AI) to drive the model |
 | 20 | **Desktop UX** (hot corners / marquee / icons) | hot-corners, marquee rubber-band select, desktop icons, unified arrange grid | **none** (bare desktop, right-click menu only) | 🟢 **shell** | ⬇ **P1** hot-corners + marquee (low risk); icons deferred (§2.4) |
 
 **Summary:** os-vps is *ahead* where it matters to its identity (real host apps,
@@ -85,7 +85,7 @@ touches the file-explorer.
 | **P1** | Context-menu UX polish | Low | None | No |
 | **P1** | Hot corners | Low | None | No |
 | **P1** | Marquee (rubber-band) selection | Low–Med | None (app-shortcut layer only) | No |
-| **P2** | Real agent tool-execution loop | Med | None | No |
+| **P2** | ✅ Real agent tool-execution loop — **shipped** (Alfa drives fs/exec, approve-per-call gate) | Med | None | No |
 | **P2** | ✅ Force-quit dialog (⌥⌘⎋) — **shipped** (⌥⌘⎋ + palette, lists open windows, Force Quit) | Low | Low | No |
 | **P2** | OS sounds + HUD bezel | Low | None | No |
 | **P3** | Command-palette MRU history | Low | None | No |

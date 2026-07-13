@@ -22,11 +22,12 @@ export async function streamAgentTurn(
   tools: AiTool[],
   onDelta: (chunk: string) => void,
   signal?: AbortSignal,
+  system?: string,
 ): Promise<AgentTurn> {
   const res = await fetch("/api/assistant", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ messages, tools }),
+    body: JSON.stringify({ messages, tools, ...(system ? { system } : {}) }),
     signal,
   });
   if (!res.ok || !res.body) {
