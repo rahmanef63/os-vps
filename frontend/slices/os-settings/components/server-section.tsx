@@ -99,7 +99,7 @@ export function ServerSection() {
       </Tabs>
 
       {active ? (
-        <div className="rounded-xl border bg-card/45 p-3">
+        <div className="rounded-lg bg-muted/40 p-3">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 text-sm font-medium">

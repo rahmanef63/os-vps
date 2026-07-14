@@ -1,11 +1,13 @@
 "use client";
 
 import { createElement } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApps, useShellUI, AppIcon, type AppDescriptor } from "@/features/appshell";
 import { Card } from "./widget-cards";
-import { useWidgetState } from "../widget-registry";
+import { useWidgetState, setPickerOpen } from "../widget-registry";
 import { WIDGET_RENDER } from "./widgets-defs";
+import { WidgetPicker } from "./widget-picker";
 
 // Today view (swipe right from home) — renders the SAME editable widget set the
 // desktop stack uses (widget-registry), so a user's chosen widgets (Clock/Notes/
@@ -21,7 +23,20 @@ export function MobileWidgets() {
 
   return (
     <div className="flex h-full flex-col gap-3 overflow-y-auto px-4 py-3 [scrollbar-width:none]">
-      <h2 className="px-1 text-lg font-bold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Today</h2>
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-lg font-bold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Today</h2>
+        {/* Edit the glanceable VPS telemetry set right from the phone — opens the
+            shared widget picker (add/remove Clock/Notes/Quicklinks/CPU/Mem/…). */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setPickerOpen(true)}
+          className="h-8 gap-1.5 rounded-full bg-white/15 px-3 text-[13px] font-medium text-white backdrop-blur hover:bg-white/25 hover:text-white"
+        >
+          <Plus className="size-4" /> Edit
+        </Button>
+      </div>
 
       {enabled.map((id) => {
         const Render = WIDGET_RENDER[id];
@@ -43,6 +58,10 @@ export function MobileWidgets() {
           </div>
         </Card>
       )}
+
+      {/* The picker Dialog is desktop-only in the tree; mount it here so the phone
+          Today view can open it (portals to body, so page inert-ness is fine). */}
+      <WidgetPicker />
     </div>
   );
 }

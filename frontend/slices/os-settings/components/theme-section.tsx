@@ -131,7 +131,7 @@ export function ThemeSection() {
           /* Plain overflow scroller on purpose: Radix ScrollArea with max-h on
              the Root never constrains its viewport, so the list could not
              scroll — this one does. */
-          <div className="max-h-[clamp(14rem,46vh,26rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-card/30">
+          <div className="max-h-[clamp(14rem,46vh,26rem)] overflow-y-auto overscroll-contain rounded-lg bg-muted/30">
             <div className="space-y-2.5 p-2">
               {groups.map((group) => (
                 <div key={group.id} className="space-y-1.5">

@@ -62,7 +62,7 @@ export function AppearanceSection() {
   return (
     <div className="space-y-5">
       <Section icon={<WallpaperIcon />} title="Wallpaper">
-        <div className="rounded-2xl border border-border bg-card/45 p-3">
+        <div className="rounded-lg bg-muted/40 p-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <WallpaperPreview wallpaper={customWallpaper ? "auto" : tweaks.wallpaper} custom={customWallpaper} />
             <div className="min-w-0 flex-1">

@@ -473,3 +473,32 @@ Windows, deliberately **no wifi/cellular/battery/brightness to fabricate on a he
 Apple 2×2 glass-tile grid with accent on-states; and the macOS window chrome already matches the design
 (traffic lights `#ff5f57/#febc2e/#28c840` r6, layered `--shadow-win`, r12). `typecheck` + `eslint` clean;
 **682 tests green**; built + `systemctl restart`, root 200. fs-zip WIP still untouched.
+
+## 13. Settings grouped-card cohesion + editable mobile Today (2026-07-14)
+
+Two deliverables — Apple-cohere the Settings *content* (the macOS sidebar was Apple, the content
+was os-vps-native) + a genuine iOS *feature*.
+
+- **Settings grouped-cards.** The whole Settings surface funnels through TWO shared primitives in
+  the **portable** `shell-settings` slice — `SettingsSection` + `SettingsRow`. Edited only those two
+  (**classes only, signatures unchanged** → portability contract byte-stable): Section wraps children
+  in an `overflow-hidden rounded-xl border bg-card` grouped card under the uppercase caption; Row
+  gains `min-h-[46px] px-4 py-[11px]` + a self-drawn inset hairline (`after:… last:after:hidden`) so
+  dividers land only between real rows. All 8 sections + the portable `AppearancePanel` inherit the
+  macOS/iOS System Settings look for free. Decluttered 4 inner card-in-cards
+  (appearance/theme/server/live-wallpaper-rows: `rounded-…border bg-card/45` → `rounded-lg bg-muted/40`)
+  so the grouped card never double-borders in light mode. Guardrails held: theme's sticky preview deck
+  is a Section SIBLING (so `overflow-hidden` can't clip it); the scroll-capped preset grid keeps its
+  `max-h`+`overflow-y-auto`. Benefits macOS + iOS + Windows + Android Settings (shared bodies).
+- **Editable Today (iOS).** The mobile Today view rendered live VPS telemetry but was frozen — the
+  store (`toggleWidget`/`moveWidget`/`setPickerOpen`) + a responsive `WidgetPicker` existed, but the
+  picker was mounted only on desktop. Added a **＋ Edit** button (`setPickerOpen(true)`) to
+  `mobile-widgets.tsx` + mounted `<WidgetPicker/>` in the mobile tree (portals to body, so the inert
+  Today page can't block it). Phone users can now add/remove/reorder their CPU/Mem/Disk/Network/
+  Uptime/Clock cards. ~1 file; reuses the widget-registry store unchanged.
+
+Adversarial review (2 passes): **no defects** — portability contract byte-stable, no sticky clip, no
+picker double-mount (`Surface` renders exactly one shell → one widgets slot), dialog portals out of
+the inert page, hairline correct, all files ≤200 LOC. `typecheck` + `eslint` clean; **682 tests green**;
+built + `systemctl restart`, root 200; Playwright-verified AI/Appearance/About/Server grouped cards
+(light + dark) + the Today picker. fs-zip WIP still untouched.

@@ -57,7 +57,7 @@ export function LiveWallpaperRows() {
       </Row>
 
       {(editing || lw?.kind === "html") && (
-        <div className="rounded-2xl border border-border bg-card/45 p-3">
+        <div className="rounded-lg bg-muted/40 p-3">
           <p className="mb-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Sparkles className="size-3.5" />
             Paste a full HTML page (scripts allowed). It runs in a sandboxed frame: no cookies, no OS access.
