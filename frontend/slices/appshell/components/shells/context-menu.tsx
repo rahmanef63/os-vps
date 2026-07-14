@@ -112,10 +112,12 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
               role="menuitem"
               disabled={it.disabled}
               onClick={() => { it.onClick(); onClose(); }}
-              className="h-auto p-0 font-normal hover:bg-transparent flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-foreground/90 transition-colors hover:bg-muted disabled:opacity-40"
+              // "rata kanan": label right-aligned, icon on the RIGHT. (shell.rahmanef.com
+              // is actually icon-left/label-left — this is the requested right-aligned look.)
+              className="h-auto p-0 font-normal hover:bg-transparent flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-right text-foreground/90 transition-colors hover:bg-muted disabled:opacity-40"
             >
+              <span className="flex-1 truncate">{it.label}</span>
               {it.icon && <it.icon className="size-4 shrink-0 text-muted-foreground" />}
-              <span className="truncate">{it.label}</span>
             </Button>
           ),
         )}

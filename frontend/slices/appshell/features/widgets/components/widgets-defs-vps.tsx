@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Code2, Globe, Moon, Palette, Sun, Timer as TimerIcon } from "lucide-react";
+import { Code2, FileText, Globe, Moon, Palette, Sun, Timer as TimerIcon } from "lucide-react";
 import { setShell, shellsForSurface, useShellAppearance, useShellPrefs } from "@/features/appshell";
 import { cn } from "@/lib/utils";
 import { Card } from "./widget-cards";
+import { mdToHtml } from "./md";
 
 // VPS-native + content widgets ported from shell.rahmanef.com's set: a stopwatch,
-// a URL embed, a sandboxed-HTML snippet, an active-shell picker, and a theme
-// toggle. Split out to keep widgets-defs.tsx under the line ceiling. All are
-// interactive (opt back into pointer events).
+// a URL embed, a sandboxed-HTML snippet, a markdown note, an active-shell picker,
+// and a theme toggle. Split out to keep widgets-defs.tsx under the line ceiling.
+// All are interactive (opt back into pointer events).
 
 const EMBED_KEY = "os-vps:widget:embed";
 const HTML_KEY = "os-vps:widget:html";
+const MD_KEY = "os-vps:widget:markdown";
 const ls = (k: string) => (typeof localStorage !== "undefined" ? localStorage.getItem(k) ?? "" : "");
 const btn = "rounded-lg border border-white/10 bg-black/10 px-2 py-1 text-xs hover:bg-white/10";
 
@@ -175,10 +177,49 @@ function ThemeWidget() {
   );
 }
 
+// A markdown note — edit raw markdown, view rendered. Persisted. Uses the safe
+// mdToHtml above (escaped, http-only links).
+function MarkdownWidget() {
+  const [md, setMd] = useState(() => ls(MD_KEY));
+  const [editing, setEditing] = useState(!md);
+  const save = () => {
+    try { localStorage.setItem(MD_KEY, md); } catch { /* quota */ }
+    setEditing(false);
+  };
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <FileText className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">Markdown</span>
+        {!editing && (
+          <button type="button" onClick={() => setEditing(true)} className="ml-auto text-[10px] text-muted-foreground hover:text-foreground">edit</button>
+        )}
+      </div>
+      {editing ? (
+        <div className="space-y-1">
+          <textarea
+            value={md}
+            onChange={(e) => setMd(e.target.value)}
+            placeholder={"# Title\n**bold**, *italic*, `code`\n- a bullet\n[link](https://…)"}
+            className="h-28 w-full resize-none rounded-lg border border-white/10 bg-black/10 p-2 font-mono text-[11px] outline-none placeholder:text-muted-foreground"
+          />
+          <button type="button" onClick={save} className={cn(btn, "w-full")}>Save</button>
+        </div>
+      ) : (
+        <div
+          className="max-h-40 overflow-auto text-xs leading-relaxed [&_a]:text-primary"
+          dangerouslySetInnerHTML={{ __html: mdToHtml(md) }}
+        />
+      )}
+    </Card>
+  );
+}
+
 export const VPS_WIDGETS = {
   timer: TimerWidget,
   embed: EmbedWidget,
   html: HtmlWidget,
+  markdown: MarkdownWidget,
   shell: ShellWidget,
   theme: ThemeWidget,
 };

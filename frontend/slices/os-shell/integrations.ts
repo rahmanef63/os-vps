@@ -5,7 +5,7 @@
 // once from os-root INSIDE the auth boundary — registries are module-level, so
 // this runs exactly once per page.
 import { createElement } from "react";
-import { Activity, Expand, FolderPlus, Lock, RotateCcw, Shrink, Wallpaper as WallpaperIcon } from "lucide-react";
+import { Activity, Expand, FilePlus, FolderPlus, Link2, Lock, RotateCcw, Shrink, Wallpaper as WallpaperIcon } from "lucide-react";
 import {
   lock,
   openQuickLook,
@@ -16,6 +16,7 @@ import {
   registerDropHandler,
   registerPreviewer,
   resetDesktopIcons,
+  setAddDialog,
   setShell,
   setUnlockGuard,
   shellsForSurface,
@@ -58,7 +59,14 @@ registerContextMenu("*", (ctx) => {
       icon: FolderPlus,
       onClick: () => openWindow("files-manager", "Files", undefined, { path: "~" }, { multi: true }),
     });
-    items.push({ label: "Reset desktop icons", icon: RotateCcw, onClick: resetDesktopIcons });
+    // Desktop-icon items only where the icon layer + AddIconDialog actually mount
+    // (macOS/Windows). The Dashboard shell renders neither, so showing them there
+    // would be a no-op that also leaves the add-dialog kind stuck.
+    if (ctx.shell !== "dashboard") {
+      items.push({ label: "Add link…", icon: Link2, onClick: () => setAddDialog("link") });
+      items.push({ label: "Add file…", icon: FilePlus, onClick: () => setAddDialog("file") });
+      items.push({ label: "Reset desktop icons", icon: RotateCcw, onClick: resetDesktopIcons });
+    }
   }
   items.push({
     label: "Change wallpaper…",

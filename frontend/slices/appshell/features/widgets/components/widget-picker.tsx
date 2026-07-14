@@ -1,37 +1,42 @@
 "use client";
 
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Component, type ReactNode } from "react";
+import { Check } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import {
-  WIDGET_META,
-  moveWidget,
-  setPickerOpen,
-  setWidgetsOn,
-  toggleWidget,
-  usePickerOpen,
-  useWidgetState,
-} from "../widget-registry";
+import { cn } from "@/lib/utils";
+import { WIDGET_META, setPickerOpen, setWidgetsOn, toggleWidget, usePickerOpen, useWidgetState } from "../widget-registry";
+import { WIDGET_RENDER } from "./widgets-defs";
 
-// Desktop-widget picker — choose which widgets show on the wallpaper stack and
-// reorder them (up/down). Opened from the palette ("Configure desktop widgets")
-// or the desktop right-click menu. ponytail: up/down reorder, no free drag yet.
+// A real widget mounted mini can throw (or a poll can fail mid-render); a crash
+// guard keeps one bad preview from taking down the whole picker.
+class PreviewBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? (
+      <div className="grid h-full place-items-center text-[10px] text-muted-foreground">preview</div>
+    ) : (
+      this.props.children
+    );
+  }
+}
+
+// Desktop-widget picker — a live-preview gallery (mirrors shell.rahmanef.com):
+// each card mounts the REAL widget clipped to a small box (pointer-events-none so
+// it's non-interactive), and clicking the card adds/removes it. Arrange by
+// dragging widgets on the desktop (no up/down reorder here anymore).
 export function WidgetPicker() {
   const open = usePickerOpen();
   const { on, enabled } = useWidgetState();
-
-  const shown = enabled
-    .map((id) => WIDGET_META.find((w) => w.id === id))
-    .filter((w): w is (typeof WIDGET_META)[number] => !!w);
-  const available = WIDGET_META.filter((w) => !enabled.includes(w.id));
-
   return (
     <Dialog open={open} onOpenChange={setPickerOpen}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Desktop widgets</DialogTitle>
-          <DialogDescription>Pick widgets for the wallpaper stack and set their order.</DialogDescription>
+          <DialogDescription>Click a widget to add or remove it. Drag widgets on the desktop to arrange.</DialogDescription>
         </DialogHeader>
 
         <label className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
@@ -39,47 +44,38 @@ export function WidgetPicker() {
           <Switch checked={on} onCheckedChange={setWidgetsOn} />
         </label>
 
-        <div className="flex flex-col gap-1.5">
-          {shown.map((w, i) => (
-            <div key={w.id} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted">
-              <span className="flex-1">{w.title}</span>
-              <Button
+        <div className="grid max-h-[55vh] grid-cols-2 gap-2 overflow-auto sm:grid-cols-3">
+          {WIDGET_META.map((w) => {
+            const Render = WIDGET_RENDER[w.id];
+            const isOn = enabled.includes(w.id);
+            return (
+              <button
+                key={w.id}
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="size-7"
-                disabled={i === 0}
-                onClick={() => moveWidget(w.id, -1)}
-                aria-label={`Move ${w.title} up`}
+                onClick={() => toggleWidget(w.id)}
+                aria-label={`${isOn ? "Remove" : "Add"} ${w.title}`}
+                aria-pressed={isOn}
+                className={cn(
+                  "flex flex-col gap-1.5 rounded-xl border p-1.5 text-left transition-colors",
+                  isOn ? "border-primary/60 bg-primary/5" : "border-border hover:border-primary/40",
+                )}
               >
-                <ArrowUp className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-7"
-                disabled={i === shown.length - 1}
-                onClick={() => moveWidget(w.id, 1)}
-                aria-label={`Move ${w.title} down`}
-              >
-                <ArrowDown className="size-4" />
-              </Button>
-              <Switch checked onCheckedChange={() => toggleWidget(w.id)} aria-label={`Remove ${w.title}`} />
-            </div>
-          ))}
-
-          {available.length > 0 && (
-            <div className="mt-1 px-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Available
-            </div>
-          )}
-          {available.map((w) => (
-            <div key={w.id} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted">
-              <span className="flex-1 text-muted-foreground">{w.title}</span>
-              <Switch checked={false} onCheckedChange={() => toggleWidget(w.id)} aria-label={`Add ${w.title}`} />
-            </div>
-          ))}
+                <div className="pointer-events-none relative h-24 w-full overflow-hidden rounded-lg bg-muted/30 p-1">
+                  <PreviewBoundary>{Render ? <Render /> : null}</PreviewBoundary>
+                  {isOn && (
+                    <span className="absolute right-1 top-1 z-20 grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="size-3" />
+                    </span>
+                  )}
+                  {/* Transparent shield on top: a click toggles the card and never
+                      drives the live preview's own controls (some widgets render
+                      pointer-events-auto, which would otherwise fire their side effects). */}
+                  <span aria-hidden className="pointer-events-auto absolute inset-0 z-10" />
+                </div>
+                <span className="px-1 text-xs font-medium">{w.title}</span>
+              </button>
+            );
+          })}
         </div>
       </DialogContent>
     </Dialog>

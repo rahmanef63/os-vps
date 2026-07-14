@@ -3,11 +3,9 @@ import {
   getWidgetSize,
   getWidgetState,
   moveWidget,
-  setCurrentSpace,
   setWidgetPos,
   setWidgetsOn,
   setWidgetSize,
-  setWidgetSpace,
   toggleWidget,
 } from "./widget-registry";
 
@@ -67,15 +65,12 @@ describe("widget-registry store", () => {
     setWidgetSize("cpu", "m"); // restore default for store hygiene
   });
 
-  it("enable assigns the current Space; position + space setters persist", () => {
-    setCurrentSpace(1);
-    toggleWidget("clock"); // enabled on the active Space
-    expect(getWidgetState().spaces.clock).toBe(1);
+  it("setWidgetPos persists a free-drag position and clamps to >= 0", () => {
+    toggleWidget("clock");
     setWidgetPos("clock", 40, 60);
     expect(getWidgetState().positions.clock).toEqual({ x: 40, y: 60 });
-    setWidgetSpace("clock", 0);
-    expect(getWidgetState().spaces.clock).toBe(0);
+    setWidgetPos("clock", -5, 10); // negative x clamps to 0
+    expect(getWidgetState().positions.clock).toEqual({ x: 0, y: 10 });
     toggleWidget("clock"); // cleanup
-    setCurrentSpace(0);
   });
 });

@@ -27,6 +27,7 @@ export const WIDGET_META: WidgetMeta[] = [
   { id: "tasks", title: "Tasks" },
   { id: "timer", title: "Timer" },
   { id: "notes", title: "Notes" },
+  { id: "markdown", title: "Markdown" },
   { id: "html", title: "HTML" },
   { id: "embed", title: "Embed" },
   { id: "quicklinks", title: "Quicklinks" },
@@ -46,8 +47,6 @@ export type WidgetState = {
   /** Free-drag position per widget (section-relative px). Missing = the layer
    *  auto-places it in the top-right column on mount. */
   positions: Record<string, WidgetPos>;
-  /** Which desktop Space (0 or 1) each widget lives on. Missing = 0. */
-  spaces: Record<string, number>;
 };
 
 // Keep only {id: valid-size} pairs — drops corrupt/legacy values.
@@ -67,18 +66,8 @@ function cleanPositions(raw: unknown): Record<string, WidgetPos> {
   }
   return out;
 }
-function cleanSpaces(raw: unknown): Record<string, number> {
-  if (!raw || typeof raw !== "object") return {};
-  const out: Record<string, number> = {};
-  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
-    if (v === 0 || v === 1) out[id] = v;
-  }
-  return out;
-}
-
 function load(): WidgetState {
-  const empty = { positions: {}, spaces: {} };
-  if (typeof localStorage === "undefined") return { on: false, enabled: DEFAULT_ENABLED, sizes: {}, ...empty };
+  if (typeof localStorage === "undefined") return { on: false, enabled: DEFAULT_ENABLED, sizes: {}, positions: {} };
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
@@ -86,15 +75,16 @@ function load(): WidgetState {
       const enabled = Array.isArray(p.enabled)
         ? p.enabled.filter((id): id is string => typeof id === "string" && WIDGET_META.some((w) => w.id === id))
         : DEFAULT_ENABLED;
-      // Migration: pre-position/-space saves just lack those keys → default {}.
-      return { on: !!p.on, enabled, sizes: cleanSizes(p.sizes), positions: cleanPositions(p.positions), spaces: cleanSpaces(p.spaces) };
+      // Migration: pre-position saves just lack the key → default {} (a stale
+      // `spaces` key from an earlier build is simply ignored).
+      return { on: !!p.on, enabled, sizes: cleanSizes(p.sizes), positions: cleanPositions(p.positions) };
     }
     // No saved state yet → default the stack ON so the desktop widgets are
     // visible out of the box (macOS-Sonoma style; toggle off anytime). Respect a
     // legacy explicit "off" so anyone who turned the old stack off keeps it off.
-    return { on: localStorage.getItem(LEGACY_KEY) !== "0", enabled: DEFAULT_ENABLED, sizes: {}, ...empty };
+    return { on: localStorage.getItem(LEGACY_KEY) !== "0", enabled: DEFAULT_ENABLED, sizes: {}, positions: {} };
   } catch {
-    return { on: false, enabled: DEFAULT_ENABLED, sizes: {}, ...empty };
+    return { on: false, enabled: DEFAULT_ENABLED, sizes: {}, positions: {} };
   }
 }
 
@@ -132,13 +122,10 @@ export function setWidgetsOn(on: boolean) {
 }
 
 export function toggleWidget(id: string) {
-  if (state.enabled.includes(id)) {
-    commit({ ...state, enabled: state.enabled.filter((x) => x !== id) });
-  } else {
-    // A newly-enabled widget lands on the CURRENT Space; the layer assigns its
-    // position on mount (top-right column).
-    commit({ ...state, enabled: [...state.enabled, id], spaces: { ...state.spaces, [id]: currentSpace } });
-  }
+  const enabled = state.enabled.includes(id)
+    ? state.enabled.filter((x) => x !== id)
+    : [...state.enabled, id];
+  commit({ ...state, enabled }); // the layer assigns a position on mount
 }
 
 export function moveWidget(id: string, dir: -1 | 1) {
@@ -158,39 +145,11 @@ export function setWidgetSize(id: string, size: WidgetSize) {
   commit({ ...state, sizes: { ...state.sizes, [id]: size } });
 }
 
-// ── Free-drag position + per-space ───────────────────────────────────────────
+// ── Free-drag position ───────────────────────────────────────────────────────
 export const getWidgetPos = (id: string): WidgetPos | undefined => state.positions[id];
 
 export function setWidgetPos(id: string, x: number, y: number) {
   commit({ ...state, positions: { ...state.positions, [id]: { x: Math.max(0, x), y: Math.max(0, y) } } });
-}
-
-export function nudgeWidgetPos(id: string, dx: number, dy: number) {
-  const p = state.positions[id] ?? { x: 0, y: 0 };
-  setWidgetPos(id, p.x + dx, p.y + dy);
-}
-
-export const getWidgetSpace = (id: string): number => state.spaces[id] ?? 0;
-
-export function setWidgetSpace(id: string, space: number) {
-  commit({ ...state, spaces: { ...state.spaces, [id]: space } });
-}
-
-// Current Space (0|1) — ephemeral (resets to 0 on reload); the space pager sets it.
-let currentSpace = 0;
-const spaceSubs = new Set<() => void>();
-export const getCurrentSpace = (): number => currentSpace;
-export function setCurrentSpace(s: number) {
-  if (currentSpace === s) return;
-  currentSpace = s;
-  spaceSubs.forEach((f) => f());
-}
-export function useCurrentSpace(): number {
-  return useSyncExternalStore(
-    (cb) => { spaceSubs.add(cb); return () => { spaceSubs.delete(cb); }; },
-    () => currentSpace,
-    () => 0,
-  );
 }
 
 // Picker-dialog open flag — ephemeral (not persisted). Kept here so any surface

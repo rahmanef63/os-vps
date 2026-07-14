@@ -1,19 +1,16 @@
 "use client";
 
 import { createElement, useEffect, useRef, useState } from "react";
-import { ArrowRightLeft, Check, LayoutGrid, Trash2 } from "lucide-react";
+import { Check, LayoutGrid, Trash2 } from "lucide-react";
 import { ContextMenu, registerCommands, registerContextMenu, toast, useContextMenu, type MenuItem } from "@/features/appshell";
 import { cn } from "@/lib/utils";
 import {
   getWidgetState,
-  setCurrentSpace,
   setPickerOpen,
   setWidgetPos,
   setWidgetSize,
-  setWidgetSpace,
   setWidgetsOn,
   toggleWidget,
-  useCurrentSpace,
   useWidgetState,
   type WidgetPos,
   type WidgetSize,
@@ -22,9 +19,9 @@ import { WIDGET_RENDER } from "./widgets-defs";
 import { WidgetPicker } from "./widget-picker";
 
 // Desktop widgets — a glanceable, EDITABLE set free-positioned on the wallpaper
-// layer (behind windows), across two Spaces. Drag a widget to move it; right-
-// click sets its size / space / removes it; the space pager switches desktops.
-// Layout + set live in the widget-registry store; the WidgetPicker edits membership.
+// layer (behind windows). Drag a widget to move it; right-click sets its size or
+// removes it. Layout + membership live in the widget-registry store; the
+// WidgetPicker (live-preview gallery) edits membership.
 
 registerCommands("desktop-widgets", [
   {
@@ -56,8 +53,8 @@ const SIZE_PX: Record<WidgetSize, number> = { s: 176, m: 240, l: 288 };
 
 // One free-dragged widget. Drag from any non-interactive part (its own inputs /
 // buttons keep working); the move commits once on drop (not every frame). Right-
-// click sets size, moves it to the other Space, or removes it.
-function DesktopWidget({ id, size, pos, space }: { id: string; size: WidgetSize; pos: WidgetPos; space: number }) {
+// click sets its size or removes it.
+function DesktopWidget({ id, size, pos }: { id: string; size: WidgetSize; pos: WidgetPos }) {
   const ctx = useContextMenu();
   const Render = WIDGET_RENDER[id];
   const drag = useRef<{ x: number; y: number } | null>(null);
@@ -82,13 +79,11 @@ function DesktopWidget({ id, size, pos, space }: { id: string; size: WidgetSize;
     setOffset(null);
   };
 
-  const other = space === 0 ? 1 : 0;
   const items: MenuItem[] = [
     { label: "Small", icon: size === "s" ? Check : undefined, onClick: () => setWidgetSize(id, "s") },
     { label: "Medium", icon: size === "m" ? Check : undefined, onClick: () => setWidgetSize(id, "m") },
     { label: "Large", icon: size === "l" ? Check : undefined, onClick: () => setWidgetSize(id, "l") },
     { type: "sep" },
-    { label: `Move to Space ${other + 1}`, icon: ArrowRightLeft, onClick: () => setWidgetSpace(id, other) },
     { label: "Remove widget", icon: Trash2, onClick: () => toggleWidget(id) },
     { label: "Desktop widgets…", icon: LayoutGrid, onClick: () => setPickerOpen(true) },
   ];
@@ -109,47 +104,33 @@ function DesktopWidget({ id, size, pos, space }: { id: string; size: WidgetSize;
 }
 
 export function DesktopWidgets() {
-  const { on, enabled, sizes, positions, spaces } = useWidgetState();
-  const space = useCurrentSpace();
+  const { on, enabled, sizes, positions } = useWidgetState();
   const ref = useRef<HTMLDivElement>(null);
-  const visible = enabled.filter((id) => (spaces[id] ?? 0) === space);
 
-  // Auto-place any visible widget that lacks a saved position — a top-right
+  // Auto-place any enabled widget that lacks a saved position — a top-right
   // column, matching the previous stack so the migration is seamless.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const W = el.clientWidth;
     let slot = 0;
-    for (const id of visible) {
+    for (const id of enabled) {
       if (positions[id]) continue;
       setWidgetPos(id, Math.max(0, W - SIZE_PX[sizes[id] ?? "m"] - 16), 16 + slot * 128);
       slot++;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible.join(","), space, on]);
+  }, [enabled.join(","), on]);
 
   if (!on) return <WidgetPicker />;
   return (
     <>
       <WidgetPicker />
       <div ref={ref} className="pointer-events-none absolute inset-0 z-[5]">
-        {visible.map((id) => {
+        {enabled.map((id) => {
           const pos = positions[id];
-          return pos ? <DesktopWidget key={id} id={id} size={sizes[id] ?? "m"} pos={pos} space={space} /> : null;
+          return pos ? <DesktopWidget key={id} id={id} size={sizes[id] ?? "m"} pos={pos} /> : null;
         })}
-      </div>
-      {/* Space pager — switch desktops; a new widget lands on the active one. */}
-      <div className="pointer-events-auto absolute left-1/2 top-2 z-[6] flex -translate-x-1/2 gap-1.5 rounded-full bg-black/25 px-2 py-1 backdrop-blur">
-        {[0, 1].map((s) => (
-          <button
-            key={s}
-            type="button"
-            aria-label={`Space ${s + 1}`}
-            onClick={() => setCurrentSpace(s)}
-            className={cn("size-2 rounded-full transition-colors", space === s ? "bg-white" : "bg-white/40 hover:bg-white/70")}
-          />
-        ))}
       </div>
     </>
   );

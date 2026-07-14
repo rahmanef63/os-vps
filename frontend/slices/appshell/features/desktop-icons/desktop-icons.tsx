@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { ExternalLink, File as FileIcon, Globe, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { openWindow } from "../../lib/store";
 import { useApps } from "../../lib/registry";
 import { AppIcon } from "../../components/app-icon";
@@ -10,11 +13,14 @@ import { ContextMenu, useContextMenu, type MenuItem } from "../../components/she
 import {
   ICON_H,
   ICON_W,
+  addIcon,
   getDesktopIcons,
   getSelected,
   moveIcons,
   removeIcons,
+  setAddDialog,
   setSelected,
+  useAddDialog,
   useDesktopIcons,
   useSelected,
   type DesktopIcon,
@@ -41,21 +47,29 @@ export function DesktopIcons() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   return (
-    <div className="pointer-events-none absolute inset-0 z-[4]">
-      {icons.map((icon) => (
-        <IconButton key={icon.id} icon={icon} selected={selected.has(icon.id)} />
-      ))}
-    </div>
+    <>
+      <div className="pointer-events-none absolute inset-0 z-[4]">
+        {icons.map((icon) => (
+          <IconButton key={icon.id} icon={icon} selected={selected.has(icon.id)} />
+        ))}
+      </div>
+      <AddIconDialog />
+    </>
   );
 }
 
 function IconButton({ icon, selected }: { icon: DesktopIcon; selected: boolean }) {
   const apps = useApps();
   const menu = useContextMenu();
-  const app = apps.find((a) => a.id === icon.app);
   const drag = useRef<{ x: number; y: number } | null>(null);
-  if (!app) return null;
-  const open = () => openWindow(app.id, app.title, app.defaultSize);
+  const app = icon.kind === "app" ? apps.find((a) => a.id === icon.app) : undefined;
+  if (icon.kind === "app" && !app) return null;
+  const label = icon.kind === "app" ? app?.title ?? "" : icon.label;
+  const open = () => {
+    if (icon.kind === "app" && app) openWindow(app.id, app.title, app.defaultSize);
+    else if (icon.kind === "link") window.open(icon.url, "_blank", "noopener,noreferrer");
+    else if (icon.kind === "file") openWindow("files-manager", label || "Files", undefined, { path: icon.path }, { multi: true });
+  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
@@ -76,7 +90,7 @@ function IconButton({ icon, selected }: { icon: DesktopIcon; selected: boolean }
   const onPointerUp = () => { drag.current = null; };
 
   const items: MenuItem[] = [
-    { label: `Open ${app.title}`, icon: ExternalLink, onClick: open },
+    { label: "Open", icon: ExternalLink, onClick: open },
     { type: "sep" },
     { label: "Remove", icon: Trash2, onClick: () => removeIcons([icon.id]) },
   ];
@@ -100,13 +114,71 @@ function IconButton({ icon, selected }: { icon: DesktopIcon; selected: boolean }
           menu.open(e);
         }}
       >
-        <span className="size-11 drop-shadow"><AppIcon app={app} /></span>
+        <span className="grid size-11 place-items-center drop-shadow">
+          {icon.kind === "app" && app ? (
+            <AppIcon app={app} />
+          ) : (
+            <span className="grid size-10 place-items-center rounded-xl bg-primary/80 text-primary-foreground">
+              {icon.kind === "link" ? <Globe className="size-6" /> : <FileIcon className="size-6" />}
+            </span>
+          )}
+        </span>
         <span className="line-clamp-2 w-full text-[11px] font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
-          {app.title}
+          {label}
         </span>
       </button>
       <ContextMenu pos={menu.pos} items={items} onClose={menu.close} />
     </>
+  );
+}
+
+// Add a link or file icon — a small dialog opened from the desktop right-click
+// menu ("Add link…" / "Add file…"). A bare URL gets an https:// prefix. Resets on
+// close (no effect) so the next open starts blank.
+function AddIconDialog() {
+  const kind = useAddDialog();
+  const [val, setVal] = useState("");
+  const [label, setLabel] = useState("");
+  const close = () => {
+    setVal("");
+    setLabel("");
+    setAddDialog(null);
+  };
+  const submit = () => {
+    const v = val.trim();
+    if (!v) return;
+    if (kind === "link") {
+      addIcon({ kind: "link", url: /^https?:\/\//i.test(v) ? v : `https://${v}`, label: label.trim() || v });
+    } else if (kind === "file") {
+      addIcon({ kind: "file", path: v, label: label.trim() || v.split("/").filter(Boolean).pop() || v });
+    }
+    close();
+  };
+  return (
+    <Dialog open={!!kind} onOpenChange={(o) => !o && close()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{kind === "link" ? "Add link" : "Add file"}</DialogTitle>
+        </DialogHeader>
+        <Input
+          autoFocus
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          placeholder={kind === "link" ? "https://example.com" : "/home/rahman/projects"}
+        />
+        <Input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          placeholder="Label (optional)"
+        />
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={close}>Cancel</Button>
+          <Button type="button" onClick={submit} disabled={!val.trim()}>Add</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
