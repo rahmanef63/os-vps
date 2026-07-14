@@ -537,6 +537,39 @@ leave (icons stranded large — the intermittent bug). One-line fix: zero the gu
 (`if (raf.current) { cancelAnimationFrame(raf.current); raf.current = 0; }`). Screenshot-verified hover
 (gaussian magnify) → leave (all icons reset to rest). `typecheck`+`eslint` clean, built + restarted, 200.
 
+### §18 — Mobile interactivity: mock vs our real iOS shell (+ 2 fidelity fixes)
+A 2-agent Workflow mapped both sides (the mock agent hit the StructuredOutput cap, so the mock side was
+read by hand from the `.dc.html` `os.*` bindings + a support.js grep). **Finding: our real shell
+substantially EXCEEDS the mock**, which is a tap+scroll prototype — the pointer/drag code in support.js is
+the design-tool runtime, not app gestures. Comparison (real gesture ✅ / tap-only ⚪ / absent ❌):
+
+| Interaction | Mock (dc.html prototype) | Our real iOS shell |
+|---|---|---|
+| Launch app | ⚪ tap icon + bounce | ⚪ tap icon/dock/library/quicklink → resume-or-open |
+| Dismiss app | ⚪ tap Home button | ⚪ Done + ✅ home-indicator swipe-up + **✅ zoom-down anim (NEW)** |
+| App open/close transition | bounce only | ✅ appOpen zoom-up + **appClose zoom-down (NEW)** |
+| App switching | ❌ none | ✅ home-indicator swipe L/R, tap/hold→switcher; switcher swipe + swipe-up-to-close |
+| Home paging | ❌ single grid | ✅ 3 snap pages (Today/Grid/Library) + dots |
+| Long-press | ❌ none | ✅ icon hold→quick-actions sheet; home-bg→context menu; right-click parity |
+| Spotlight search | ❌ none | ✅ swipe-up on grid |
+| Control Center | ⚪ os.onCC hook | ✅ swipe-down top-right — home **+ in-app (NEW)** |
+| Notification Center | ❌ none | ✅ swipe-down top-left — home **+ in-app (NEW)** |
+| Nav frost on scroll | ⚪ os.navBg/onScroll | ✅ scroll-frost |
+| Nav large-title collapse | ⚪ os.navTitleOp | ❌ (per-shell detail uses a big title instead; nav title always shown) |
+| Floating tab bar | ⚪ os.tabItems | ❌ skipped — no per-app tab model (would be empty chrome) |
+| Nav trailing action | ⚪ os.onTrailing | ❌ Done only |
+| Status bar | clock+island+wifi+battery | notch reserve only — **no fake hardware (VPS essence)** |
+| Live-activity island | ❌ | ✅ notifications topPill (real activities) |
+
+**Fixed this pass (the 2 genuine fidelity gaps in OURS):** (1) **dismiss-to-home zoom** — apps unmounted
+instantly; added an `appClose` keyframe + a `closing` state in mobile-shell that finalises on
+`animationend` (guarded to the layer's own animation; `pointer-events-none` during the zoom). (2) **CC/NC
+in-app** — were only reachable from the home (which is inert under an app); added a top notch-zone
+swipe-catcher on the app layer (`--sai-top` strip, left→NC / right→CC), so both work inside apps.
+Screenshot-verified CC opening over an open Settings app. Mock-only items (tab bar, trailing action,
+large-title collapse) are nav-stack patterns that don't fit our fullscreen tool-app model — deliberately
+not added.
+
 ### §17 — Flat Apple icons + full settings refactor (all 8 sections)
 A 3-agent Workflow visual-diffed our rendered icons vs the Apple refs and audited all 8 settings
 sections; then a second 3-agent Workflow adversarially reviewed the result.

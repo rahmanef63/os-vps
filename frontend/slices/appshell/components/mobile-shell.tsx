@@ -27,6 +27,7 @@ export function MobileShell() {
   const [cc, setCc] = useState(false);
   const [nc, setNc] = useState(false); // notification center (pull down, left half)
   const [appScrolled, setAppScrolled] = useState(false); // iOS nav-bar frost-on-scroll
+  const [closing, setClosing] = useState(false); // playing the dismiss-to-home zoom
 
   // Dock = manifest-pinned apps (AppDescriptor.pinned — the generic shell never
   // hardcodes project app ids); falls back to the first 4 dockable apps.
@@ -83,9 +84,45 @@ export function MobileShell() {
     setAppScrolled(false);
   };
   const goHome = () => {
-    if (topId) minimizeWindow(topId);
     setSwitcher(false);
+    // Zoom the app down to the home (real-iOS dismiss) when it's actually
+    // front-most and we're not coming from the switcher; the app layer's
+    // onAnimationEnd finalises (minimise + show home). Otherwise go straight home.
+    if (topId && !home && !switcher) {
+      setClosing(true);
+      return;
+    }
     setHome(true);
+  };
+  // Called by the app layer once the dismiss zoom finishes.
+  const finishClose = () => {
+    if (topId) minimizeWindow(topId);
+    setClosing(false);
+    setHome(true);
+  };
+
+  // Swipe down from the top notch zone WHILE an app is open → Control Center
+  // (right half) / Notification Center (left half) — same split as the home, so
+  // both are reachable in-app (real iOS), not only from the home screen.
+  const onAppTopPointerDown = (e: React.PointerEvent) => {
+    const sy = e.clientY;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const left = e.clientX - rect.left < rect.width / 2;
+    let fired = false;
+    const cleanup = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", cleanup);
+    };
+    const move = (ev: PointerEvent) => {
+      if (!fired && ev.clientY - sy > 40) {
+        fired = true;
+        cleanup();
+        if (left) setNc(true);
+        else setCc(true);
+      }
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", cleanup);
   };
 
   const openSwitcher = () => setSwitcher(true);
@@ -139,9 +176,28 @@ export function MobileShell() {
       {/* APP fullscreen */}
       {showApp && activeApp && (
         <div
-          className="absolute inset-0 z-[10] flex flex-col [animation:appOpen_var(--shell-dur-slow)_var(--shell-ease)] [transform-origin:center_bottom]"
-          style={{ background: "var(--surface)" }}
+          className={cn(
+            "absolute inset-0 z-[10] flex flex-col [transform-origin:center_bottom]",
+            closing && "pointer-events-none", // lock interaction during the dismiss zoom
+          )}
+          style={{
+            background: "var(--surface)",
+            animation: `${closing ? "appClose" : "appOpen"} var(--shell-dur-slow) var(--shell-ease)`,
+          }}
+          // Finalise the dismiss only when the APP layer's OWN close animation
+          // ends (guard against a child animation bubbling up).
+          onAnimationEnd={(e) => {
+            if (closing && e.target === e.currentTarget) finishClose();
+          }}
         >
+          {/* Top notch-zone swipe-catcher: pull down for NC (left) / CC (right)
+              in-app. Covers only the empty safe-area strip above the nav row, so
+              it never blocks the app icon / title / Done. */}
+          <div
+            className="absolute inset-x-0 top-0 z-[20] [touch-action:none]"
+            style={{ height: "var(--sai-top)" }}
+            onPointerDown={onAppTopPointerDown}
+          />
           {/* Nav bar: transparent at rest, frosting into a hairline glass bar once
               the app scrolls (onScrollCapture on <main> catches the app's own inner
               scroll container generically). Title stays put — os-vps apps carry no
