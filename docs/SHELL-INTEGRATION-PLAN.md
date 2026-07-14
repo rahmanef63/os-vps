@@ -502,3 +502,14 @@ picker double-mount (`Surface` renders exactly one shell → one widgets slot), 
 the inert page, hairline correct, all files ≤200 LOC. `typecheck` + `eslint` clean; **682 tests green**;
 built + `systemctl restart`, root 200; Playwright-verified AI/Appearance/About/Server grouped cards
 (light + dark) + the Today picker. fs-zip WIP still untouched.
+
+### §14 — Dynamic Island (iOS home), from `mock-os/…/MobileShell.dc.html`
+Compared our iOS shell against the imported Apple mock. Mock elements audited: status clock ✅,
+**Dynamic Island ❌**, wifi/battery (skipped — a headless VPS never fakes hardware), nav frost ✅,
+floating tab bar (skipped — no per-app tab model, would be empty chrome), home indicator ✅ (richer).
+One real essence-safe gap: the notch. Added `dynamic-island.tsx` — a black silhouette pill (the
+physical cutout, not a sensor readout) centered at `top: calc(var(--sai-top)+3px)`, rendered on the
+iPhone **home** (`mobile-home.tsx`), where it sits over the wallpaper beside the status clock. Left it
+OFF the in-app view on purpose: apps paint an opaque dark `--surface`, so a black-on-black pill reads
+as a smudge, not a notch (real iOS blends it there too); the nav bar owns the app's top instead.
+`typecheck`+`eslint` clean, built + restarted, Playwright-verified home (island present) + app (clean).

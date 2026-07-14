@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { AppDescriptor } from "../lib/types";
 import { AppIcon } from "./app-icon";
 import { Clock } from "./clock";
+import { DynamicIsland } from "./dynamic-island";
 import { Slot } from "../registry/feature-registry";
 import { MobileAppLibrary } from "./mobile-app-library";
 import { AppActionSheet, AppsGrid } from "./mobile-home-parts";
@@ -81,8 +82,9 @@ export function MobileHome({
 
   return (
     <div className="absolute inset-0 flex flex-col" inert={inactive} aria-hidden={inactive} onContextMenu={onHomeContext}>
-      {/* top safe area: status clock + Dynamic Island live here; swipe down →
-          NC (left) / CC (right). Height = base bar + the device notch inset. */}
+      <DynamicIsland />
+      {/* top safe area: status clock (left) + the Dynamic Island (center) live
+          here; swipe down → NC (left) / CC (right). Height = base bar + notch. */}
       <div
         className="flex shrink-0 items-end px-7 pb-0.5 text-[13px] font-semibold text-white/90 [touch-action:none]"
         style={{ height: "calc(2.25rem + var(--sai-top))" }}
