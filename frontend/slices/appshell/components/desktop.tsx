@@ -23,7 +23,7 @@ import { DesktopIcons, useDesktopMarquee } from "../features/desktop-icons";
 import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
 import { ShellContextMenu, useShellContextMenu, type MenuItem } from "./shells/context-menu";
-import { registerShell, resolveShell, useShellPrefs } from "../registry/shells";
+import { registerShell, resolveShell, useShellPrefs, ActiveShellProvider } from "../registry/shells";
 import { useShellAppearance } from "../registry/capabilities";
 import { cn } from "@/lib/utils";
 // side-effects: shell + palette-command registrations
@@ -65,12 +65,14 @@ function Surface() {
   const framed = surface === "mobile" && r.vw >= 768;
 
   return (
-    <div id="main-content" data-shell={desc.id} className="relative h-dvh w-screen overflow-hidden">
-      <Wallpaper shellDefault={desc.wallpaper} />
-      {framed ? <PhoneFrame Comp={Comp} /> : <Comp />}
-      <Slot region="overlay" />
-      <Slot region="notifications" />
-    </div>
+    <ActiveShellProvider id={desc.id} surface={surface}>
+      <div id="main-content" data-shell={desc.id} className="relative h-dvh w-screen overflow-hidden">
+        <Wallpaper shellDefault={desc.wallpaper} />
+        {framed ? <PhoneFrame Comp={Comp} /> : <Comp />}
+        <Slot region="overlay" />
+        <Slot region="notifications" />
+      </div>
+    </ActiveShellProvider>
   );
 }
 

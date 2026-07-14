@@ -131,8 +131,10 @@ export {
   surfaceOf,
   setShell,
   useShellPrefs,
+  ActiveShellProvider,
+  useActiveShell,
 } from "./registry/shells";
-export type { ShellId, ShellSurface, ShellDescriptor, ShellPrefs } from "./registry/shells";
+export type { ShellId, ShellSurface, ShellDescriptor, ShellPrefs, ActiveShell } from "./registry/shells";
 
 // ── Responsive: the single source of truth (provider + hook + container) ─────
 export { ResponsiveProvider } from "./responsive/responsive-provider";

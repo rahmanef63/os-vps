@@ -122,7 +122,7 @@ export function AppsGrid({
     // touch-action:pan-y keeps horizontal swipes free for the home pager.
     <div
       onPointerDown={onPointerDown}
-      className="grid h-full grid-cols-4 content-start gap-x-2.5 gap-y-5 overflow-y-auto px-[18px] pt-3.5 pb-5 [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="grid h-full grid-cols-4 content-start gap-x-3.5 gap-y-[22px] overflow-y-auto px-6 pt-[18px] pb-6 [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {apps.map((app) => (
         <Button

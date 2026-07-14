@@ -12,7 +12,7 @@
    register from the app layer). The Settings pickers read `shellsForSurface()`;
    the surface resolves via `resolveShell()`. No shell forks the window store —
    they only call the existing store actions. */
-import { useSyncExternalStore, type ComponentType } from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore, type ComponentType, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { registerCommands } from "../lib/commands";
 
@@ -143,4 +143,25 @@ export function resolveShell(surface: ShellSurface, p: ShellPrefs): ShellDescrip
   const d = REGISTRY.get(id);
   if (d && d.surface === surface) return d;
   return REGISTRY.get(surface === "mobile" ? "ios" : "macos") ?? shellList().find((s) => s.surface === surface)!;
+}
+
+// ── active-shell context ────────────────────────────────────────────────────
+// The resolved shell (id + surface) pushed DOWN to apps/features so a SHARED
+// component can pick a per-shell config — e.g. Settings renders a macOS
+// sidebar+detail, an iOS big-title nav-stack, or a Windows list from the SAME
+// row primitives. Set once by Surface from resolveShell(); read via
+// useActiveShell(). Beats DOM-sniffing [data-shell] (the only prior way an app
+// could learn its shell) — the value is reactive and typed.
+export type ActiveShell = { id: ShellId; surface: ShellSurface };
+const ActiveShellContext = createContext<ActiveShell>({ id: "macos", surface: "desktop" });
+
+export function ActiveShellProvider({ id, surface, children }: ActiveShell & { children: ReactNode }) {
+  const value = useMemo(() => ({ id, surface }), [id, surface]);
+  return <ActiveShellContext.Provider value={value}>{children}</ActiveShellContext.Provider>;
+}
+
+/** The resolved active shell (id + surface). Defaults to macOS/desktop outside a
+ *  Surface (e.g. isolated tests), so callers never need a null check. */
+export function useActiveShell(): ActiveShell {
+  return useContext(ActiveShellContext);
 }

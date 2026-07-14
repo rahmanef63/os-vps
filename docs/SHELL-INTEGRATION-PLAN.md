@@ -56,7 +56,7 @@ Legend — **Better**: which repo's implementation is stronger today.
 | 9 | **File explorer** ⚠️ | sidebar dir-tree, preview pane, properties dialog, mock/convex/live adapters | **real VPS host fs**, zip, upload-progress, inspector | ↔ tie | ⛔ **Do NOT disturb** (constraint #2). Sidebar-tree only, deferred & behind a flag (§3-Deferred) |
 | 10 | **Theming / appearance** | 36 presets, 1-hex rebrand, toolbar quick-picker | **same engine** (shell literally "ported from os-vps"), live wallpapers | ↔ tie | ⬇ Optional: **theme-quick-picker** toolbar switcher (§2.6) |
 | 11 | **Notifications** | toast→history, per-app badges, calendar in center | toasts + center + **Dynamic Island live-activity bus** | ↔ tie | ✅ Keep |
-| 12 | **Settings** | single appearance panel + auto-lock | **multi-section** (AI/Server/Browser/Devices/Theme…) | 🟢 **os-vps** | ⬇ Port only **auto-lock timeout** + deep-link scroll (§2.7) |
+| 12 | **Settings** | single appearance panel + auto-lock | **multi-section** (AI/Server/Browser/Devices/Theme…) + **per-shell layout** (macOS sidebar / Windows tabs / iOS stack) | 🟢 **os-vps** | ⬇ Port only **auto-lock timeout** + deep-link scroll (§2.7) · per-shell ✅ (§10) |
 | 13 | **Backend / data** | Convex Cloud + IndexedDB + mock fs | **self-contained host control plane** (fs/exec/pty/browser) + jail + audit | 🟢 **os-vps** | ⛔ Convex is out of scope — contradicts essence |
 | 14 | **Auth / RBAC** | session-token RBAC, PBKDF2, 6-role matrix, invites | **device-approval** HMAC cookie, single-owner | 🟢 os-vps (for its model) | ⛔ Multi-user RBAC out of scope — os-vps is a personal cockpit |
 | 15 | **Resume / portfolio / CMS** | **full headless CMS** driving public site (portfolio/blog/services) | **none** | 🟢 shell (for its purpose) | ⛔ Out of scope — os-vps is not a portfolio |
@@ -387,3 +387,40 @@ mouse-hover by design like real Win11 — keyboard uses Win+Arrow; the run-dialo
 Verified live on `:4005` (Playwright, seeded persona): snap flyout, Run box, Mica frost, Android
 bolder clock + flat top bar. `typecheck` + `eslint` clean; **682 tests green** (676 + 6 new);
 built + `systemctl restart`, root 200. fs-zip WIP still untouched.
+
+## 10. Per-shell feature-config seam + Settings redesign (2026-07-14)
+
+The architectural piece the comparison table implied but no feature had: a **feature that
+renders differently per shell from the SAME component + config**, not a fork. Requested as
+"Settings on macOS vs Windows should look different even though the utils/components are the
+same file — only the configuration changes." Implemented against the Apple OS.dc.html design
+(imported via the claude_design MCP; tokens map 1:1 onto the existing `--label`/`--tint`/`--sep`
+layer, so this was component work, not a token rebuild).
+
+- **The seam** (`registry/shells.tsx`): new `ActiveShell = { id, surface }` context +
+  `ActiveShellProvider` + `useActiveShell()` (defaults macOS/desktop). `Surface` (`desktop.tsx`)
+  now wraps `#main-content` in it, feeding down the value it *already* resolves via
+  `resolveShell()`. Barrel-exported through `appshell/index.ts` → `@/features/os-shell`. This is
+  the missing primitive: before, an app could only learn its shell by DOM-sniffing `[data-shell]`;
+  now it reads a typed, reactive value. No store fork — pure read-down.
+- **Settings** (`os-settings/app.tsx`): `useActiveShell()` picks a layout — `surface==='mobile'`
+  → **stack** (MasterDetail drill-down), `id==='macos'` → **sidebar** (System Settings: a `w-56`
+  colored-tile category rail + detail pane, `SettingsSidebar` in `nav.tsx` with fixed per-category
+  glyph colors like real macOS), else → **tabs** (the existing Windows/Dashboard top strip). The
+  eight functional section bodies (Appearance/Theme/AI/Quicklink/Devices/Server/Browser/About) are
+  **unchanged** — only the navigation chrome swaps. This is the pattern any other feature can now
+  follow. Extracted `SectionList`/`SectionDetail`/`SectionBody` into `components/sections.tsx` to
+  keep `app.tsx` a lean layout-selector (221→118 LOC).
+- **iOS home** (`mobile-home-parts.tsx`): grid spacing nudged to the Apple springboard metrics
+  (gap 22/14, padding 24) so icons breathe like real iOS. Chrome audit otherwise confirmed
+  os-vps already matches the design at the token layer — traffic lights `#ff5f57/#febc2e/#28c840`
+  r6 exact, `--shadow-win` is a richer 3-layer shadow than the spec's single blur, dock r22 +
+  magnification, icon-radius 22%≈23% — so **no chrome churn** (the honest finding: the shells were
+  already HIG-complete; the real gap was the per-shell app-config seam).
+
+Adversarial review (3 lenses, 9 agents, findings verified): 3 confirmed (3 false positives
+dropped) — **iOS double-title** (the mobile app-chrome already paints "Settings"; dropped the
+redundant in-pane `<h1>`) and **app.tsx over the 200-LOC gate** (fixed by the extraction above).
+Verified live on `:4005` (Playwright, seeded personas): macOS Settings sidebar with colored tiles,
+Windows tab strip preserved, iOS single-title stack, airy home grid. `typecheck` + `eslint` clean;
+**682 tests green**; built + `systemctl restart`, root 200. fs-zip WIP still untouched.

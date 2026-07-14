@@ -16,20 +16,24 @@ import { cn } from "@/lib/utils";
 export type SectionId =
   | "appearance" | "theme" | "ai" | "quicklinks" | "devices" | "server" | "browser" | "about";
 
+// Per-category tile colors — fixed like macOS System Settings' category glyphs
+// (Bluetooth stays blue in dark mode); intentionally NOT theme tokens, mirroring
+// the raw-value precedent in AppDescriptor.gradient.
 export const SECTIONS: ReadonlyArray<{
   id: SectionId;
   label: string;
   blurb: string;
   icon: ComponentType<{ className?: string }>;
+  color: string;
 }> = [
-  { id: "appearance", label: "Appearance", blurb: "Style, accent, wallpaper, device", icon: Palette },
-  { id: "theme", label: "Theme", blurb: "Mode, presets, font, contrast", icon: Paintbrush },
-  { id: "ai", label: "AI", blurb: "Model and API key", icon: Sparkles },
-  { id: "quicklinks", label: "Quicklink", blurb: "Website shortcuts with favicons", icon: Link2 },
-  { id: "devices", label: "Devices", blurb: "Approved browsers and sessions", icon: ShieldCheck },
-  { id: "server", label: "Server", blurb: "Mock or live host data", icon: Server },
-  { id: "browser", label: "Browser", blurb: "Remote Chromium runtime status", icon: Globe },
-  { id: "about", label: "About", blurb: "System info and reset", icon: Info },
+  { id: "appearance", label: "Appearance", blurb: "Style, accent, wallpaper, device", icon: Palette, color: "#0a84ff" },
+  { id: "theme", label: "Theme", blurb: "Mode, presets, font, contrast", icon: Paintbrush, color: "#ff375f" },
+  { id: "ai", label: "AI", blurb: "Model and API key", icon: Sparkles, color: "#bf5af2" },
+  { id: "quicklinks", label: "Quicklink", blurb: "Website shortcuts with favicons", icon: Link2, color: "#5e5ce6" },
+  { id: "devices", label: "Devices", blurb: "Approved browsers and sessions", icon: ShieldCheck, color: "#30d158" },
+  { id: "server", label: "Server", blurb: "Mock or live host data", icon: Server, color: "#ff9f0a" },
+  { id: "browser", label: "Browser", blurb: "Remote Chromium runtime status", icon: Globe, color: "#64d2ff" },
+  { id: "about", label: "About", blurb: "System info and reset", icon: Info, color: "#8e8e93" },
 ];
 
 // System Settings top tab strip: every section visible at a glance, scrolls
@@ -65,6 +69,47 @@ export function SettingsTabs({
           >
             <Icon className="size-4 shrink-0" />
             <span>{label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// macOS System Settings sidebar: a vertical category list with fixed colored
+// glyph tiles (Apple's category convention). Same SECTIONS, same onSelect — only
+// the presentation differs from the Windows tab strip. Active row fills accent.
+export function SettingsSidebar({
+  active,
+  onSelect,
+}: {
+  active: SectionId;
+  onSelect: (id: SectionId) => void;
+}) {
+  return (
+    <nav role="tablist" aria-label="Settings sections" className="flex h-full flex-col gap-0.5 overflow-y-auto p-2">
+      {SECTIONS.map(({ id, label, icon: Icon, color }) => {
+        const on = id === active;
+        return (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            title={SECTIONS.find((s) => s.id === id)?.blurb}
+            onClick={() => onSelect(id)}
+            className={cn(
+              "flex min-h-9 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] font-medium leading-tight transition-colors",
+              on ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent",
+            )}
+          >
+            <span
+              className="grid size-[26px] shrink-0 place-items-center rounded-[7px] shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+              style={{ background: color }}
+            >
+              <Icon className="size-[15px] text-white" />
+            </span>
+            <span className="min-w-0 flex-1 truncate">{label}</span>
           </button>
         );
       })}
