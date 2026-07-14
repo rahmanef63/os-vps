@@ -5,13 +5,14 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { Search, LayoutGrid, ArrowUpRight, Minimize2, X } from "lucide-react";
+import { Search, LayoutGrid, ArrowUpRight, Minimize2, X, Settings, Lock } from "lucide-react";
 import { useApps } from "../../../lib/registry";
 import { useWindowOrder, useWindow, useFocused } from "../../../hooks/use-shell";
-import { focusWindow, minimizeWindow, restoreWindow, closeWindow, toggleNotificationCenter } from "../../../lib/store";
+import { focusWindow, minimizeWindow, restoreWindow, closeWindow, toggleNotificationCenter, openWindow } from "../../../lib/store";
+import { lock } from "../../../lib/lock";
 import { AppIcon } from "../../app-icon";
 import { WindowPreview } from "../../window-preview";
-import { ContextMenu, useContextMenu } from "../context-menu";
+import { ContextMenu, useContextMenu, type MenuItem } from "../context-menu";
 import { StartMenu } from "./start-menu";
 
 export const TASKBAR_H = 48;
@@ -19,6 +20,7 @@ export const TASKBAR_H = 48;
 export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
   const [startOpen, setStartOpen] = useState(false);
   const order = useWindowOrder();
+  const tbMenu = useContextMenu();
   useEffect(() => {
     if (!startOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -30,9 +32,12 @@ export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
   return (
     <>
       {startOpen && <StartMenu onClose={() => setStartOpen(false)} />}
-      <div className="absolute inset-x-0 bottom-0 z-[60] flex h-12 items-center border-t border-border bg-card/85 px-2 backdrop-blur-md font-[family-name:var(--shell-font)]">
+      <div
+        className="absolute inset-x-0 bottom-0 z-[60] flex h-12 items-center border-t border-border bg-card/85 px-2 backdrop-blur-md font-[family-name:var(--shell-font)]"
+        onContextMenu={(e) => { if (e.target === e.currentTarget) tbMenu.open(e); }}
+      >
         <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
-          <StartButton open={startOpen} onClick={() => setStartOpen((o) => !o)} />
+          <StartButton open={startOpen} onClick={() => setStartOpen((o) => !o)} onTaskView={onTaskView} />
           <Button type="button" variant="ghost"
             onClick={() => setStartOpen(true)}
             className="h-auto p-0 font-normal hover:bg-transparent flex h-9 items-center gap-2 rounded-md border border-border bg-background/60 px-3 text-xs text-muted-foreground hover:bg-muted"
@@ -57,23 +62,42 @@ export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
           <Clock />
         </div>
       </div>
+      <ContextMenu
+        pos={tbMenu.pos}
+        onClose={tbMenu.close}
+        items={[
+          ...(onTaskView ? [{ label: "Task View", icon: LayoutGrid, onClick: onTaskView }] : []),
+          { label: "Taskbar settings", icon: Settings, onClick: () => openWindow("os-settings", "Settings") },
+        ]}
+      />
     </>
   );
 }
 
-function StartButton({ open, onClick }: { open: boolean; onClick: () => void }) {
+function StartButton({ open, onClick, onTaskView }: { open: boolean; onClick: () => void; onTaskView?: () => void }) {
+  const menu = useContextMenu();
+  const items: MenuItem[] = [
+    { label: "Settings", icon: Settings, onClick: () => openWindow("os-settings", "Settings") },
+    ...(onTaskView ? [{ label: "Task View", icon: LayoutGrid, onClick: onTaskView }] : []),
+    { type: "sep" },
+    { label: "Lock", icon: Lock, onClick: lock },
+  ];
   return (
-    <Button type="button" variant="ghost"
-      onClick={onClick}
-      aria-label="Start"
-      className={cn(`h-auto p-0 font-normal hover:bg-transparent grid size-9 place-items-center rounded-md hover:bg-muted ${open ? "bg-muted" : ""}`)}
-    >
-      <span className="grid grid-cols-2 gap-[2px]">
-        {[0, 1, 2, 3].map((i) => (
-          <span key={i} className="size-1.5 rounded-[1px] bg-info" />
-        ))}
-      </span>
-    </Button>
+    <>
+      <Button type="button" variant="ghost"
+        onClick={onClick}
+        onContextMenu={menu.open}
+        aria-label="Start"
+        className={cn(`h-auto p-0 font-normal hover:bg-transparent grid size-9 place-items-center rounded-md hover:bg-muted ${open ? "bg-muted" : ""}`)}
+      >
+        <span className="grid grid-cols-2 gap-[2px]">
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} className="size-1.5 rounded-[1px] bg-info" />
+          ))}
+        </span>
+      </Button>
+      <ContextMenu pos={menu.pos} onClose={menu.close} items={items} />
+    </>
   );
 }
 

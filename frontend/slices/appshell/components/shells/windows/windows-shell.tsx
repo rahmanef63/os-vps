@@ -18,6 +18,7 @@ import { AppSwitcher } from "../../app-switcher";
 import { NotificationCenter } from "../../notification-center";
 import { WindowOverview } from "../window-overview";
 import { ForceQuitDialog } from "../../../features/force-quit/force-quit";
+import { DesktopIcons, useDesktopMarquee } from "../../../features/desktop-icons";
 import { ShellContextMenu, useShellContextMenu, type MenuItem } from "../context-menu";
 import { Taskbar, TASKBAR_H } from "./taskbar";
 import { SnapAssist } from "./snap-assist";
@@ -28,6 +29,7 @@ function WindowsShell() {
   const stacked = useMemo(() => stackByZ(order, winMap), [order, winMap]);
   const [taskView, setTaskView] = useState(false);
   const menu = useShellContextMenu("windows");
+  const marquee = useDesktopMarquee();
   const interactive = !!useShellAppearance().liveWallpaper?.interactive;
   useOverviewKey(() => setTaskView((v) => !v)); // F3 toggles Task View, parity with macOS Mission Control
   useEffect(() => {
@@ -49,10 +51,18 @@ function WindowsShell() {
       <section
         className={cn("absolute inset-0 z-[10]", interactive && "pointer-events-none [&>*]:pointer-events-auto")}
         onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e, baseItems); }}
+        onPointerDown={marquee.onPointerDown}
       >
-        {/* Widgets first: paint behind windows (z-[5] < z-10+) but sit inside the
-            section so their right-click opens the widget menu, not the desktop. */}
+        {/* Icons + widgets sit inside the section (behind windows) so their own
+            right-click / drag beats the desktop menu + marquee (bare surface only). */}
+        <DesktopIcons />
         <Slot region="desktopWidgets" />
+        {marquee.rect && (
+          <div
+            className="pointer-events-none absolute z-[6] rounded-sm border border-primary bg-primary/15"
+            style={{ left: marquee.rect.x, top: marquee.rect.y, width: marquee.rect.w, height: marquee.rect.h }}
+          />
+        )}
         {stacked.map((id) => (
           <Window key={id} id={id} variant="windows" />
         ))}

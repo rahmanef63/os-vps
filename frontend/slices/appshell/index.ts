@@ -100,6 +100,7 @@ export type { HotkeyDef, HotkeyOptions } from "./lib/use-focused-hotkey";
 export { registerContextMenu, getContextMenuItems } from "./lib/context-menu";
 export type { MenuItem, ContextMenuCtx, ContextMenuProvider } from "./lib/context-menu";
 export { ContextMenu, ShellContextMenu, useContextMenu, useShellContextMenu } from "./components/shells/context-menu";
+export { resetDesktopIcons } from "./features/desktop-icons";
 export { registerWallpaper, getWallpaper, listWallpapers, useWallpapers } from "./lib/wallpaper-registry";
 export type { WallpaperDescriptor, WallpaperProps } from "./lib/wallpaper-registry";
 export {

@@ -19,6 +19,7 @@ import { Slot } from "../registry/feature-registry";
 import { toggleSpotlight, toggleInspector, snapWindow, cycleSnap, toggleMaximize, minimizeWindow, minimizeAll, restoreWindow, closeAll, shellStore } from "../lib/store";
 import { WindowOverview } from "./shells/window-overview";
 import { ForceQuitDialog } from "../features/force-quit/force-quit";
+import { DesktopIcons, useDesktopMarquee } from "../features/desktop-icons";
 import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
 import { ShellContextMenu, useShellContextMenu, type MenuItem } from "./shells/context-menu";
@@ -150,6 +151,7 @@ function DesktopChrome() {
   const stacked = useMemo(() => stackByZ(order, winMap), [order, winMap]);
   const [overview, setOverview] = useState(false);
   const menu = useShellContextMenu("macos");
+  const marquee = useDesktopMarquee();
   // An interactive live wallpaper needs empty-desktop clicks to reach it: the
   // window layer goes transparent to hit-testing, its windows stay clickable.
   const interactive = !!useShellAppearance().liveWallpaper?.interactive;
@@ -171,11 +173,19 @@ function DesktopChrome() {
         // Only the empty desktop opens the menu — clicks inside a child layer (an
         // app window OR a desktop widget) keep their own right-click handling.
         onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e, baseItems); }}
+        onPointerDown={marquee.onPointerDown}
       >
-        {/* Widgets first so they paint behind windows (z-[5] < window z-10+), yet
-            live INSIDE the section so their right-click hits the widget menu, not
-            the desktop menu it would otherwise bubble to from an outer layer. */}
+        {/* Icons + widgets live INSIDE the section (behind windows: z-[4]/z-[5] <
+            window z-10+) so their own right-click / drag beats the desktop menu +
+            marquee, which only fire on the bare surface. */}
+        <DesktopIcons />
         <Slot region="desktopWidgets" />
+        {marquee.rect && (
+          <div
+            className="pointer-events-none absolute z-[6] rounded-sm border border-primary bg-primary/15"
+            style={{ left: marquee.rect.x, top: marquee.rect.y, width: marquee.rect.w, height: marquee.rect.h }}
+          />
+        )}
         {stacked.map((id) => (
           <Window key={id} id={id} />
         ))}
