@@ -4,9 +4,10 @@ import { createElement } from "react";
 import { glyphIcon } from "@/features/app-store";
 import { cn } from "@/lib/utils";
 
-// Live preview of the new app's macOS-style icon. Re-authors the AppIcon look
-// (gradient tile + soft top light + hairline ring) driven by the chosen CSS
-// gradient + lucide glyph, so the user sees their app before it hits the dock.
+// Live preview of the new app's icon. Shares AppIcon's --shell-icon-* tokens +
+// .shell-icon-tile squircle, driven by the chosen CSS gradient + lucide glyph,
+// so the preview matches how the tile will actually render in the current shell
+// (flat on iOS, gently dimensional on macOS).
 export function IconPreview({
   glyph,
   gradient,
@@ -19,14 +20,22 @@ export function IconPreview({
   return (
     <span
       className={cn(
-        "relative grid size-16 place-items-center overflow-hidden rounded-[var(--radius-icon)] text-white",
-        "shadow-[0_1px_2px_rgba(0,0,0,0.2),0_4px_10px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-2px_4px_rgba(0,0,0,0.12)]",
+        "shell-icon-tile relative grid size-16 place-items-center overflow-hidden text-white",
         className,
       )}
-      style={{ background: gradient }}
+      style={{ background: gradient, boxShadow: "var(--shell-icon-shadow)" }}
     >
-      <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.32),rgba(255,255,255,0.08)_42%,rgba(255,255,255,0)_60%,rgba(0,0,0,0.08))]" />
-      <span className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/15" />
+      <span
+        className="pointer-events-none absolute inset-0 rounded-[inherit]"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,var(--shell-icon-sheen)) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,var(--shell-icon-shade)) 100%)",
+        }}
+      />
+      <span
+        className="pointer-events-none absolute inset-0 rounded-[inherit]"
+        style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,var(--shell-icon-ring))" }}
+      />
       {/* createElement: dynamic stateless lookup, not a render-created component */}
       {createElement(glyphIcon(glyph), { className: "relative z-[1] size-7" })}
     </span>

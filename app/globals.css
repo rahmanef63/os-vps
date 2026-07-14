@@ -226,7 +226,16 @@ body {
   --shell-font: var(--font-ui);
   --shell-radius-win: var(--radius-win);
   --shell-radius-ui: var(--radius);
-  --shell-icon-radius: 22%;
+  --shell-icon-radius: 22.37%;
+  /* App-icon look, per shell. Defaults are FLAT (iOS 7+ killed the glassy dome);
+     macOS re-adds a whisper of depth below. corner = superellipse exponent for
+     the true squircle (no-ops without corner-shape). */
+  --shell-icon-corner: 4;
+  --shell-icon-sheen: 0.06; /* top-light overlay alpha */
+  --shell-icon-shade: 0; /* bottom inner-shade alpha */
+  --shell-icon-ring: 0.1; /* top hairline edge alpha */
+  --shell-icon-glyph: 52%; /* glyph size */
+  --shell-icon-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
   --shell-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shell-dur-fast: 150ms;
   --shell-dur: 250ms;
@@ -236,6 +245,28 @@ body {
   --shell-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", var(--font-ui);
   --shell-radius-win: 10px;
   --shell-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* macOS icons keep gentle Big-Sur dimensionality (not flat, not glossy) + a
+   soft layered dock shadow + a slightly more inset glyph. iOS inherits the flat
+   base above. Illustrated Finder/Safari-style art is out of scope (proprietary);
+   this is a cohesive modern glyph-tile set. */
+[data-shell="macos"] {
+  --shell-icon-radius: 22.5%;
+  --shell-icon-sheen: 0.12;
+  --shell-icon-shade: 0.06;
+  --shell-icon-ring: 0.14;
+  --shell-icon-glyph: 46%;
+  --shell-icon-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+/* True continuous-corner squircle where Chromium 139+ supports corner-shape;
+   everything else keeps the tuned rounded-rect (border-radius). */
+.shell-icon-tile {
+  border-radius: var(--shell-icon-radius);
+}
+@supports (corner-shape: superellipse(2)) {
+  .shell-icon-tile {
+    corner-shape: superellipse(var(--shell-icon-corner, 4));
+  }
 }
 [data-shell="windows"] {
   --shell-font: "Segoe UI Variable Text", "Segoe UI", system-ui, var(--font-ui);
@@ -259,6 +290,7 @@ body {
   --shell-dur: 300ms;
   --shell-dur-slow: 400ms;
   --shell-icon-radius: 50%;
+  --shell-icon-corner: 2; /* keep the 50% pill a true circle (superellipse(2) ≡ round) */
 }
 /* OS reduced-motion: collapse durations to ~instant. 1ms (not 0) so animationend
    still fires — the window close/minimize finalize on that event. Scoped narrowly

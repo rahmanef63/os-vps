@@ -5,10 +5,12 @@ import { Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuickLinks, type QuickLink } from "../registry/capabilities";
 
-// macOS-style squircle tile holding a website favicon (a "web app" shortcut).
-// Mirrors AppIcon's shadow/ring so quicklinks sit naturally among real apps in
-// the dock, Launchpad and mobile grid. Favicon bytes are external + dynamic, so
-// a raw <img> (not next/Image) keeps appshell brand/host-free.
+// Squircle tile holding a website favicon (a "web app" shortcut). Shares
+// AppIcon's --shell-icon-* tokens + .shell-icon-tile squircle so quicklinks sit
+// naturally among real apps in the dock, Launchpad and mobile grid. White tile
+// (favicons assume a light ground); a hairline ring keeps it defined on any
+// wallpaper. Favicon bytes are external + dynamic, so a raw <img> (not
+// next/Image) keeps appshell brand/host-free.
 export function QuicklinkIcon({ link, className }: { link: QuickLink; className?: string }) {
   const { faviconUrl } = useQuickLinks();
   const src = faviconUrl(link.url);
@@ -16,10 +18,10 @@ export function QuicklinkIcon({ link, className }: { link: QuickLink; className?
   return (
     <span
       className={cn(
-        "relative grid size-full place-items-center overflow-hidden rounded-[var(--radius-icon)] bg-white text-zinc-500",
-        "shadow-[0_1px_2px_rgba(0,0,0,0.2),0_4px_10px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-2px_4px_rgba(0,0,0,0.12)]",
+        "shell-icon-tile relative grid size-full place-items-center overflow-hidden bg-white text-zinc-500",
         className,
       )}
+      style={{ boxShadow: "var(--shell-icon-shadow)" }}
     >
       <span className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-black/10" />
       {src && !err ? (
