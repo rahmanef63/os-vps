@@ -19,6 +19,9 @@ import { TrafficLights } from "./traffic-lights";
 import { TabStrip } from "./window-tabs";
 import { WindowContent } from "./window-content";
 import { WinCaption } from "./win-caption";
+import { ContextMenu, useContextMenu, type MenuItem } from "./shells/context-menu";
+import { togglePin } from "../lib/window-commands";
+import { Maximize2, Minimize2, Minus, Pin, PinOff, X } from "lucide-react";
 import type { WinId } from "../lib/types";
 
 // Subscribes to ONE window — a drag on another window never re-renders this.
@@ -32,6 +35,10 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
   const groupTopId = useGroupTop(win?.groupId);
   const ref = useRef<HTMLDivElement>(null);
   const { startDrag, startResize, zone } = useWindowDrag(id, ref);
+  const ctx = useContextMenu();
+  // Left-button only starts a drag — a right-click on the title bar opens the
+  // window menu instead of dragging the frame.
+  const onBarDown = (e: React.PointerEvent) => { if (e.button === 0) startDrag(e); };
   // Component-local exit phase: the store close/minimize stay SYNCHRONOUS (tests
   // + bulk ops rely on it); the per-window button animates first, then finalizes
   // the store action on animationend. A guarded window (unsaved editor) skips the
@@ -45,6 +52,15 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
   if (win.groupId && groupTopId !== id) return null; // a tab behind the group's active frame
   const preview = zone ? snapRect(zone) : null;
   const isWin = variant === "windows";
+  // Title-bar right-click menu — the window controls, mirroring the traffic
+  // lights / caption buttons plus pin.
+  const menuItems: MenuItem[] = [
+    { label: win.maximized ? "Restore" : "Maximize", icon: win.maximized ? Minimize2 : Maximize2, onClick: () => toggleMaximize(id) },
+    { label: "Minimize", icon: Minus, onClick: beginMinimize },
+    { label: win.pinned ? "Unpin from Top" : "Keep on Top", icon: win.pinned ? PinOff : Pin, onClick: () => togglePin(id) },
+    { type: "sep" },
+    { label: "Close", icon: X, onClick: beginClose },
+  ];
   const anim =
     phase === "closing"
       ? "[animation:winClose_var(--shell-dur-fast)_var(--shell-ease)_forwards]"
@@ -82,8 +98,9 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
         {isWin ? (
           <div
             className="flex h-[34px] shrink-0 cursor-grab items-center border-b border-border bg-card font-[family-name:var(--shell-font)] active:cursor-grabbing"
-            onPointerDown={startDrag}
+            onPointerDown={onBarDown}
             onDoubleClick={() => toggleMaximize(id)}
+            onContextMenu={ctx.open}
           >
             <div className="pointer-events-none flex-1 truncate pl-3 text-[12px] font-medium text-muted-foreground">
               {win.title}
@@ -99,8 +116,9 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
           <div
             className="glass flex h-[38px] shrink-0 cursor-grab items-center gap-2 border-b border-border px-3 font-[family-name:var(--shell-font)] active:cursor-grabbing"
             style={{ background: "var(--window-head)" }}
-            onPointerDown={startDrag}
+            onPointerDown={onBarDown}
             onDoubleClick={() => toggleMaximize(id)}
+            onContextMenu={ctx.open}
           >
             <TrafficLights
               onClose={beginClose}
@@ -139,6 +157,7 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
         <Handle cls="bottom-0 left-0 h-2 w-full cursor-ns-resize" onDown={(e) => startResize(e, "b")} />
         <Handle cls="bottom-0 right-0 size-4 cursor-nwse-resize" onDown={(e) => startResize(e, "br")} />
       </div>
+      <ContextMenu pos={ctx.pos} items={menuItems} onClose={ctx.close} />
     </>
   );
 });

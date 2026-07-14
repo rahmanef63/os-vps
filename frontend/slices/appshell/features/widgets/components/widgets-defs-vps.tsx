@@ -1,0 +1,184 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Code2, Globe, Moon, Palette, Sun, Timer as TimerIcon } from "lucide-react";
+import { setShell, shellsForSurface, useShellAppearance, useShellPrefs } from "@/features/appshell";
+import { cn } from "@/lib/utils";
+import { Card } from "./widget-cards";
+
+// VPS-native + content widgets ported from shell.rahmanef.com's set: a stopwatch,
+// a URL embed, a sandboxed-HTML snippet, an active-shell picker, and a theme
+// toggle. Split out to keep widgets-defs.tsx under the line ceiling. All are
+// interactive (opt back into pointer events).
+
+const EMBED_KEY = "os-vps:widget:embed";
+const HTML_KEY = "os-vps:widget:html";
+const ls = (k: string) => (typeof localStorage !== "undefined" ? localStorage.getItem(k) ?? "" : "");
+const btn = "rounded-lg border border-white/10 bg-black/10 px-2 py-1 text-xs hover:bg-white/10";
+
+// Stopwatch — start/pause/reset. The interval only ticks while running.
+function TimerWidget() {
+  const [ms, setMs] = useState(0);
+  const [running, setRunning] = useState(false);
+  useEffect(() => {
+    if (!running) return;
+    const t = setInterval(() => setMs((m) => m + 100), 100);
+    return () => clearInterval(t);
+  }, [running]);
+  const s = Math.floor(ms / 1000);
+  const label = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <TimerIcon className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">Timer</span>
+        <span className="ml-auto font-mono text-lg font-bold tabular-nums">{label}</span>
+      </div>
+      <div className="flex gap-2">
+        <button type="button" onClick={() => setRunning((r) => !r)} className={cn(btn, "flex-1")}>
+          {running ? "Pause" : "Start"}
+        </button>
+        <button type="button" onClick={() => { setRunning(false); setMs(0); }} className={cn(btn, "flex-1")}>
+          Reset
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+// Embeds a URL in an iframe (frameable content only — CSP + the target's
+// X-Frame-Options still apply). URL persists to localStorage.
+function EmbedWidget() {
+  const [url, setUrl] = useState(() => ls(EMBED_KEY));
+  const [draft, setDraft] = useState(url);
+  const save = (v: string) => {
+    setUrl(v);
+    try { v ? localStorage.setItem(EMBED_KEY, v) : localStorage.removeItem(EMBED_KEY); } catch { /* quota */ }
+  };
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <Globe className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">Embed</span>
+        {url && (
+          <button type="button" onClick={() => { save(""); setDraft(""); }} className="ml-auto text-[10px] text-muted-foreground hover:text-foreground">
+            change
+          </button>
+        )}
+      </div>
+      {url ? (
+        <iframe src={url} sandbox="allow-scripts allow-same-origin" title="Embed" className="h-40 w-full rounded-lg border border-white/10 bg-white" />
+      ) : (
+        <div className="flex gap-1">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && draft.trim() && save(draft.trim())}
+            placeholder="https://…"
+            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/10 px-2 py-1 text-xs outline-none placeholder:text-muted-foreground"
+          />
+          <button type="button" onClick={() => draft.trim() && save(draft.trim())} className={btn}>Go</button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// A raw-HTML snippet rendered in a SANDBOXED iframe (allow-scripts only — no
+// same-origin, so it can't touch the cockpit), same guard as HTML wallpapers.
+function HtmlWidget() {
+  const [html, setHtml] = useState(() => ls(HTML_KEY));
+  const [editing, setEditing] = useState(!html);
+  const save = () => { try { localStorage.setItem(HTML_KEY, html); } catch { /* quota */ } setEditing(false); };
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <Code2 className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">HTML</span>
+        {!editing && (
+          <button type="button" onClick={() => setEditing(true)} className="ml-auto text-[10px] text-muted-foreground hover:text-foreground">edit</button>
+        )}
+      </div>
+      {editing ? (
+        <div className="space-y-1">
+          <textarea
+            value={html}
+            onChange={(e) => setHtml(e.target.value)}
+            placeholder="<b>Hello</b>"
+            className="h-24 w-full resize-none rounded-lg border border-white/10 bg-black/10 p-2 font-mono text-[11px] outline-none placeholder:text-muted-foreground"
+          />
+          <button type="button" onClick={save} className={cn(btn, "w-full")}>Save</button>
+        </div>
+      ) : (
+        <iframe sandbox="allow-scripts" srcDoc={html} title="HTML" className="h-32 w-full rounded-lg border border-white/10 bg-white" />
+      )}
+    </Card>
+  );
+}
+
+// Switches the active DESKTOP shell (macOS / Windows / Dashboard). VPS-native —
+// reads the shell registry directly (brand-free).
+function ShellWidget() {
+  const prefs = useShellPrefs();
+  const shells = shellsForSurface("desktop");
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <Palette className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">Shell</span>
+      </div>
+      <div className="grid grid-cols-1 gap-1.5">
+        {shells.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => setShell("desktop", s.id)}
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs",
+              prefs.desktop === s.id ? "bg-primary text-primary-foreground" : "hover:bg-white/10",
+            )}
+          >
+            <s.icon className="size-4 shrink-0" />
+            {s.label}
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// Light/dark theme toggle (VPS-native control) via the appearance capability.
+function ThemeWidget() {
+  const { theme, setTheme } = useShellAppearance();
+  return (
+    <Card className="pointer-events-auto">
+      <div className="mb-2 flex items-center gap-2">
+        <Palette className="size-4 text-muted-foreground" />
+        <span className="text-[12.5px] font-semibold">Theme</span>
+      </div>
+      <div className="flex gap-1.5">
+        {(["light", "dark"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTheme(t)}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs capitalize",
+              theme === t ? "bg-primary text-primary-foreground" : "hover:bg-white/10",
+            )}
+          >
+            {t === "light" ? <Sun className="size-4" /> : <Moon className="size-4" />} {t}
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+export const VPS_WIDGETS = {
+  timer: TimerWidget,
+  embed: EmbedWidget,
+  html: HtmlWidget,
+  shell: ShellWidget,
+  theme: ThemeWidget,
+};

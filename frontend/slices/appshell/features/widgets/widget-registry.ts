@@ -25,8 +25,13 @@ export const WIDGET_META: WidgetMeta[] = [
   { id: "uptime", title: "Uptime" },
   { id: "calendar", title: "Calendar" },
   { id: "tasks", title: "Tasks" },
+  { id: "timer", title: "Timer" },
   { id: "notes", title: "Notes" },
+  { id: "html", title: "HTML" },
+  { id: "embed", title: "Embed" },
   { id: "quicklinks", title: "Quicklinks" },
+  { id: "theme", title: "Theme" },
+  { id: "shell", title: "Shell" },
 ];
 
 const KEY = "os-vps:desktop-widgets"; // { on, enabled[], sizes{} }

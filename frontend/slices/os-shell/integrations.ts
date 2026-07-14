@@ -5,7 +5,7 @@
 // once from os-root INSIDE the auth boundary — registries are module-level, so
 // this runs exactly once per page.
 import { createElement } from "react";
-import { Activity, FolderPlus, Lock, Wallpaper as WallpaperIcon } from "lucide-react";
+import { Activity, Expand, FolderPlus, Lock, Shrink, Wallpaper as WallpaperIcon } from "lucide-react";
 import {
   lock,
   openQuickLook,
@@ -15,7 +15,9 @@ import {
   registerContextMenu,
   registerDropHandler,
   registerPreviewer,
+  setShell,
   setUnlockGuard,
+  shellsForSurface,
   deliverDrop,
   serialize,
   share,
@@ -62,6 +64,23 @@ registerContextMenu("*", (ctx) => {
     onClick: () => openWindow("os-settings", "Settings"),
   });
   if (ctx.surface === "mobile") items.push({ label: "Lock screen", icon: Lock, onClick: lock });
+  // "View as …" — switch the active shell persona for this surface (desktop:
+  // macOS/Windows/Dashboard, mobile: iOS/Android), excluding the current one.
+  for (const s of shellsForSurface(ctx.surface)) {
+    if (s.id !== ctx.shell) {
+      items.push({ label: `View as ${s.label}`, icon: s.icon, onClick: () => setShell(ctx.surface, s.id) });
+    }
+  }
+  // Full-screen the whole cockpit (read live so the label reflects current state).
+  const inFs = typeof document !== "undefined" && !!document.fullscreenElement;
+  items.push({
+    label: inFs ? "Exit Full Screen" : "Enter Full Screen",
+    icon: inFs ? Shrink : Expand,
+    onClick: () => {
+      if (inFs) void document.exitFullscreen?.();
+      else void document.documentElement.requestFullscreen?.().catch(() => {});
+    },
+  });
   return items;
 });
 registerContextMenu("dashboard", () => [

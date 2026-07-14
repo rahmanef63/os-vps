@@ -5,6 +5,7 @@ import { Clock as ClockIcon, Cpu, HardDrive, Link2, MemoryStick, Network, Sticky
 import { QuicklinkIcon, useQuickLinks, useSystemStats } from "@/features/appshell";
 import { Bar, Card, Row, Sparkline, gb } from "./widget-cards";
 import { CalendarWidget, TasksWidget } from "./widgets-defs-apps";
+import { VPS_WIDGETS } from "./widgets-defs-vps";
 
 const NOTES_KEY = "os-vps:widget:notes";
 
@@ -161,4 +162,5 @@ export const WIDGET_RENDER: Record<string, () => React.ReactNode> = {
   tasks: TasksWidget,
   notes: NotesWidget,
   quicklinks: QuicklinksWidget,
+  ...VPS_WIDGETS,
 };
