@@ -513,3 +513,31 @@ iPhone **home** (`mobile-home.tsx`), where it sits over the wallpaper beside the
 OFF the in-app view on purpose: apps paint an opaque dark `--surface`, so a black-on-black pill reads
 as a smudge, not a notch (real iOS blends it there too); the nav bar owns the app's top instead.
 `typecheck`+`eslint` clean, built + restarted, Playwright-verified home (island present) + app (clean).
+
+### §15 — iOS Settings → Apple grouped list + dock magnification bug fix
+A 3-agent Workflow (`ios-parity-investigate`) root-caused the dock bug + audited every iOS surface
+against the Apple reference renders (`mock-os/…/uploads/pasted-*.png`: iOS Settings + Wi-Fi detail —
+large title, search, grouped white cards, colored 29px tiles, chevrons).
+
+**iOS Settings index (topFix).** The mobile "stack" `SectionList` was a flat dark list with monochrome
+`size-4` glyphs — the farthest-from-mock iconic surface. Rebuilt it as Apple iOS System Settings:
+`groups = [SECTIONS.slice(0,4), SECTIONS.slice(4)]` → two `bg-card` rounded cards; each row = the colored
+29px tile (reusing `SECTIONS[].color`, exactly as the macOS `SettingsSidebar` already did) + 16px label
++ `ChevronRight` + a `after:` hairline inset to the label (`last:after:hidden`). **Skipped** the mock's
+large in-content title (the shell nav bar already paints "Settings" → the prior double-title regression)
+and its search pill (8 sections don't warrant one; a dead field is a fake affordance). Only `sections.tsx`
+changed; the shared `SectionDetail`/`SectionBody` bodies + `nav.tsx` SECTIONS are untouched. Playwright-
+verified: colored tiles + grouped cards + chevrons + inset hairlines, both cards.
+
+**Dock magnification "stuck big" bug.** macOS dock magnification is an out-of-React rAF loop guarded by
+`if (!raf.current)`. The no-deps `useEffect` cleanup cancelled the pending frame on every re-render but
+never zeroed `raf.current` — so a window-state re-render landing mid-hover left the guard poisoned
+(stuck non-zero), permanently blocking `schedule()`: magnification froze mid-hover AND never reset on
+leave (icons stranded large — the intermittent bug). One-line fix: zero the guard after cancelling
+(`if (raf.current) { cancelAnimationFrame(raf.current); raf.current = 0; }`). Screenshot-verified hover
+(gaussian magnify) → leave (all icons reset to rest). `typecheck`+`eslint` clean, built + restarted, 200.
+
+**Audit backlog (owner picks depth):** Files (no large-title/search header, flat doc glyphs · med),
+About (`<dl>` grid not iOS grouped value-rows · med), System Monitor + App Store (double title: shell
+nav + in-app header · med), app nav bar (left title + Done vs mock's centered title + Back; no large-
+title handoff · med). Home/Springboard already **matches** the mock (colored tiles, dock, dots, island).

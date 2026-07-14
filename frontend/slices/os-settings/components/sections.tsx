@@ -1,6 +1,8 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { DevicesPanel } from "@/features/auth";
 import { SECTIONS, type SectionId } from "./nav";
 import { AutoLockRow } from "./auto-lock-row";
@@ -64,8 +66,12 @@ export function SectionDetail({ id }: { id: SectionId }) {
   );
 }
 
-// Compact nav: vertical section list (mobile master pane). Tapping a row drills
-// the MasterDetail into the section content; the back arrow returns to this list.
+// Mobile section index — Apple iOS System Settings: colored icon tiles in grouped
+// rounded cards, single-line rows with a trailing chevron, hairline separators
+// inset to the label. Tapping a row drills the MasterDetail into the section
+// content; the back arrow returns here. No large title in-pane — the mobile
+// app-chrome header already paints "Settings" (avoids a double title); no search
+// pill either (8 sections don't warrant one, and a dead field is a fake affordance).
 export function SectionList({
   active,
   onSelect,
@@ -73,29 +79,47 @@ export function SectionList({
   active: SectionId | null;
   onSelect: (id: SectionId) => void;
 }) {
+  // Two grouped cards echo iOS's visual grouping: personalization (first four)
+  // above, system/infra below. Derived from SECTIONS order so any new section
+  // auto-lands in the lower card — no separate id list to keep in sync.
+  const groups = [SECTIONS.slice(0, 4), SECTIONS.slice(4)];
   return (
-    <nav role="tablist" aria-label="Settings sections" className="flex flex-col p-2">
-      {SECTIONS.map(({ id, label, blurb, icon: Icon }) => {
-        const on = id === active;
-        return (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={on}
-            onClick={() => onSelect(id)}
-            className={`flex min-h-11 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] font-medium leading-tight transition-colors ${on ? "bg-primary/15 text-foreground" : "text-muted-foreground hover:bg-accent"}`}
-          >
-            <Icon className="size-4 shrink-0" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate">{label}</span>
-              <span className="block truncate text-[11px] font-normal text-muted-foreground">
-                {blurb}
-              </span>
-            </span>
-          </button>
-        );
-      })}
-    </nav>
+    <div
+      role="tablist"
+      aria-label="Settings sections"
+      className="mx-auto min-h-full max-w-2xl space-y-6 bg-muted/25 p-4 pb-[max(1rem,var(--sai-bottom,0px))]"
+    >
+      {groups.map((group, gi) => (
+        <div key={gi} className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
+          {group.map((s) => {
+            const Icon = s.icon;
+            const on = s.id === active;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => onSelect(s.id)}
+                className={cn(
+                  "relative flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors",
+                  "after:absolute after:inset-x-0 after:bottom-0 after:left-[3.5rem] after:h-px after:bg-border/60 last:after:hidden",
+                  on ? "bg-accent" : "hover:bg-accent/60",
+                )}
+              >
+                <span
+                  className="grid size-[29px] shrink-0 place-items-center rounded-[7px] shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+                  style={{ background: s.color }}
+                >
+                  <Icon className="size-[17px] text-white" />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-tight">{s.label}</span>
+                <ChevronRight className="size-[18px] shrink-0 text-muted-foreground/45" />
+              </button>
+            );
+          })}
+        </div>
+      ))}
+    </div>
   );
 }

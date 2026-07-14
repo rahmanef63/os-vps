@@ -139,7 +139,12 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
   // re-render doesn't snap icons back to rest. Also cancels the rAF on unmount.
   useEffect(() => {
     if (mouseX.current != null) schedule();
-    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    // Zero the guard after cancelling: apply() (the only other place raf.current
+    // resets to 0) was just cancelled, so leaving a stale non-zero handle here
+    // permanently blocks schedule()'s `if (!raf.current)` — magnification then
+    // freezes mid-hover AND never resets on leave (the intermittent "dock stuck
+    // big" bug, when a window-state re-render lands in the same frame as a hover).
+    return () => { if (raf.current) { cancelAnimationFrame(raf.current); raf.current = 0; } };
   });
 
   return (
