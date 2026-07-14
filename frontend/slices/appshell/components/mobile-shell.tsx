@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useUrlHome } from "../hooks/use-url-home";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useApps } from "../lib/registry";
 import { useWindowOrder, useFocused, useWindow } from "../hooks/use-shell";
@@ -25,6 +26,7 @@ export function MobileShell() {
   const [switcher, setSwitcher] = useState(false);
   const [cc, setCc] = useState(false);
   const [nc, setNc] = useState(false); // notification center (pull down, left half)
+  const [appScrolled, setAppScrolled] = useState(false); // iOS nav-bar frost-on-scroll
 
   // Dock = manifest-pinned apps (AppDescriptor.pinned — the generic shell never
   // hardcodes project app ids); falls back to the first 4 dockable apps.
@@ -63,6 +65,7 @@ export function MobileShell() {
       if (!focusApp(app.id)) openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi });
       setSwitcher(false);
       setHome(false);
+      setAppScrolled(false); // fresh app opens at the top → clear the nav-bar frost
     },
     [setHome],
   );
@@ -77,6 +80,7 @@ export function MobileShell() {
     restoreWindow(id);
     setSwitcher(false);
     setHome(false);
+    setAppScrolled(false);
   };
   const goHome = () => {
     if (topId) minimizeWindow(topId);
@@ -93,6 +97,7 @@ export function MobileShell() {
     const next = live[(live.indexOf(topId) + dir + live.length) % live.length];
     restoreWindow(next);
     setHome(false);
+    setAppScrolled(false);
   };
 
   const quickAppIds = useMemo(() => dockApps.map((a) => a.id), [dockApps]);
@@ -130,9 +135,16 @@ export function MobileShell() {
           className="absolute inset-0 z-[10] flex flex-col [animation:appOpen_var(--shell-dur-slow)_var(--shell-ease)] [transform-origin:center_bottom]"
           style={{ background: "var(--surface)" }}
         >
+          {/* Nav bar: transparent at rest, frosting into a hairline glass bar once
+              the app scrolls (onScrollCapture on <main> catches the app's own inner
+              scroll container generically). Title stays put — os-vps apps carry no
+              in-content large title to fade in. */}
           <header
-            className="flex shrink-0 items-center gap-2.5 border-b border-border px-3.5"
-            style={{ background: "var(--glass-bar)", height: "calc(3rem + var(--sai-top))", paddingTop: "var(--sai-top)" }}
+            className={cn(
+              "flex shrink-0 items-center gap-2.5 border-b px-3.5 transition-[background-color,border-color] duration-200",
+              appScrolled ? "border-border bg-[var(--glass-bar)] backdrop-blur-xl" : "border-transparent bg-transparent",
+            )}
+            style={{ height: "calc(3rem + var(--sai-top))", paddingTop: "var(--sai-top)" }}
           >
             <span className="size-[30px] shrink-0">
               <AppIcon app={activeApp} />
@@ -148,6 +160,7 @@ export function MobileShell() {
               every app already pads with var(--sai-bottom), so bumping the var
               clears the pill centrally without double-padding anyone. */}
           <main
+            onScrollCapture={(e) => setAppScrolled((e.target as HTMLElement).scrollTop > 4)}
             className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]"
             style={{ "--sai-bottom": "calc(env(safe-area-inset-bottom, 0px) + 34px)" } as React.CSSProperties}
           >

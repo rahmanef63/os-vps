@@ -454,3 +454,22 @@ sidebar), Windows Explorer (Name/Size/Kind details list), iOS Files (grid + blue
 > (some inputs unreadable but a valid partial archive IS produced) is treated as failure → a folder
 > download containing any unreadable file would 500 where it previously streamed the partial zip.
 > **Left untouched** (not this work, and WIP). One-line fix for its author: accept `code === 0 || code === 18`.
+
+## 12. iOS in-app nav-bar scroll-frost + chrome assessment (2026-07-14)
+
+The mobile app nav bar (`mobile-shell.tsx`) now starts **transparent** and frosts into a hairline
+glass bar once the app scrolls — the iOS large-title-collapse cue, adapted: the **title stays put**
+(os-vps apps carry no in-content large title to fade in). Scroll is detected generically via
+`onScrollCapture` on `<main>` so it catches each app's OWN inner scroll container (radix `ScrollArea`,
+etc.), not just a main-level scroll; `appScrolled` resets in the app-switch handlers
+(launch/resume/switchApp) so a freshly-opened app starts unfrosted. Verified live — the header's
+computed background goes `rgba(0,0,0,0)` → `oklab(0 0 0 / .62)` on scroll, with a hairline border
+fading in. Known ceilings (graceful): a non-scrolling app never frosts (header stays clean-transparent);
+a window closed out-of-band leaves the next app's frost until its first scroll.
+
+**Control Center + macOS window assessed, left as-is (no manufactured churn):** the CC
+(`features/control-center`) is already **real-toggles-only** — Appearance/Server/Focus/Search/Assistant/
+Windows, deliberately **no wifi/cellular/battery/brightness to fabricate on a headless VPS** — in an
+Apple 2×2 glass-tile grid with accent on-states; and the macOS window chrome already matches the design
+(traffic lights `#ff5f57/#febc2e/#28c840` r6, layered `--shadow-win`, r12). `typecheck` + `eslint` clean;
+**682 tests green**; built + `systemctl restart`, root 200. fs-zip WIP still untouched.
