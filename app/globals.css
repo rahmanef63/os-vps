@@ -235,9 +235,9 @@ body {
   --shell-radius-ui: var(--radius);
   --shell-icon-radius: 22.37%;
   /* App-icon look, per shell. Defaults are FLAT (iOS 7+ killed the glassy dome);
-     macOS re-adds a whisper of depth below. corner = superellipse exponent for
-     the true squircle (no-ops without corner-shape). */
-  --shell-icon-corner: 4;
+     macOS re-adds a whisper of depth below. Plain rounded-rect corner — a true
+     CSS squircle (corner-shape: superellipse) was tried and reverted: at a fixed
+     radius a >2 exponent makes corners hug the square = POINTIER, not rounder. */
   --shell-icon-sheen: 0.06; /* top-light overlay alpha */
   --shell-icon-shade: 0; /* bottom inner-shade alpha */
   --shell-icon-ring: 0.1; /* top hairline edge alpha */
@@ -265,15 +265,9 @@ body {
   --shell-icon-glyph: 46%;
   --shell-icon-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 6px 14px rgba(0, 0, 0, 0.3);
 }
-/* True continuous-corner squircle where Chromium 139+ supports corner-shape;
-   everything else keeps the tuned rounded-rect (border-radius). */
+/* Shared app-icon tile corner: a plain rounded-rect at the per-shell radius. */
 .shell-icon-tile {
   border-radius: var(--shell-icon-radius);
-}
-@supports (corner-shape: superellipse(2)) {
-  .shell-icon-tile {
-    corner-shape: superellipse(var(--shell-icon-corner, 4));
-  }
 }
 [data-shell="windows"] {
   --shell-font: "Segoe UI Variable Text", "Segoe UI", system-ui, var(--font-ui);
@@ -297,7 +291,6 @@ body {
   --shell-dur: 300ms;
   --shell-dur-slow: 400ms;
   --shell-icon-radius: 50%;
-  --shell-icon-corner: 2; /* keep the 50% pill a true circle (superellipse(2) ≡ round) */
 }
 /* OS reduced-motion: collapse durations to ~instant. 1ms (not 0) so animationend
    still fires — the window close/minimize finalize on that event. Scoped narrowly
