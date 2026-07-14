@@ -275,3 +275,26 @@ explicitly-named asks — **widget** and **klik kanan** — are delivered and re
 **One open verification item:** live *visual* interaction testing (right-click nav, hot
 corners, the widget picker) — blocked in the dev env (auth wall + no local demo); eyeball
 on os.rahmanef.com per §5.
+
+---
+
+## 7. Apple HIG (`design.md`) compliance pass (2026-07-14)
+
+Audited the shell chrome against the uploaded Apple HIG reference. **The token layer already
+implemented the bulk of it** — semantic tokens (no raw hex in components), `prefers-reduced-motion`
+collapsing `--shell-dur*→1ms`, `.high-contrast`/`.reduce-glass` modes, per-persona radius + the
+Apple easing curve `cubic-bezier(.32,.72,0,1)`. So this was a **narrow gap-close**, not a rebuild.
+
+Fixed (adversarial survey → confirmed instances only):
+- **Touch targets → 44pt (HIG §10.3/§13)** on the ios/android personas — Android NavBar
+  Back/Home/Recents (`size-10→11`), Android app-header back + recents-card close
+  (`coarse:size-9→11`), iOS "Done" (`h-9→11`), iOS notification dismiss (44px tap wrapping a
+  small visible dot). Playwright-measured: NavBar renders **44×44** exactly.
+- **Reduce-motion residue (HIG §9)** — Dynamic Island slide (auto-plays on every toast) now
+  rides `var(--shell-dur)` so the media query collapses it; dock-magnify glide gets
+  `motion-reduce:transition-none`.
+- Dimensions clean, no work: inline hex (only macOS brand traffic-lights, correctly excluded),
+  icon-button aria-labels (all present). Fixed a stale `globals.css` comment claiming a
+  nonexistent Starfield `matchMedia` hook (support is CSS-only; no auto-animating canvas exists).
+
+fs-zip WIP still untouched (file-explorer, constraint #2).

@@ -37,8 +37,8 @@ export function HoverPanel({ wide, children }: { wide?: boolean; children: React
 // bottom-anchored icon ZONE sized w×w that OVERFLOWS upward — the magnified icon
 // rises out of the bar (in front of it) instead of sitting inside. width + height
 // transition so hover-in/out (and the redistribution as the cursor moves) glide.
-export const SLOT_TRANS = "transition-[width] duration-200 ease-out";
-export const ZONE_TRANS = "transition-[height] duration-200 ease-out";
+export const SLOT_TRANS = "transition-[width] duration-200 ease-out motion-reduce:transition-none";
+export const ZONE_TRANS = "transition-[height] duration-200 ease-out motion-reduce:transition-none";
 
 export function DockIcon({
   app, windows, focused, slotRef, zoneRef,

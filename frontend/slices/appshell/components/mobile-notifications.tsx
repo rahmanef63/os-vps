@@ -82,9 +82,12 @@ export function MobileNotifications({ open, onClose }: { open: boolean; onClose:
                 <Button type="button" variant="ghost"
                   aria-label="Dismiss"
                   onClick={() => dismissNotification(n.id)}
-                  className="h-auto p-0 font-normal hover:bg-transparent rounded-full bg-white/15 p-1 text-white/80"
+                  className="grid size-11 shrink-0 place-items-center rounded-full p-0 font-normal text-white/80 hover:bg-transparent"
                 >
-                  <X className="size-3" />
+                  {/* 44pt tap target (HIG §13); the visible dot stays small */}
+                  <span className="grid size-7 place-items-center rounded-full bg-white/15">
+                    <X className="size-3.5" />
+                  </span>
                 </Button>
               </div>
             ))}

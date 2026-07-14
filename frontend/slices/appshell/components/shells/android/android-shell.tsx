@@ -153,7 +153,7 @@ function AndroidShell() {
               className="flex shrink-0 items-center gap-3 px-3 text-white"
               style={{ background: activeApp.gradient, height: "calc(3rem + var(--sai-top, 0px))", paddingTop: "var(--sai-top, 0px)" }}
             >
-              <Button type="button" variant="ghost" onClick={goHome} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent"><ChevronLeft className="size-5" /></Button>
+              <Button type="button" variant="ghost" onClick={goHome} aria-label="Back" className="-ml-2 h-auto p-0 font-normal hover:bg-transparent grid size-11 place-items-center"><ChevronLeft className="size-5" /></Button>
               <strong className="flex-1 truncate text-base">{activeApp.title}</strong>
             </header>
             <main className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]">

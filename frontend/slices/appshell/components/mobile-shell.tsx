@@ -138,8 +138,8 @@ export function MobileShell() {
               <AppIcon app={activeApp} />
             </span>
             <strong className="flex-1 truncate text-base">{activeApp.title}</strong>
-            {/* primary exit control — keep the pill visually compact but give it a ≥36px hit area */}
-            <Button type="button" variant="ghost" onClick={goHome} className="h-9 min-w-9 rounded-md px-3 text-sm font-medium text-primary">
+            {/* primary exit control — text keeps it wide; bump height to the 44pt HIG touch target */}
+            <Button type="button" variant="ghost" onClick={goHome} className="h-11 min-w-11 rounded-md px-3 text-sm font-medium text-primary">
               Done
             </Button>
           </header>

@@ -261,8 +261,8 @@ body {
      spotlight palette, app-launcher, and tailwindcss-animate `animate-in`
      utilities (data-state driven). The window geometry glide (`.win-geo`) and
      the wallpaper blob keyframes are intentionally excluded — wallpaper drift
-     is decorative-only but the canvas Starfield disables itself when the
-     hook reads `matchMedia("(prefers-reduced-motion: reduce)")`. */
+     is decorative-only (transform-only, compositor-cheap) and there is no
+     auto-animating canvas in the tree to gate. */
   [data-state="open"], [data-state="closed"],
   .animate-in, .animate-out,
   [class*="fade-in"], [class*="slide-in"], [class*="zoom-in"] {

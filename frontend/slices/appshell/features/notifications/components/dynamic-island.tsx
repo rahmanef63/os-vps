@@ -24,7 +24,7 @@ export function DynamicIsland() {
         disabled={!a.appId}
         onClick={() => a.appId && openAppById(a.appId)}
         className="h-auto hover:bg-black/85 pointer-events-auto flex max-w-[80%] items-center gap-2.5 rounded-full bg-black/85 px-3.5 py-2 text-white shadow-xl backdrop-blur disabled:cursor-default"
-        style={{ animation: "appOpen .25s cubic-bezier(.2,.8,.2,1)" }}
+        style={{ animation: "appOpen var(--shell-dur) var(--shell-ease)" }}
       >
         <span className="grid size-5 shrink-0 place-items-center">
           {tone === "done" ? (
