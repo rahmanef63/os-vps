@@ -9,7 +9,7 @@
    close). Portaled to document.body so its z-index always wins — a non-portaled
    fixed layer is trapped inside a positioned/z-indexed ancestor (e.g. a taskbar)
    and can be occluded. */
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getContextMenuItems, joinGroups, type MenuItem } from "../../lib/context-menu";
@@ -86,10 +86,29 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
   }, [pos, onClose]);
 
   if (!pos) return null;
+  // Match shell.rahmanef.com: LEFT-aligned rows, icon on the LEFT, accent-fill
+  // hover. Per-persona metrics/motion read fresh at open time from the active
+  // shell (stamped on #main-content's data-shell): macOS = dense + zoom-in;
+  // Windows = Fluent (34px rows, fixed icon gutter, slide-down); iOS/Android =
+  // 44pt touch targets + larger text (HIG). The accent is os-vps's own --primary
+  // token — not a hardcoded hex — per the design.md "semantic tokens" guidance.
+  const shell = document.querySelector("[data-shell]")?.getAttribute("data-shell");
+  const isWin = shell === "windows";
+  const isTouch = shell === "ios" || shell === "android";
+  const itemMetrics = isWin
+    ? "h-[34px] rounded-[4px]"
+    : isTouch
+      ? "min-h-11 rounded-lg py-2.5 text-[15px]"
+      : "rounded-md py-1";
+  const openMotion = isWin ? "fade-in-0 slide-in-from-top-2 duration-150" : "fade-in zoom-in-95 duration-100";
+  const panelRadius = isWin ? "rounded-lg" : isTouch ? "rounded-2xl" : "rounded-xl";
+  const iconSize = isTouch ? "size-[18px]" : "size-4";
   // Clamp on all four edges (Math.max lower-bounds so a click near the bottom/
-  // right of a small viewport can't push the menu offscreen).
+  // right of a small viewport can't push the menu offscreen). Per-row height is
+  // variant-aware so the bottom clamp reserves enough for the taller touch rows.
+  const rowH = isTouch ? 44 : isWin ? 34 : 30;
   const x = Math.max(8, Math.min(pos.x, window.innerWidth - 220));
-  const y = Math.max(8, Math.min(pos.y, window.innerHeight - items.length * 34 - 12));
+  const y = Math.max(8, Math.min(pos.y, window.innerHeight - items.length * rowH - 12));
 
   return createPortal(
     <>
@@ -100,25 +119,39 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
       <div
         ref={menuRef}
         role="menu"
-        className="fixed z-[1201] min-w-[200px] rounded-lg border border-border bg-popover/95 p-1 text-sm shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100"
+        className={cn(
+          "fixed z-[1201] min-w-[200px] border border-border bg-popover/95 p-1 text-sm shadow-2xl backdrop-blur-md animate-in",
+          panelRadius,
+          openMotion,
+        )}
         style={{ left: x, top: y }}
       >
         {items.map((it, i) =>
           it.type === "sep" ? (
             <div key={i} role="separator" className="my-1 h-px bg-border" />
           ) : (
-            <Button type="button" variant="ghost"
+            <button
+              type="button"
               key={i}
               role="menuitem"
               disabled={it.disabled}
               onClick={() => { it.onClick(); onClose(); }}
-              // "rata kanan": label right-aligned, icon on the RIGHT. (shell.rahmanef.com
-              // is actually icon-left/label-left — this is the requested right-aligned look.)
-              className="h-auto p-0 font-normal hover:bg-transparent flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-right text-foreground/90 transition-colors hover:bg-muted disabled:opacity-40"
+              className={cn(
+                "group flex w-full items-center gap-2.5 px-2.5 text-left text-foreground/90 outline-none transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-foreground/90",
+                itemMetrics,
+              )}
             >
-              <span className="flex-1 truncate">{it.label}</span>
-              {it.icon && <it.icon className="size-4 shrink-0 text-muted-foreground" />}
-            </Button>
+              {isWin ? (
+                // Fixed icon gutter — an empty same-size slot keeps every label's
+                // left edge aligned even when a row has no icon (Fluent rows).
+                <span className="flex size-4 shrink-0 items-center justify-center">
+                  {it.icon && <it.icon className="size-4 text-primary group-hover:text-primary-foreground group-focus-visible:text-primary-foreground" />}
+                </span>
+              ) : (
+                it.icon && <it.icon className={cn(iconSize, "shrink-0 text-primary group-hover:text-primary-foreground group-focus-visible:text-primary-foreground")} />
+              )}
+              <span className="truncate">{it.label}</span>
+            </button>
           ),
         )}
       </div>
