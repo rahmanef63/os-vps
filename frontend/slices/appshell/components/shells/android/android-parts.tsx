@@ -23,13 +23,13 @@ export function NavBar({ inactive = false, onBack, onHome, onRecents }: { inacti
       inert={inactive}
       aria-hidden={inactive}
     >
-      <Button type="button" variant="ghost" onClick={onBack} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent grid size-11 place-items-center">
+      <Button type="button" variant="ghost" onClick={onBack} aria-label="Back" className="h-auto p-0 font-normal hover:bg-transparent grid size-12 place-items-center">
         <ChevronLeft className="size-5" />
       </Button>
-      <Button type="button" variant="ghost" onClick={onHome} aria-label="Home" className="h-auto p-0 font-normal hover:bg-transparent grid size-11 place-items-center">
+      <Button type="button" variant="ghost" onClick={onHome} aria-label="Home" className="h-auto p-0 font-normal hover:bg-transparent grid size-12 place-items-center">
         <span className="size-4 rounded-full border-2 border-foreground/70" />
       </Button>
-      <Button type="button" variant="ghost" onClick={onRecents} aria-label="Recents" className="h-auto p-0 font-normal hover:bg-transparent grid size-11 place-items-center">
+      <Button type="button" variant="ghost" onClick={onRecents} aria-label="Recents" className="h-auto p-0 font-normal hover:bg-transparent grid size-12 place-items-center">
         <span className="size-3.5 rounded-[3px] border-2 border-foreground/70" />
       </Button>
     </div>

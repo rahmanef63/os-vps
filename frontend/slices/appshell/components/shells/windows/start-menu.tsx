@@ -51,7 +51,7 @@ export function StartMenu({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="absolute inset-0 z-[59]" onClick={onClose} />
-      <div className="absolute bottom-14 left-1/2 z-[61] flex w-[560px] max-w-[92vw] -translate-x-1/2 flex-col rounded-xl border border-border bg-card/95 p-4 shadow-2xl backdrop-blur-xl font-[family-name:var(--shell-font)]">
+      <div className="absolute bottom-14 left-1/2 z-[61] flex w-[560px] max-w-[92vw] -translate-x-1/2 flex-col rounded-xl border border-border bg-[var(--mica-win,var(--card))] p-4 shadow-2xl backdrop-blur-xl font-[family-name:var(--shell-font)]">
         {/* search */}
         <div className="mb-3 flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
           <Search className="size-4 text-muted-foreground" />

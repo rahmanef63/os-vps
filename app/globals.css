@@ -243,10 +243,19 @@ body {
   --shell-radius-ui: 4px;
   --shell-ease: cubic-bezier(0, 0, 0, 1);
   --shell-dur: 230ms;
+  /* Win11 Mica: a near-opaque neutral window surface with a faint accent wash.
+     Reuses the theme-aware --window-bg + --accent so it flips light/dark by
+     itself; scoped to the windows shell, so no other persona is touched.
+     Accent held to 5% so muted-foreground labels on the tinted chrome keep
+     WCAG AA (10% dropped the window title / clock to ~4.46:1; 5% ≈ 4.58:1). */
+  --mica-win: color-mix(in srgb, var(--window-bg) 95%, var(--accent) 5%);
 }
 [data-shell="android"] {
   --shell-font: Roboto, "Google Sans Text", system-ui, var(--font-ui);
-  --shell-ease: cubic-bezier(0.2, 0, 0, 1);
+  /* M3 Expressive spring-ish enter: a mild overshoot (y>1) gives app-open a
+     lively settle. Android-only + enter-only (no exit/geometry glide on mobile),
+     so it can't cause dismiss bounce; reduce-motion still collapses --shell-dur. */
+  --shell-ease: cubic-bezier(0.2, 0.9, 0.3, 1.06);
   --shell-dur: 300ms;
   --shell-dur-slow: 400ms;
   --shell-icon-radius: 50%;

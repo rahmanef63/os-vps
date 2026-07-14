@@ -97,7 +97,7 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
       >
         {isWin ? (
           <div
-            className="flex h-[34px] shrink-0 cursor-grab items-center border-b border-border bg-card font-[family-name:var(--shell-font)] active:cursor-grabbing"
+            className="flex h-[34px] shrink-0 cursor-grab items-center border-b border-border bg-[var(--mica-win,var(--card))] font-[family-name:var(--shell-font)] active:cursor-grabbing"
             onPointerDown={onBarDown}
             onDoubleClick={() => toggleMaximize(id)}
             onContextMenu={ctx.open}
@@ -106,6 +106,7 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
               {win.title}
             </div>
             <WinCaption
+              id={id}
               maximized={win.maximized}
               onMinimize={beginMinimize}
               onMaximize={() => toggleMaximize(id)}

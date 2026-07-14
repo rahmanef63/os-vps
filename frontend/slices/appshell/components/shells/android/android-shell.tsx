@@ -12,7 +12,7 @@
 import { Button } from "@/components/ui/button";
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useUrlHome } from "../../../hooks/use-url-home";
-import { Search, ChevronLeft, Bot } from "lucide-react";
+import { Search, ArrowLeft, Bot } from "lucide-react";
 import { useApps } from "../../../lib/registry";
 import { usePullDown } from "../../../hooks/use-pull-down";
 import { useWindowOrder, useFocused, useWindow } from "../../../hooks/use-shell";
@@ -149,12 +149,15 @@ function AndroidShell() {
         {/* fullscreen app */}
         {showApp && activeApp && top && (
           <div className="absolute inset-0 z-[20] flex flex-col bg-background [animation:appOpen_var(--shell-dur)_var(--shell-ease)] [transform-origin:center_bottom]">
+            {/* M3 top app bar: flat surface (bg-card, hairline divider), leading
+                ArrowLeft up-affordance, Title Large regular weight — not a colored
+                brand header. The per-app color still reads on the icon + recents. */}
             <header
-              className="flex shrink-0 items-center gap-3 px-3 text-white"
-              style={{ background: activeApp.gradient, height: "calc(3rem + var(--sai-top, 0px))", paddingTop: "var(--sai-top, 0px)" }}
+              className="flex shrink-0 items-center gap-3 border-b border-border bg-card px-3 text-foreground"
+              style={{ height: "calc(3rem + var(--sai-top, 0px))", paddingTop: "var(--sai-top, 0px)" }}
             >
-              <Button type="button" variant="ghost" onClick={goHome} aria-label="Back" className="-ml-2 h-auto p-0 font-normal hover:bg-transparent grid size-11 place-items-center"><ChevronLeft className="size-5" /></Button>
-              <strong className="flex-1 truncate text-base">{activeApp.title}</strong>
+              <Button type="button" variant="ghost" onClick={goHome} aria-label="Back" className="-ml-2 h-auto p-0 font-normal hover:bg-transparent grid size-12 place-items-center"><ArrowLeft className="size-5" /></Button>
+              <span className="flex-1 truncate text-[19px] font-normal">{activeApp.title}</span>
             </header>
             <main className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]">
               <WindowContent app={top.app} payload={top.payload} />

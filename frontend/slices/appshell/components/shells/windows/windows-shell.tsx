@@ -22,12 +22,15 @@ import { DesktopIcons, useDesktopMarquee } from "../../../features/desktop-icons
 import { ShellContextMenu, useShellContextMenu, type MenuItem } from "../context-menu";
 import { Taskbar, TASKBAR_H } from "./taskbar";
 import { SnapAssist } from "./snap-assist";
+import { RunDialog } from "./run-dialog";
+import { inEditable } from "../../../lib/use-focused-hotkey";
 
 function WindowsShell() {
   const order = useWindowOrder();
   const winMap = useWindowsMap();
   const stacked = useMemo(() => stackByZ(order, winMap), [order, winMap]);
   const [taskView, setTaskView] = useState(false);
+  const [runOpen, setRunOpen] = useState(false);
   const menu = useShellContextMenu("windows");
   const marquee = useDesktopMarquee();
   const interactive = !!useShellAppearance().liveWallpaper?.interactive;
@@ -35,6 +38,18 @@ function WindowsShell() {
   useEffect(() => {
     applyChromeInsets({ top: 0, bottom: TASKBAR_H });
     return () => applyChromeInsets({}); // restore macOS insets + re-tile snapped windows
+  }, []);
+  // Win+R (Ctrl+R fallback) opens the Run dialog; ignored while typing in a field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // !shiftKey so Ctrl+Shift+R (hard reload) still works; only plain Win/Ctrl+R opens Run.
+      if (!((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === "r")) return;
+      if (inEditable(e.target)) return;
+      e.preventDefault();
+      setRunOpen(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
   const baseItems: MenuItem[] = [
     { label: "Task View", icon: LayoutGrid, onClick: () => setTaskView(true) },
@@ -73,6 +88,7 @@ function WindowsShell() {
       <SnapAssist />
       <Taskbar onTaskView={() => setTaskView((v) => !v)} />
       {taskView && <WindowOverview onClose={() => setTaskView(false)} label="Task View" />}
+      {runOpen && <RunDialog onClose={() => setRunOpen(false)} />}
       <ForceQuitDialog />
       <ShellContextMenu state={menu.state} onClose={menu.close} />
     </>

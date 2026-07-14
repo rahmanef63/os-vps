@@ -41,7 +41,7 @@ export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
     <>
       {startOpen && <StartMenu onClose={() => setStartOpen(false)} />}
       <div
-        className="absolute inset-x-0 bottom-0 z-[60] flex h-12 items-center border-t border-border bg-card/85 px-2 backdrop-blur-md font-[family-name:var(--shell-font)]"
+        className="absolute inset-x-0 bottom-0 z-[60] flex h-12 items-center border-t border-border bg-[var(--mica-win,var(--card))] px-2 backdrop-blur-md font-[family-name:var(--shell-font)]"
         onContextMenu={(e) => { if (e.target === e.currentTarget) tbMenu.open(e); }}
       >
         <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">

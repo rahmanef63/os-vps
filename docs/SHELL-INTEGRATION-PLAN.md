@@ -249,7 +249,7 @@ right-click the desktop → keyboard-nav the menu + "Desktop widgets…"; hot co
 | P3 Theme quick-picker | ✅ done (2026-07-12) | `os-shell/theme-quick-picker.tsx` — Palette popover in the menu-bar status cluster (preset grid + swatches + Stock reset), mounted via the `menuBarStatus` slot as a **consumer feature** (keeps appshell brand-free; it can't import `@/lib/appearance`). |
 | P3 Auto-lock | ✅ done (2026-07-12) | **Check result: os-vps already had a *better* lock mechanism than shell** (`lib/lock.ts` — guard-injectable idle auto-lock, `useLocked`/`requestUnlock`, lock-screen owns the timer) — it just lacked a config UI. Added `setAutoLockMinutes` + an `AutoLockRow` (Off/1/5/15/30 min Select) in Settings → Devices. |
 | P3 Thirds-tiling | ✅ done (2026-07-13) | **Check result: os-vps already had the thirds *geometry*** (`snapRect` l13/r23/l23/r13) but nothing triggered it. Added a pure `cycleSnap()` + wired ⌘/Ctrl+Arrow to cycle ½ → ⅔ → ⅓ → ½ per side (great for a cockpit: terminal + editor + monitor). Unit-tested. |
-| P4 Windows chrome extras | 🟡 partial (2026-07-14) | **Start-menu depth + Fluent accent + pinned taskbar shipped** (§8) — closes the "Windows start button + openable apps" gap. Remaining optional: Win+R run-dialog, system tray, Mica token. |
+| P4 Windows chrome extras | ✅ done (2026-07-14) | §8 start-menu depth + accent + pinned taskbar; §9 Win+R run-dialog + Snap-Layouts hover-flyout + Mica token. Only a fake wifi/battery tray deliberately skipped (essence). |
 | Deferred: FE sidebar-tree | ⛔ deferred | constraint #2 |
 
 ---
@@ -349,3 +349,41 @@ typecheck` + `eslint` clean; built + `systemctl restart`, root 200.
 
 The two design-guide references now live in-repo under `design-md/` (Apple HIG + Windows/Android),
 mirroring shell.rahmanef.com so both forks carry the same design SSOT.
+
+---
+
+## 9. Windows chrome extras + Android M3 pass (2026-07-14)
+
+Continued the `designwindowsandroid.md` conformance — the four remaining parity items, planned by a
+parallel explore-fan-out, ported (mostly verbatim from shell.rahmanef.com), then run through a
+3-lens adversarial review before ship. **No new deps; nothing touched the file-explorer.**
+
+- **Win+R Run dialog** (new `shells/windows/run-dialog.tsx` + `windows-shell.tsx` wiring). Pure
+  `resolveApp()` (exact-id → exact-title → prefix → substring; never evals) opens a registered app
+  via the shared `openWindow`. Win/Ctrl+R keydown, guarded by `inEditable` (ignored while typing)
+  **and `!e.shiftKey`** so Ctrl+Shift+R hard-reload still works. Unit-tested (`run-dialog.test.ts`,
+  6 cases). Only icon swap vs shell: phosphor→lucide `Terminal`.
+- **Snap Layouts hover-flyout** (new `snap-layouts.tsx` + `win-caption.tsx` hover + `window.tsx`
+  `id` prop). Hovering the maximize caption button drops the Win11 6-layout picker (50/50, 70/30,
+  30/70, quarters, big-left/right + stacked), each diagram derived from the existing `snapRect`
+  zones and calling the existing `snapWindow(id, zone)` — zero new geometry. Review fix: the flyout
+  root now `stopPropagation`s pointerdown so a press in its padding/gutters can't bubble to the
+  titlebar drag handler and un-maximize the window.
+- **Mica material token** (`globals.css` `[data-shell="windows"]`). `--mica-win = color-mix(srgb,
+  var(--window-bg) 95%, var(--accent) 5%)` — a faint accent-washed frost on the taskbar, start
+  menu, and window titlebar (`bg-[var(--mica-win,var(--card))]`). Theme-aware for free (reuses
+  window-bg/accent). Review fix: **accent trimmed 10%→5%** because 10% dropped muted-foreground
+  labels to ~4.46:1; 5% computes to ~4.58:1, back over WCAG AA.
+- **Android M3 Expressive** (`clock.tsx`, `android-parts.tsx`, `android-shell.tsx`, `globals.css`).
+  Bolder home clock (`font-light`→`font-medium`), 48dp nav + app-bar targets (`size-11`→`size-12`),
+  a flat M3 top app bar (bg-card surface + hairline + `ArrowLeft` + regular-weight Title-Large,
+  replacing the brand-gradient/white-text header), and a mild spring-ish `--shell-ease` overshoot on
+  app-open. Skipped as infra-heavy/YAGNI: real spring physics (needs a motion lib), shape-morph,
+  dynamic-color/tonal-elevation pipeline, Material Symbols fill-on-select.
+
+Adversarial review (3 lenses, all findings verified): 2 medium bugs fixed (snap drag-bubble, Mica
+contrast), 1 low fixed (hard-reload chord), 2 low a11y notes accepted as-is (the snap flyout is
+mouse-hover by design like real Win11 — keyboard uses Win+Arrow; the run-dialog matches shell).
+Verified live on `:4005` (Playwright, seeded persona): snap flyout, Run box, Mica frost, Android
+bolder clock + flat top bar. `typecheck` + `eslint` clean; **682 tests green** (676 + 6 new);
+built + `systemctl restart`, root 200. fs-zip WIP still untouched.
