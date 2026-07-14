@@ -297,4 +297,16 @@ Fixed (adversarial survey → confirmed instances only):
   icon-button aria-labels (all present). Fixed a stale `globals.css` comment claiming a
   nonexistent Starfield `matchMedia` hook (support is CSS-only; no auto-animating canvas exists).
 
+**Preset contrast (HIG §7.6/§13 — 4.5:1) — DONE.** `scripts/check-contrast.mjs` flagged **80
+failing pairs across all 36 tweakcn presets** (not the 4 the pre-push tail showed) — the imported
+tweakcn library is low-contrast by design in places (pastel/neon). Wrote `scripts/fix-contrast.mjs`,
+a one-shot identity-preserving tuner: holds each colour's **hue + chroma** and the author's existing
+foreground (no white↔black text flips), moves only the failing token's oklch **lightness** by the
+minimum to reach 4.5:1 (mirrors globals.css's own "nudge darker, minimal delta" default-accent
+convention); syncs aliased brand keys (ring/chart-1/sidebar-primary). Retuned 80 tokens →
+**audit now 0 fails, both modes.** Swatch-verified: every hue preserved (claude terracotta, twitter
+blue, ocean-breeze green, cyberpunk magenta); only pastel-dreams shifted materially (it was 1.88 —
+white on pale pink, literally illegible). `muted-foreground`/`primary`/`destructive` only; main body
+text never failed.
+
 fs-zip WIP still untouched (file-explorer, constraint #2).
