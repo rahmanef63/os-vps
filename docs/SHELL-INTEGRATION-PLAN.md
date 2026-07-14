@@ -24,10 +24,12 @@ These are non-negotiable. Every task below is checked against them.
    Self-contained single Next.js app, **no Convex, no database, no external
    agent**, HMAC signed-cookie device-approval auth, host access via `lib/host`.
    Any port that needs a cloud DB or a user-role system is **out of scope** (§4).
-2. **Do NOT disturb the file-explorer.** `frontend/slices/files-manager` runs on
-   the real VPS host backend + zip/upload flows; it has diverged from shell's
-   Convex/mock file-explorer by *purpose*. No port touches its data/hooks layer.
-   (Per repo memory: the two file slices must not be merged.)
+2. **Do NOT disturb the file-explorer's DATA layer.** `frontend/slices/files-manager`
+   runs on the real VPS host backend + zip/upload flows; its data/hooks layer
+   (`use-files*`, the `lib/host.ts` seam, zip/upload/inspector) stays untouched and
+   rr-liftable, and the two file slices must not be merged. Its *presentation* is
+   adaptable per-shell (Finder / Explorer / Files — §11) as long as every host-I/O
+   symbol still routes through `lib/host.ts` (owner-authorized 2026-07-14).
 3. **No new runtime dependencies** unless a port genuinely can't be done with the
    existing stack (shadcn + Tailwind 4 + the appshell buses). The widget engine
    is pure CSS/DOM + a store — no framer-motion, no grid lib.
@@ -53,7 +55,7 @@ Legend — **Better**: which repo's implementation is stronger today.
 | 6 | **Command palette / spotlight** | cmdk, i18n, **MRU recent-commands history** | bespoke, apps+actions+registry commands + **live VPS fs search** | ↔ tie | ⬇ Port **MRU history** only (§2.5). Keep os-vps's fs search |
 | 7 | **App registry & catalog** | 3 registries, lazy bundles, Store metadata | manifest + runtime install/create-app | ↔ tie | ✅ Keep |
 | 8 | **App list** | 17 portfolio apps; **no terminal/browser/editor/monitor** | 13 utility apps: **Terminal (pty), Browser (Playwright), Code, Monitor, image+reel editors** | 🟢 **os-vps** | ✅ This *is* the essence — never regress |
-| 9 | **File explorer** ⚠️ | sidebar dir-tree, preview pane, properties dialog, mock/convex/live adapters | **real VPS host fs**, zip, upload-progress, inspector | ↔ tie | ⛔ **Do NOT disturb** (constraint #2). Sidebar-tree only, deferred & behind a flag (§3-Deferred) |
+| 9 | **File explorer** ⚠️ | sidebar dir-tree, preview pane, properties dialog, mock/convex/live adapters | **real VPS host fs**, zip, upload-progress, inspector + **per-shell presentation** (Finder grid / Explorer list / iOS Files, Apple folder tiles) | 🟢 **os-vps** | ✅ **Per-shell presentation shipped** (§11); DATA layer still untouched (constraint #2) |
 | 10 | **Theming / appearance** | 36 presets, 1-hex rebrand, toolbar quick-picker | **same engine** (shell literally "ported from os-vps"), live wallpapers | ↔ tie | ⬇ Optional: **theme-quick-picker** toolbar switcher (§2.6) |
 | 11 | **Notifications** | toast→history, per-app badges, calendar in center | toasts + center + **Dynamic Island live-activity bus** | ↔ tie | ✅ Keep |
 | 12 | **Settings** | single appearance panel + auto-lock | **multi-section** (AI/Server/Browser/Devices/Theme…) + **per-shell layout** (macOS sidebar / Windows tabs / iOS stack) | 🟢 **os-vps** | ⬇ Port only **auto-lock timeout** + deep-link scroll (§2.7) · per-shell ✅ (§10) |
@@ -424,3 +426,31 @@ redundant in-pane `<h1>`) and **app.tsx over the 200-LOC gate** (fixed by the ex
 Verified live on `:4005` (Playwright, seeded personas): macOS Settings sidebar with colored tiles,
 Windows tab strip preserved, iOS single-title stack, airy home grid. `typecheck` + `eslint` clean;
 **682 tests green**; built + `systemctl restart`, root 200. fs-zip WIP still untouched.
+
+## 11. File explorer per-shell presentation (2026-07-14)
+
+Owner lifted the presentation freeze (constraint #2 now guards only the DATA layer). Applied the
+**same `useActiveShell()` seam as Settings** to the file explorer — presentation only, every
+host-I/O symbol still routed through `lib/host.ts`; data/hooks/zip/upload/inspector untouched.
+
+- **Per-shell default view** (`app.tsx`): `useActiveShell().id === "windows"` → details **list**
+  (Explorer), else → icon **grid** (Finder / iOS Files). Same component + same fs hooks; the shell
+  only seeds the initial mode (user still toggles). This is the macOS≠Windows "same file, different
+  config" example applied to Files.
+- **Apple folder tiles** (`file-item.tsx`, grid only): folders now render a filled lucide `Folder`
+  (`fill-current` → `text-primary` idle / `primary-foreground` when selected) with a soft
+  drop-shadow so they read as the dominant grid object; image thumbs + file glyphs bumped
+  `size-9`→`size-11` with shadows. **List rows unchanged** (`LIST_ROW_HEIGHT = 28` stays valid).
+
+Adversarial skeptic review — my two files **clean in every state**: scanned all 36 tweakcn presets
+(none set `accent == primary`, so the idle folder never vanishes on hover), view-default resolves
+for all five shells (macos/windows/dashboard/ios/android), no SSR/hydration/overflow/LOC issue,
+data layer untouched. Verified live on `:4005`: macOS Finder (grid + blue folders + Favorites/Tree
+sidebar), Windows Explorer (Name/Size/Kind details list), iOS Files (grid + blue folders).
+`typecheck` + `eslint` clean; **682 tests green**.
+
+> ⚠️ The same review surfaced a **pre-existing regression in the UNRELATED, uncommitted
+> `lib/host/fs-zip.ts` WIP** (a pipe→temp-file rewrite, not part of this change): zip **exit code 18**
+> (some inputs unreadable but a valid partial archive IS produced) is treated as failure → a folder
+> download containing any unreadable file would 500 where it previously streamed the partial zip.
+> **Left untouched** (not this work, and WIP). One-line fix for its author: accept `code === 0 || code === 18`.

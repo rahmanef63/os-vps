@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { AppFrame, AppSidebar, useResponsive, type AppProps } from "@/features/os-shell";
+import { AppFrame, AppSidebar, useActiveShell, useResponsive, type AppProps } from "@/features/os-shell";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropOverlay } from "./components/drop-overlay";
@@ -36,7 +36,11 @@ export default function FilesManager({ payload }: AppProps) {
   const dnd = useDnd(sel.selected, sel.selectOne, fs.move, fs.upload);
   const uploadRef = useRef<HTMLInputElement>(null);
   const folderRef = useRef<HTMLInputElement>(null);
-  const [view, setView] = useState<ViewMode>("grid");
+  // Per-shell default view (same explorer, shell-idiomatic first impression):
+  // macOS Finder + iOS Files open in the icon grid, Windows Explorer in the
+  // details list. The user can still toggle; this only seeds the initial mode.
+  const { id: shellId } = useActiveShell();
+  const [view, setView] = useState<ViewMode>(shellId === "windows" ? "list" : "grid");
   const [sort, setSort] = useState<SortKey>("name");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Mobile pulls the FileDetails strip out of the footer (path + size + copy

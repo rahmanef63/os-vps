@@ -1,6 +1,7 @@
 "use client";
 
 import { createElement, type DragEvent, type MouseEvent, useState } from "react";
+import { Folder } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -120,7 +121,18 @@ export function FileItem({
             fetchPriority="low"
             onError={() => setThumbFail(true)}
             className={cn(
-              "size-9 shrink-0 rounded object-cover transition-transform",
+              "size-11 shrink-0 rounded-md object-cover shadow-[0_2px_6px_rgba(0,0,0,0.22)] transition-transform",
+              dropActive && "scale-110",
+            )}
+          />
+        ) : isDir ? (
+          // Finder/Files-style filled folder — fill-current is the accent when
+          // idle, primary-foreground when the tile is selected — with a soft
+          // drop shadow so folders read as the dominant grid object.
+          <Folder
+            className={cn(
+              "size-12 shrink-0 fill-current drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition-transform",
+              selected ? "" : "text-primary",
               dropActive && "scale-110",
             )}
           />
@@ -128,7 +140,7 @@ export function FileItem({
           // createElement: dynamic stateless lookup, not a render-created component
           createElement(iconFor(entry), {
             className: cn(
-              "size-9 shrink-0 transition-transform",
+              "size-11 shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)] transition-transform",
               selected ? "" : color,
               dropActive && "scale-110",
             ),
