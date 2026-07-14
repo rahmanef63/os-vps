@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { getWidgetSize, getWidgetState, moveWidget, setWidgetsOn, setWidgetSize, toggleWidget } from "./widget-registry";
+import {
+  getWidgetSize,
+  getWidgetState,
+  moveWidget,
+  setCurrentSpace,
+  setWidgetPos,
+  setWidgetsOn,
+  setWidgetSize,
+  setWidgetSpace,
+  toggleWidget,
+} from "./widget-registry";
 
 // Store logic only (no localStorage in the node env — the module degrades to
 // in-memory state, which is exactly what these assertions exercise). Tests run
@@ -55,5 +65,17 @@ describe("widget-registry store", () => {
     setWidgetSize("cpu", "l"); // unchanged → no commit, same state object
     expect(getWidgetState()).toBe(ref);
     setWidgetSize("cpu", "m"); // restore default for store hygiene
+  });
+
+  it("enable assigns the current Space; position + space setters persist", () => {
+    setCurrentSpace(1);
+    toggleWidget("clock"); // enabled on the active Space
+    expect(getWidgetState().spaces.clock).toBe(1);
+    setWidgetPos("clock", 40, 60);
+    expect(getWidgetState().positions.clock).toEqual({ x: 40, y: 60 });
+    setWidgetSpace("clock", 0);
+    expect(getWidgetState().spaces.clock).toBe(0);
+    toggleWidget("clock"); // cleanup
+    setCurrentSpace(0);
   });
 });
