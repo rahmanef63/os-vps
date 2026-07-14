@@ -1,10 +1,11 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Lock, ShieldCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { DevicesPanel } from "@/features/auth";
 import { useActiveShell } from "@/features/os-shell";
+import { SettingsSection } from "@/features/shell-settings";
 import { SECTIONS, type SectionId } from "./nav";
 import { AutoLockRow } from "./auto-lock-row";
 import { AppearanceSection } from "./appearance-section";
@@ -30,13 +31,19 @@ function SectionBody({ id }: { id: SectionId }) {
       return <QuicklinksSection />;
     case "devices":
       return (
-        <div className="space-y-3">
-          <AutoLockRow />
-          <DevicesPanel />
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
-            Each browser is a device gated by password + approval. Approve a
-            pending device to grant it access; revoke to cut it off.
-          </p>
+        <div className="space-y-4 sm:space-y-5">
+          <SettingsSection icon={<Lock />} title="Auto-Lock">
+            <AutoLockRow />
+          </SettingsSection>
+          {/* bare: DevicesPanel brings its own cards — don't nest a card-in-card */}
+          <SettingsSection
+            icon={<ShieldCheck />}
+            title="Approved devices"
+            bare
+            footnote="Each browser is a device gated by password + approval. Approve a pending device to grant it access; revoke to cut it off."
+          >
+            <DevicesPanel />
+          </SettingsSection>
         </div>
       );
     case "server":
@@ -87,10 +94,15 @@ export function SectionList({
   active: SectionId | null;
   onSelect: (id: SectionId) => void;
 }) {
-  // Two grouped cards echo iOS's visual grouping: personalization (first four)
-  // above, system/infra below. Derived from SECTIONS order so any new section
-  // auto-lands in the lower card — no separate id list to keep in sync.
-  const groups = [SECTIONS.slice(0, 4), SECTIONS.slice(4)];
+  // Grouped cards echo iOS's visual grouping, bucketed by each section's
+  // semantic `group` (personalization / services / system) — reorder-safe,
+  // unlike an index slice. Consecutive same-group sections share a card.
+  const groups = SECTIONS.reduce<(typeof SECTIONS)[number][][]>((acc, s) => {
+    const last = acc[acc.length - 1];
+    if (last && last[0].group === s.group) last.push(s);
+    else acc.push([s]);
+    return acc;
+  }, []);
   return (
     <div
       role="tablist"

@@ -537,6 +537,33 @@ leave (icons stranded large — the intermittent bug). One-line fix: zero the gu
 (`if (raf.current) { cancelAnimationFrame(raf.current); raf.current = 0; }`). Screenshot-verified hover
 (gaussian magnify) → leave (all icons reset to rest). `typecheck`+`eslint` clean, built + restarted, 200.
 
+### §17 — Flat Apple icons + full settings refactor (all 8 sections)
+A 3-agent Workflow visual-diffed our rendered icons vs the Apple refs and audited all 8 settings
+sections; then a second 3-agent Workflow adversarially reviewed the result.
+
+- **Icons — flatten (the #1 tell).** Our tiles stacked 4 skeuomorphic gloss cues (0.32 top-light, inset
+  white highlight, bottom dome-shade, glyph emboss) = an iOS-6 glassy bubble. Apple went flat in iOS 7.
+  Moved every value to per-shell `--shell-icon-*` tokens (globals.css): iOS flat, macOS a whisper of
+  Big-Sur depth. `.shell-icon-tile` adds a true continuous-corner squircle via
+  `corner-shape: superellipse()` behind `@supports` (Chromium 139+), degrading to the tuned rounded-rect.
+  Resynced the two hand-copied mirrors (quicklink-icon, create-app icon-preview). *(shipped 03ab2ca)*
+- **Settings — root cause + 4 shared primitives.** `SettingsSection`'s card had ZERO padding/child-gap,
+  so every non-Row child (footnotes, buttons, sub-cards, `<dl>`s) sat flush → card-in-card cramping.
+  Added to the portable shell-settings slice: `footnote?` + `bare?` on `SettingsSection`, and new
+  `SettingsActionRow` (full-width action, tone default=`--info` / destructive; AA-safe), `SettingsBlock`
+  (padded freeform block), `SettingsValueRow` (label/value, always inline). All additive (existing
+  callers unchanged).
+- **All 8 sections refactored to native iOS/macOS grouped lists, zero config lost:** About (`<dl>`→value
+  rows + About-This-Mac identity header + destructive Reset action row + **sample-data footnote** so mock
+  specs aren't shown as real host); Server (Tabs + card-in-card → selectable target list with checkmark +
+  `+ Add SSH target` row + friendly kind label + demo-disabled inputs + footnote); Browser (auto-fetch on
+  mount so value rows populate + Refresh action row + footnote); AI (save in a Block + footnote); Quicklinks
+  (per-item bordered cards → grouped Blocks + add row at bottom); Theme (bespoke sticky deck + `MiniRow` +
+  nested scroller → a real Display Section + `bare` preset picker); Appearance (Device preview → Segmented,
+  wallpaper hero de-nested, footnote); Devices (orphan row → titled Sections, DevicesPanel `bare`). Mobile
+  index now groups by a semantic `SECTIONS[].group` (personalization / services / system), not an index
+  slice. 682 tests green, screenshot-verified iOS + macOS.
+
 **Audit backlog (owner picks depth):** Files (no large-title/search header, flat doc glyphs · med),
 About (`<dl>` grid not iOS grouped value-rows · med), System Monitor + App Store (double title: shell
 nav + in-app header · med), app nav bar (left title + Done vs mock's centered title + Back; no large-

@@ -5,8 +5,7 @@ import { Sparkles, Check } from "lucide-react";
 import { toast } from "@/features/os-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Section } from "./section";
-import { Row } from "./row";
+import { SettingsSection, SettingsRow, SettingsBlock } from "@/features/shell-settings";
 
 type Cfg = { hasApiKey: boolean; apiKeyMasked: string; model: string };
 
@@ -73,8 +72,18 @@ export function AiSection() {
   }
 
   return (
-    <Section icon={<Sparkles />} title="AI (Alfa)">
-      <Row label="Anthropic key">
+    <SettingsSection
+      icon={<Sparkles />}
+      title="AI (Alfa)"
+      footnote={
+        <>
+          Bring your own Anthropic key (stored server-side, never shown again). If
+          empty, the server&apos;s <code>ANTHROPIC_API_KEY</code> is used. Key never
+          reaches the browser after saving.
+        </>
+      }
+    >
+      <SettingsRow label="Anthropic key">
         <Input
           type="password"
           value={key}
@@ -82,26 +91,21 @@ export function AiSection() {
           placeholder={cfg?.hasApiKey ? cfg.apiKeyMasked : "sk-ant-…"}
           className="sm:w-56"
         />
-      </Row>
-      <Row label="Model">
+      </SettingsRow>
+      <SettingsRow label="Model">
         <Input
           value={model}
           onChange={(e) => setModel(e.target.value)}
           placeholder={cfg?.model ?? "claude-opus-4-8"}
           className="sm:w-56"
         />
-      </Row>
-      <div className="flex justify-end">
+      </SettingsRow>
+      <SettingsBlock className="flex justify-end">
         <Button size="sm" onClick={onSave} disabled={cfg === null || busy}>
           {saved ? <Check className="size-3.5" /> : null}
           {saved ? "Saved" : busy ? "Saving…" : "Save"}
         </Button>
-      </div>
-      <p className="text-[11px] leading-relaxed text-muted-foreground">
-        Bring your own Anthropic key (stored server-side, never shown again). If
-        empty, the server&apos;s <code>ANTHROPIC_API_KEY</code> is used. Key never
-        reaches the browser after saving.
-      </p>
-    </Section>
+      </SettingsBlock>
+    </SettingsSection>
   );
 }

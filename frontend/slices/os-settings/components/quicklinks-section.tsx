@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormDrawer } from "@/features/os-shell";
 import { useQuicklinks, faviconUrl, normalizeUrl } from "@/lib/quicklinks";
-import { Section } from "./section";
+import { SettingsSection, SettingsBlock } from "@/features/shell-settings";
 
 type PendingQL = { id: string; label: string };
 
@@ -29,9 +29,62 @@ export function QuicklinksSection() {
   };
 
   return (
-    <div className="space-y-5">
-      <Section icon={<Plus />} title="Add a quicklink">
-        <div className="flex flex-col gap-2 sm:flex-row">
+    <>
+      <SettingsSection
+        icon={<Link2 />}
+        title={`Shortcuts (${items.length})`}
+        footnote="Shortcuts surface with their favicon in the dock, Launchpad, mobile grid and Spotlight; opening one pops a new browser tab."
+      >
+        {items.length === 0 && (
+          <SettingsBlock>
+            <p className="text-xs text-muted-foreground">No quicklinks yet — add one below.</p>
+          </SettingsBlock>
+        )}
+        {items.map((ql, i) => {
+          const src = faviconUrl(ql.url);
+          return (
+            <SettingsBlock key={ql.id} className="flex items-center gap-2">
+              <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-zinc-500">
+                {src ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={src} alt="" width={18} height={18} loading="lazy" decoding="async" className="size-[18px] object-contain" />
+                ) : (
+                  <Globe className="size-4" />
+                )}
+              </span>
+              <Input
+                value={ql.title}
+                onChange={(e) => update(ql.id, { title: e.target.value })}
+                aria-label="Label"
+                className="h-8 min-w-0 flex-1"
+              />
+              <Input
+                value={ql.url}
+                onChange={(e) => update(ql.id, { url: e.target.value })}
+                onBlur={(e) => update(ql.id, { url: normalizeUrl(e.target.value) })}
+                aria-label="URL"
+                className="h-8 min-w-0 flex-[2] font-mono text-[11px]"
+              />
+              <Button type="button" variant="ghost" size="icon" aria-label="Move up" onClick={() => move(ql.id, -1)} disabled={i === 0}>
+                <ArrowUp className="size-4" />
+              </Button>
+              <Button type="button" variant="ghost" size="icon" aria-label="Move down" onClick={() => move(ql.id, 1)} disabled={i === items.length - 1}>
+                <ArrowDown className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Remove"
+                onClick={() => setPending({ id: ql.id, label: ql.title || ql.url })}
+              >
+                <Trash2 className="size-4 text-destructive" />
+              </Button>
+            </SettingsBlock>
+          );
+        })}
+        {/* Add row — flush-free, iOS "+ new item at the list bottom" */}
+        <SettingsBlock className="flex flex-col gap-2 sm:flex-row">
           <Input
             placeholder="github.com"
             value={url}
@@ -50,60 +103,8 @@ export function QuicklinksSection() {
           <Button type="button" onClick={submit} className="shrink-0">
             <Plus className="size-4" /> Add
           </Button>
-        </div>
-      </Section>
-
-      <Section icon={<Link2 />} title={`Shortcuts (${items.length})`}>
-        {items.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No quicklinks yet — add a website above.</p>
-        ) : (
-          <ul className="space-y-2">
-            {items.map((ql, i) => {
-              const src = faviconUrl(ql.url);
-              return (
-                <li key={ql.id} className="flex items-center gap-2 rounded-lg border border-border bg-card/50 p-2">
-                  <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-zinc-500">
-                    {src ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={src} alt="" width={18} height={18} loading="lazy" decoding="async" className="size-[18px] object-contain" />
-                    ) : (
-                      <Globe className="size-4" />
-                    )}
-                  </span>
-                  <Input
-                    value={ql.title}
-                    onChange={(e) => update(ql.id, { title: e.target.value })}
-                    aria-label="Label"
-                    className="h-8 min-w-0 flex-1"
-                  />
-                  <Input
-                    value={ql.url}
-                    onChange={(e) => update(ql.id, { url: e.target.value })}
-                    onBlur={(e) => update(ql.id, { url: normalizeUrl(e.target.value) })}
-                    aria-label="URL"
-                    className="h-8 min-w-0 flex-[2] font-mono text-[11px]"
-                  />
-                  <Button type="button" variant="ghost" size="icon" aria-label="Move up" onClick={() => move(ql.id, -1)} disabled={i === 0}>
-                    <ArrowUp className="size-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" aria-label="Move down" onClick={() => move(ql.id, 1)} disabled={i === items.length - 1}>
-                    <ArrowDown className="size-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Remove"
-                    onClick={() => setPending({ id: ql.id, label: ql.title || ql.url })}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </Section>
+        </SettingsBlock>
+      </SettingsSection>
 
       <FormDrawer open={pending !== null} onOpenChange={(open) => !open && setPending(null)} size="sm">
         <FormDrawer.Header>
@@ -129,6 +130,6 @@ export function QuicklinksSection() {
           </Button>
         </FormDrawer.Footer>
       </FormDrawer>
-    </div>
+    </>
   );
 }

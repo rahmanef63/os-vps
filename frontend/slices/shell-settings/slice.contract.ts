@@ -18,7 +18,7 @@ export const contract = defineSliceContract({
   provides: {
     routes: [] as string[],
     hooks: [] as string[],
-    components: ["AppearancePanel", "SettingsSection", "SettingsRow", "AccentSwatches"] as string[],
+    components: ["AppearancePanel", "SettingsSection", "SettingsRow", "SettingsValueRow", "SettingsActionRow", "SettingsBlock", "AccentSwatches"] as string[],
     tables: [] as string[],
   },
 });

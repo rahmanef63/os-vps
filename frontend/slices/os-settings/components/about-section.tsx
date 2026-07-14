@@ -5,7 +5,9 @@ import { Info, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormDrawer } from "@/features/os-shell";
 import { useOsApi, fmtGiB, fmtUptime, type SysStats, type FsUsage } from "@/features/os-shell";
-import { Section } from "./section";
+import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
+import { IS_DEMO } from "@/lib/demo";
+import { SettingsSection, SettingsValueRow, SettingsActionRow } from "@/features/shell-settings";
 
 const APP_NAME = "Topside";
 const APP_TAGLINE = "VPS cockpit";
@@ -25,9 +27,14 @@ function performReset() {
 
 export function AboutSection() {
   const api = useOsApi();
+  const { tweaks } = useAppearance();
   const [stats, setStats] = useState<SysStats | null>(null);
   const [usage, setUsage] = useState<FsUsage | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+
+  // Stats are MOCK when the active target is mock/demo — flag it so About never
+  // presents invented machine specs as the real host (VPS-essence honesty).
+  const isSample = IS_DEMO || effectiveServerTarget(tweaks.server, IS_DEMO)?.kind === "mock";
 
   useEffect(() => {
     let alive = true;
@@ -54,40 +61,39 @@ export function AboutSection() {
   ];
 
   return (
-    <Section icon={<Info />} title="About">
-      <div className="flex items-center gap-3">
-        <div className="grid size-12 place-items-center rounded-2xl bg-primary text-lg font-black tracking-tight text-primary-foreground">
+    <div className="space-y-4 sm:space-y-5">
+      {/* About-This-Mac style identity header — above the grouped cards */}
+      <div className="flex flex-col items-center gap-2 pt-1 text-center">
+        <div
+          className="shell-icon-tile grid size-16 place-items-center bg-primary text-2xl font-black tracking-tight text-primary-foreground"
+          style={{ boxShadow: "var(--shell-icon-shadow)" }}
+        >
           ts
         </div>
         <div>
-          <div className="text-base font-bold tracking-tight text-foreground">
-            {APP_NAME}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {APP_NAME} · {APP_TAGLINE}
-          </div>
+          <div className="text-lg font-bold tracking-tight text-foreground">{APP_NAME}</div>
+          <div className="text-xs text-muted-foreground">{APP_TAGLINE}</div>
         </div>
       </div>
-      <div className="rounded-xl bg-muted p-3">
-        <dl className="grid grid-cols-1 gap-y-2 text-[12px] sm:grid-cols-2 sm:gap-x-6">
-          {rows.map(([k, v]) => (
-            <div key={k} className="flex items-center justify-between gap-3">
-              <dt className="text-muted-foreground">{k}</dt>
-              <dd className="font-semibold text-foreground">{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-      <div className="flex justify-end">
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-destructive"
+
+      <SettingsSection
+        icon={<Info />}
+        title="System"
+        footnote={isSample ? "Sample data — connect a live host in Server for real specs." : undefined}
+      >
+        {rows.map(([k, v]) => (
+          <SettingsValueRow key={k} label={k} value={v} />
+        ))}
+      </SettingsSection>
+
+      <SettingsSection icon={<RotateCcw />} title="Reset">
+        <SettingsActionRow
+          label="Reset Topside"
+          tone="destructive"
+          icon={<RotateCcw />}
           onClick={() => setConfirmReset(true)}
-        >
-          Reset Topside
-        </Button>
-      </div>
+        />
+      </SettingsSection>
 
       <FormDrawer open={confirmReset} onOpenChange={setConfirmReset} size="sm">
         <FormDrawer.Header>
@@ -113,6 +119,6 @@ export function AboutSection() {
           </Button>
         </FormDrawer.Footer>
       </FormDrawer>
-    </Section>
+    </div>
   );
 }

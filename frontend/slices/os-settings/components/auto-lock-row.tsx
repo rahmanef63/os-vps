@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { autoLockMinutes, setAutoLockMinutes } from "@/features/appshell";
-import { Row } from "./row";
+import { SettingsRow as Row } from "@/features/shell-settings";
 
 // The appshell lock-screen already owns the idle timer (reads autoLockMinutes()).
 // This is the missing UI to configure it — persists to sv:autolock. A VPS cockpit

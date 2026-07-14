@@ -29,3 +29,29 @@ export function SettingsRow({
     </div>
   );
 }
+
+// A read-only value row: label left, muted value right, ALWAYS inline (unlike
+// SettingsRow, which stacks its control under the label on narrow widths — right
+// for segmented/switch controls, wrong for a short read-only value like "8 GB").
+export function SettingsValueRow({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative flex min-h-[46px] items-center justify-between gap-3 px-4 py-[11px]",
+        "after:absolute after:inset-x-0 after:bottom-0 after:left-4 after:h-px after:bg-border/60 last:after:hidden",
+        className,
+      )}
+    >
+      <span className="shrink-0 text-sm text-foreground">{label}</span>
+      <span className="min-w-0 truncate text-right text-[13px] text-muted-foreground">{value}</span>
+    </div>
+  );
+}

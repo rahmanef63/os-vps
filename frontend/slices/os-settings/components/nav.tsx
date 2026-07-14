@@ -16,6 +16,11 @@ import { cn } from "@/lib/utils";
 export type SectionId =
   | "appearance" | "theme" | "ai" | "quicklinks" | "devices" | "server" | "browser" | "about";
 
+// Semantic buckets for the iOS grouped index (mobile). Reorder-safe: the mobile
+// cards derive from this field, not an index slice, so adding/reordering a
+// section can't silently re-bucket it.
+export type SettingsGroup = "personalization" | "services" | "system";
+
 // Per-category tile colors — fixed like macOS System Settings' category glyphs
 // (Bluetooth stays blue in dark mode); intentionally NOT theme tokens, mirroring
 // the raw-value precedent in AppDescriptor.gradient.
@@ -25,15 +30,16 @@ export const SECTIONS: ReadonlyArray<{
   blurb: string;
   icon: ComponentType<{ className?: string }>;
   color: string;
+  group: SettingsGroup;
 }> = [
-  { id: "appearance", label: "Appearance", blurb: "Style, accent, wallpaper, device", icon: Palette, color: "#0a84ff" },
-  { id: "theme", label: "Theme", blurb: "Mode, presets, font, contrast", icon: Paintbrush, color: "#ff375f" },
-  { id: "ai", label: "AI", blurb: "Model and API key", icon: Sparkles, color: "#bf5af2" },
-  { id: "quicklinks", label: "Quicklink", blurb: "Website shortcuts with favicons", icon: Link2, color: "#5e5ce6" },
-  { id: "devices", label: "Devices", blurb: "Approved browsers and sessions", icon: ShieldCheck, color: "#30d158" },
-  { id: "server", label: "Server", blurb: "Mock or live host data", icon: Server, color: "#ff9f0a" },
-  { id: "browser", label: "Browser", blurb: "Remote Chromium runtime status", icon: Globe, color: "#64d2ff" },
-  { id: "about", label: "About", blurb: "System info and reset", icon: Info, color: "#8e8e93" },
+  { id: "appearance", label: "Appearance", blurb: "Style, accent, wallpaper, device", icon: Palette, color: "#0a84ff", group: "personalization" },
+  { id: "theme", label: "Theme", blurb: "Mode, presets, font, contrast", icon: Paintbrush, color: "#ff375f", group: "personalization" },
+  { id: "ai", label: "AI", blurb: "Model and API key", icon: Sparkles, color: "#bf5af2", group: "services" },
+  { id: "quicklinks", label: "Quicklink", blurb: "Website shortcuts with favicons", icon: Link2, color: "#5e5ce6", group: "services" },
+  { id: "devices", label: "Devices", blurb: "Approved browsers and sessions", icon: ShieldCheck, color: "#30d158", group: "system" },
+  { id: "server", label: "Server", blurb: "Mock or live host data", icon: Server, color: "#ff9f0a", group: "system" },
+  { id: "browser", label: "Browser", blurb: "Remote Chromium runtime status", icon: Globe, color: "#64d2ff", group: "system" },
+  { id: "about", label: "About", blurb: "System info and reset", icon: Info, color: "#8e8e93", group: "system" },
 ];
 
 // System Settings top tab strip: every section visible at a glance, scrolls

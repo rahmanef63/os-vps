@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Globe } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useState } from "react";
+import { Globe, RefreshCw } from "lucide-react";
 import { IS_DEMO } from "@/lib/demo";
-import { Section } from "./section";
-import { Row } from "./row";
+import {
+  SettingsSection,
+  SettingsRow,
+  SettingsValueRow,
+  SettingsActionRow,
+} from "@/features/shell-settings";
 import { StatusChip, type TestState } from "./status-chip";
 
 type Info = {
@@ -18,75 +21,82 @@ type Info = {
   idleMs: number;
 };
 
+const RUNTIME_NOTE = (
+  <>
+    A real Chromium on the VPS, loopback-bound (127.0.0.1:4002) behind a shared
+    secret. Start/stop via systemd (<code>os-browser.service</code>). Login
+    cookies persist in the profile across restarts.
+  </>
+);
+
 // Read-only status of the os-browser runtime (the Playwright Chromium sidecar).
 // All control is via systemd on the host — this panel never mutates the service.
 export function BrowserSection() {
   const [test, setTest] = useState<TestState>(null);
   const [info, setInfo] = useState<Info | null>(null);
 
-  async function onTest() {
-    setTest({ state: "testing" });
-    setInfo(null);
+  // Pure fetch (no setState) so the mount effect can use the .then form
+  // (react-hooks/set-state-in-effect), like ai-section.
+  const fetchInfo = useCallback(async (): Promise<{ info: Info | null; test: TestState }> => {
     try {
       const r = await fetch("/api/v1/browser/info", { cache: "no-store" });
       if (!r.ok) throw new Error(r.status === 501 ? "not configured" : `http_${r.status}`);
       const data = (await r.json()) as Info;
-      setInfo(data);
-      setTest({ state: "ok", msg: data.headless ? "headless" : "headed" });
+      return { info: data, test: { state: "ok", msg: data.headless ? "headless" : "headed" } };
     } catch (e) {
-      setTest({ state: "err", msg: e instanceof Error ? e.message : String(e) });
+      return { info: null, test: { state: "err", msg: e instanceof Error ? e.message : String(e) } };
     }
-  }
+  }, []);
+
+  const refresh = useCallback(() => {
+    setTest({ state: "testing" });
+    fetchInfo().then(({ info, test }) => {
+      setInfo(info);
+      setTest(test);
+    });
+  }, [fetchInfo]);
+
+  // Auto-fetch on mount so the value rows are populated immediately (not gated
+  // behind a manual button that leaves the group looking empty).
+  useEffect(() => {
+    if (IS_DEMO) return;
+    let alive = true;
+    fetchInfo().then(({ info, test }) => {
+      if (!alive) return;
+      setInfo(info);
+      setTest(test);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [fetchInfo]);
 
   if (IS_DEMO)
     return (
-      <Section icon={<Globe />} title="Browser runtime">
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          The remote browser is disabled in the demo. In a live deployment this
-          shows the Playwright Chromium sidecar status.
-        </p>
-      </Section>
+      <SettingsSection
+        icon={<Globe />}
+        title="Browser runtime"
+        footnote="The remote browser is disabled in the demo. In a live deployment this shows the Playwright Chromium sidecar status."
+      >
+        <SettingsValueRow label="Status" value="Disabled in demo" />
+      </SettingsSection>
     );
 
   return (
-    <Section icon={<Globe />} title="Browser runtime">
-      <div className="flex items-center justify-between gap-3">
-        <StatusChip test={test} />
-        <Button size="sm" variant="outline" onClick={onTest} disabled={test?.state === "testing"}>
-          Check status
-        </Button>
-      </div>
-      {info && (
-        <>
-          <Row label="Current URL">
-            <span className="truncate text-[12px] text-muted-foreground">{info.url || "about:blank"}</span>
-          </Row>
-          <Row label="Viewport">
-            <span className="text-[12px] text-muted-foreground">
-              {info.viewport.width}×{info.viewport.height}
-            </span>
-          </Row>
-          <Row label="Mode">
-            <span className="text-[12px] text-muted-foreground">{info.headless ? "Headless" : "Headed"}</span>
-          </Row>
-          <Row label="Extension">
-            <span className="truncate text-[12px] text-muted-foreground">{info.extension ?? "none"}</span>
-          </Row>
-          <Row label="Idle reset">
-            <span className="text-[12px] text-muted-foreground">
-              {info.idleMs > 0 ? `${Math.round(info.idleMs / 1000)}s` : "off"}
-            </span>
-          </Row>
-          <Row label="Profile">
-            <span className="truncate text-[12px] text-muted-foreground">{info.profile}</span>
-          </Row>
-        </>
-      )}
-      <p className="text-[11px] leading-relaxed text-muted-foreground">
-        A real Chromium on the VPS, loopback-bound (127.0.0.1:4002) behind a
-        shared secret. Start/stop via systemd (<code>os-browser.service</code>).
-        Login cookies persist in the profile across restarts.
-      </p>
-    </Section>
+    <SettingsSection icon={<Globe />} title="Browser runtime" footnote={RUNTIME_NOTE}>
+      <SettingsRow label="Status">
+        {test ? <StatusChip test={test} /> : <span className="text-[13px] text-muted-foreground">—</span>}
+      </SettingsRow>
+      <SettingsValueRow label="Current URL" value={info?.url || "about:blank"} />
+      <SettingsValueRow label="Viewport" value={info ? `${info.viewport.width}×${info.viewport.height}` : "—"} />
+      <SettingsValueRow label="Mode" value={info ? (info.headless ? "Headless" : "Headed") : "—"} />
+      <SettingsValueRow label="Extension" value={info?.extension ?? (info ? "none" : "—")} />
+      <SettingsValueRow
+        label="Idle reset"
+        value={info ? (info.idleMs > 0 ? `${Math.round(info.idleMs / 1000)}s` : "off") : "—"}
+      />
+      <SettingsValueRow label="Profile" value={info?.profile || "—"} />
+      <SettingsActionRow label="Refresh" icon={<RefreshCw />} onClick={refresh} busy={test?.state === "testing"} />
+    </SettingsSection>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { Monitor, Smartphone, Wallpaper as WallpaperIcon } from "lucide-react";
+import { Monitor, Wallpaper as WallpaperIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Segmented } from "@/components/ui/segmented";
 import { cn } from "@/lib/utils";
 import {
   DEVICE_OPTIONS,
@@ -14,7 +15,7 @@ import {
 } from "@/lib/appearance";
 import { ImagePickerButton, imageStyle, type ImageValue } from "@/features/image-picker";
 import { setShell, shellsForSurface, useShellPrefs, type ShellId } from "@/features/os-shell";
-import { SettingsRow as Row, SettingsSection as Section } from "@/features/shell-settings";
+import { SettingsRow as Row, SettingsSection as Section, SettingsBlock } from "@/features/shell-settings";
 import { LiveWallpaperRows } from "./live-wallpaper-rows";
 
 function ChoiceCard({
@@ -61,17 +62,32 @@ export function AppearanceSection() {
 
   return (
     <div className="space-y-5">
-      <Section icon={<WallpaperIcon />} title="Wallpaper">
-        <div className="rounded-lg bg-muted/40 p-3">
+      <Section
+        icon={<WallpaperIcon />}
+        title="Wallpaper"
+        footnote="Auto follows the active shell's backdrop; colors come from the theme preset. Pick a custom image to override."
+      >
+        <SettingsBlock>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <WallpaperPreview wallpaper={customWallpaper ? "auto" : tweaks.wallpaper} custom={customWallpaper} />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold">
                 {customWallpaper ? String(customWallpaper.metadata?.title ?? customWallpaper.metadata?.filename ?? "Custom image") : wallpaperLabel(tweaks.wallpaper)}
               </p>
-              <p className="text-[11px] text-muted-foreground">
-                Auto follows the active shell&apos;s backdrop; colors come from the theme preset. Pick a custom image to override.
-              </p>
+              {customWallpaper && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-1 h-7 px-2 text-xs text-info hover:text-info"
+                  onClick={() => {
+                    setWallpaperImage(null);
+                    setTweaks({ wallpaper: "auto" });
+                  }}
+                >
+                  Reset to Auto
+                </Button>
+              )}
             </div>
             <ImagePickerButton
               label={customWallpaper ? "Change image" : "Choose image"}
@@ -82,21 +98,7 @@ export function AppearanceSection() {
               className="w-full sm:w-auto"
             />
           </div>
-          {customWallpaper && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="mt-2 h-8 px-2 text-xs"
-              onClick={() => {
-                setWallpaperImage(null);
-                setTweaks({ wallpaper: "auto" });
-              }}
-            >
-              Reset to Auto
-            </Button>
-          )}
-        </div>
+        </SettingsBlock>
         <LiveWallpaperRows />
       </Section>
 
@@ -126,15 +128,11 @@ export function AppearanceSection() {
           </div>
         </Row>
         <Row label="Device preview">
-          <div className="grid w-full grid-cols-3 gap-2 sm:w-auto">
-            {DEVICE_OPTIONS.map((device) => (
-              <ChoiceCard key={device.value} active={tweaks.device === device.value} label={device.label} hint={device.hint} onClick={() => setTweaks({ device: device.value as Device })}>
-                <span className="grid h-9 place-items-center rounded-xl bg-secondary text-muted-foreground">
-                  {device.value === "phone" ? <Smartphone className="size-4" /> : <Monitor className="size-4" />}
-                </span>
-              </ChoiceCard>
-            ))}
-          </div>
+          <Segmented
+            options={DEVICE_OPTIONS}
+            value={tweaks.device}
+            onChange={(v) => setTweaks({ device: v as Device })}
+          />
         </Row>
         <Row label="Reduce transparency">
           <Switch checked={tweaks.reduceGlass} onCheckedChange={(reduceGlass) => setTweaks({ reduceGlass })} />

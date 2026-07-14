@@ -87,9 +87,14 @@
   --accent-bg: var(--hover);
   --accent-foreground: var(--text);
   --destructive: #ff5f57;
+  /* AA-safe red for destructive TEXT on a light card (the fill --destructive
+     stays bright for buttons/dots where white sits on top). */
+  --destructive-text: #d70015;
   --success: #34c759;
   --warning: #ff9500;
-  --info: #0a84ff;
+  /* Darker than iOS #0a84ff so tinted TEXT (links, action rows) clears AA 4.5:1
+     on the light card; bg-info + the dark-theme value stay bright. */
+  --info: #0060df;
   --border: var(--sep);
   --input: var(--sep-strong);
   --ring: var(--accent);
@@ -132,6 +137,7 @@
 
   --warning: #ff9f0a;
   --info: #409cff;
+  --destructive-text: #ff5f57; /* bright red for destructive text on the dark card (AA 5.4:1) */
 }
 
 .high-contrast[data-theme="dark"] {
@@ -160,6 +166,7 @@
   --color-accent: var(--accent-bg);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-text: var(--destructive-text);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);

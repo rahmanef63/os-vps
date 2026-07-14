@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, RotateCcw, Type } from "lucide-react";
+import { Check, RotateCcw, SunMoon, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
@@ -16,7 +16,11 @@ import {
   type PresetItem,
   type Theme,
 } from "@/lib/appearance";
-import { SettingsSection as Section } from "@/features/shell-settings";
+import {
+  SettingsSection as Section,
+  SettingsRow as Row,
+  SettingsBlock,
+} from "@/features/shell-settings";
 import { cn } from "@/lib/utils";
 
 function PresetChip({ preset, active, onSelect }: { preset: PresetItem; active: boolean; onSelect: () => void }) {
@@ -45,10 +49,10 @@ function PresetChip({ preset, active, onSelect }: { preset: PresetItem; active: 
   );
 }
 
-// Compact live preview — fills the left of the sticky deck.
+// Compact live preview of the current theme.
 function ThemePreview() {
   return (
-    <div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-pop)]">
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-pop)]">
       <div className="flex items-center gap-1.5 border-b border-border bg-sidebar px-2.5 py-1.5">
         <span className="size-2 rounded-full bg-destructive" />
         <span className="size-2 rounded-full bg-warning" />
@@ -68,15 +72,6 @@ function ThemePreview() {
   );
 }
 
-function MiniRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-7 items-center justify-between gap-3">
-      <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
-      {children}
-    </div>
-  );
-}
-
 export function ThemeSection() {
   const { tweaks, setTweaks } = useAppearance();
   const [groups, setGroups] = useState<PresetGroup[] | null>(null);
@@ -88,62 +83,49 @@ export function ThemeSection() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      {/* Sticky deck: the live preview + mode controls stay pinned to the top
-          of the settings scroll pane while the preset list below scrolls. */}
-      <div className="sticky top-0 z-10 rounded-2xl border border-border bg-background/90 p-2.5 shadow-sm backdrop-blur">
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch">
+    <div className="space-y-4 sm:space-y-5">
+      <Section icon={<SunMoon />} title="Display">
+        <SettingsBlock>
           <ThemePreview />
-          <div className="flex w-full shrink-0 flex-col justify-center gap-1.5 sm:w-72">
-            <MiniRow label="Light / dark">
-              <Segmented
-                options={THEME_MODE_OPTIONS}
-                value={tweaks.theme}
-                onChange={(v) => setTweaks({ theme: v as Theme })}
-              />
-            </MiniRow>
-            <MiniRow label="Font size">
-              <Segmented
-                options={FONT_SCALE_OPTIONS}
-                value={String(tweaks.fontScale)}
-                onChange={(v) => setTweaks({ fontScale: Number(v) })}
-              />
-            </MiniRow>
-            <MiniRow label="High contrast">
-              <Switch checked={tweaks.highContrast} onCheckedChange={(highContrast) => setTweaks({ highContrast })} />
-            </MiniRow>
-          </div>
-        </div>
-      </div>
+        </SettingsBlock>
+        <Row label="Appearance">
+          <Segmented options={THEME_MODE_OPTIONS} value={tweaks.theme} onChange={(v) => setTweaks({ theme: v as Theme })} />
+        </Row>
+        <Row label="Text size">
+          <Segmented options={FONT_SCALE_OPTIONS} value={String(tweaks.fontScale)} onChange={(v) => setTweaks({ fontScale: Number(v) })} />
+        </Row>
+        <Row label="High contrast">
+          <Switch checked={tweaks.highContrast} onCheckedChange={(highContrast) => setTweaks({ highContrast })} />
+        </Row>
+      </Section>
 
-      <Section icon={<Type />} title="Theme presets">
-        <div className="flex items-center justify-between gap-2">
-          <p className="min-w-0 text-[11px] leading-relaxed text-muted-foreground">
-            One preset = colors, radius and typeface (fonts auto-load).
-          </p>
-          <Button type="button" variant="secondary" size="sm" className="shrink-0" disabled={!tweaks.preset} onClick={() => setTweaks({ preset: null })}>
+      {/* bare: the preset picker is a grid of selectable swatch tiles, not a
+          grouped list — no card wrapper (avoids card-in-card). */}
+      <Section
+        icon={<Type />}
+        title="Theme presets"
+        bare
+        footnote="One preset = colors, radius and typeface (fonts auto-load)."
+      >
+        <div className="flex items-center justify-end pb-1.5">
+          <Button type="button" variant="secondary" size="sm" disabled={!tweaks.preset} onClick={() => setTweaks({ preset: null })}>
             <RotateCcw /> Stock
           </Button>
         </div>
         {groups === null ? (
-          <p className="text-xs text-muted-foreground">Loading presets…</p>
+          <p className="px-1 text-xs text-muted-foreground">Loading presets…</p>
         ) : (
-          /* Plain overflow scroller on purpose: Radix ScrollArea with max-h on
-             the Root never constrains its viewport, so the list could not
-             scroll — this one does. */
-          <div className="max-h-[clamp(14rem,46vh,26rem)] overflow-y-auto overscroll-contain rounded-lg bg-muted/30">
-            <div className="space-y-2.5 p-2">
-              {groups.map((group) => (
-                <div key={group.id} className="space-y-1.5">
-                  <div className="px-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{group.label}</div>
-                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                    {group.items.map((p) => (
-                      <PresetChip key={p.name} preset={p} active={tweaks.preset === p.name} onSelect={() => setTweaks({ preset: p.name })} />
-                    ))}
-                  </div>
+          <div className="space-y-3">
+            {groups.map((group) => (
+              <div key={group.id} className="space-y-1.5">
+                <div className="px-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{group.label}</div>
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  {group.items.map((p) => (
+                    <PresetChip key={p.name} preset={p} active={tweaks.preset === p.name} onSelect={() => setTweaks({ preset: p.name })} />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </Section>

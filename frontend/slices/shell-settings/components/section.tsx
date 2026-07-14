@@ -5,17 +5,25 @@ import { cn } from "@/lib/utils";
 
 // A titled settings group: an uppercase muted caption above a grouped card, so
 // stacked sections read as the macOS/iOS System Settings list. Rows inside carry
-// their own inset hairline dividers (see SettingsRow); custom blocks a section
-// drops in sit flush in the same card.
+// their own inset hairline dividers (see SettingsRow). `footnote` renders a muted
+// caption BELOW the card — the iOS grouped-list footer, where explanatory text
+// belongs (never flush inside the card). Freeform in-card content should use
+// SettingsBlock so it isn't flush to the border.
 export function SettingsSection({
   icon,
   title,
   children,
+  footnote,
+  bare = false,
   className,
 }: {
   icon: ReactNode;
   title: string;
   children: ReactNode;
+  footnote?: ReactNode;
+  /** Skip the grouped-card wrapper — for children that bring their own surface
+   *  (e.g. a panel of its own cards), so they don't nest a card-in-card. */
+  bare?: boolean;
   className?: string;
 }) {
   return (
@@ -24,7 +32,10 @@ export function SettingsSection({
         <span className="[&_svg]:size-3.5">{icon}</span>
         <span className="text-[11px] font-semibold uppercase tracking-wide">{title}</span>
       </div>
-      <div className="overflow-hidden rounded-xl border bg-card">{children}</div>
+      {bare ? children : <div className="overflow-hidden rounded-xl border bg-card">{children}</div>}
+      {footnote && (
+        <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">{footnote}</p>
+      )}
     </section>
   );
 }

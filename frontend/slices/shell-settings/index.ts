@@ -3,7 +3,9 @@
 // (e.g. the os-settings app) composes these and injects an AppearanceAdapter built
 // from its own appearance store, so this slice carries no project-specific values.
 export { SettingsSection } from "./components/section";
-export { SettingsRow } from "./components/row";
+export { SettingsRow, SettingsValueRow } from "./components/row";
+export { SettingsActionRow } from "./components/action-row";
+export { SettingsBlock } from "./components/block";
 export { AccentSwatches } from "./components/accent-swatches";
 export { AppearancePanel } from "./components/appearance-panel";
 export type { AppearanceAdapter, SegSetting, SettingOption } from "./lib/types";
