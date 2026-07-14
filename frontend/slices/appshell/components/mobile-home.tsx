@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AppDescriptor } from "../lib/types";
 import { AppIcon } from "./app-icon";
-import { Clock } from "./clock";
-import { DynamicIsland } from "./dynamic-island";
 import { Slot } from "../registry/feature-registry";
 import { MobileAppLibrary } from "./mobile-app-library";
 import { AppActionSheet, AppsGrid } from "./mobile-home-parts";
@@ -82,16 +80,15 @@ export function MobileHome({
 
   return (
     <div className="absolute inset-0 flex flex-col" inert={inactive} aria-hidden={inactive} onContextMenu={onHomeContext}>
-      <DynamicIsland />
-      {/* top safe area: status clock (left) + the Dynamic Island (center) live
-          here; swipe down → NC (left) / CC (right). Height = base bar + notch. */}
+      {/* Top safe-area spacer: reserves the notch / Dynamic-Island zone (a real
+          phone's hardware lives here) and owns the swipe-down gesture →
+          Notification Center (left half) / Control Center (right half).
+          Deliberately empty — no status clock (not useful in a VPS cockpit). */}
       <div
-        className="flex shrink-0 items-end px-7 pb-0.5 text-[13px] font-semibold text-white/90 [touch-action:none]"
+        className="shrink-0 [touch-action:none]"
         style={{ height: "calc(2.25rem + var(--sai-top))" }}
         onPointerDown={onTopPointerDown}
-      >
-        <Clock mode="time" />
-      </div>
+      />
 
       <div
         ref={pagerRef}

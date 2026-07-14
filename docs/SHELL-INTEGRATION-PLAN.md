@@ -541,3 +541,25 @@ leave (icons stranded large — the intermittent bug). One-line fix: zero the gu
 About (`<dl>` grid not iOS grouped value-rows · med), System Monitor + App Store (double title: shell
 nav + in-app header · med), app nav bar (left title + Done vs mock's centered title + Back; no large-
 title handoff · med). Home/Springboard already **matches** the mock (colored tiles, dock, dots, island).
+
+### §16 — Notch safe-area, remove the clock, fully-dynamic per-shell Settings detail
+Owner: Settings must be *fully* iOS on iPhone + *fully* macOS on Mac (dynamic, no lost config); iOS top
+gets covered by phone notches; the status clock is useless — remove it.
+
+- **Notch reserve.** `--sai-top` was `env(safe-area-inset-top,0px)` = **0 in a browser tab**, so a real
+  phone's notch/Dynamic-Island covered the top of the home + app content. Floored it on the iOS shell
+  root (`mobile-shell.tsx`): `--sai-top: max(env(safe-area-inset-top,0px), 2.75rem)` — cascades to home
+  + every app, so all top bars reserve ≥44px. Desktop shells untouched (var is scoped to `MobileShell`).
+- **Removed the status clock** + the decorative notch pill I'd added in §14 (real phones have a real
+  notch there; drawing a fake one is redundant, and the clock isn't useful in a cockpit). `mobile-home.tsx`
+  top bar is now an empty spacer that still owns the swipe-down NC/CC gesture. Deleted `dynamic-island.tsx`.
+  The SEPARATE **notifications** live-activity island (`features/notifications/…/dynamic-island.tsx`, the
+  `topPill` slot — shows real activities, useful) stays, and it got the same notch fix (`top-1.5` →
+  `top: max(0.375rem, var(--sai-top))`) so a live activity clears the notch too.
+- **Dynamic per-shell Settings detail.** `SectionDetail` now reads `useActiveShell().surface`: iPhone
+  renders a 26px **iOS large title** (the section name — distinct from the shell nav's "Settings", so no
+  double title) over the shared grouped-card body; macOS/Windows keep the compact h2+blurb. The mobile
+  `MasterDetail` back button went gray→**iOS blue tint** (`text-primary`, 18px chevron). The shared
+  `SectionBody` (every section's controls) is untouched — zero config/functionality lost. Screenshot-
+  verified iOS (big title + blue back + grouped cards, all controls) + macOS (colored sidebar + detail)
+  + iOS home (clean notch reserve, no clock).

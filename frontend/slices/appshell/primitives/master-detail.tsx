@@ -55,7 +55,11 @@ export function MasterDetail({
               type="button"
               variant="ghost"
               onClick={onBack}
-              className="h-auto flex flex-none items-center gap-1 border-b border-border px-2 py-2 text-sm text-muted-foreground"
+              // Back label uses --info (iOS's dark-brightened link blue,
+              // #0a84ff / #409cff) not --primary: primary is the fill-blue tuned
+              // for white text ON it, and as a text label on a dark pane it fails
+              // AA 4.5:1 — info clears it in both themes and IS the iOS tint.
+              className="h-auto flex flex-none items-center gap-0.5 border-b border-border px-2 py-2 text-[15px] font-medium text-info hover:text-info"
             >
               <ChevronLeft className="size-4" />
               {backLabel}

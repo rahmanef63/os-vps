@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { DevicesPanel } from "@/features/auth";
+import { useActiveShell } from "@/features/os-shell";
 import { SECTIONS, type SectionId } from "./nav";
 import { AutoLockRow } from "./auto-lock-row";
 import { AppearanceSection } from "./appearance-section";
@@ -47,19 +48,26 @@ function SectionBody({ id }: { id: SectionId }) {
   }
 }
 
-// One scrolling section pane with its heading. Shared by every layout's detail
-// region (macOS sidebar detail, Windows tab pane, mobile drill-down).
+// One scrolling section pane with its heading, adapting per shell (the dynamic
+// per-shell seam): on iPhone a bold iOS large title (the section name — distinct
+// from the shell nav bar's "Settings", so no double title); on macOS/Windows a
+// compact title + blurb above the same shared grouped-card body.
 export function SectionDetail({ id }: { id: SectionId }) {
+  const { surface } = useActiveShell();
+  const isPhone = surface === "mobile";
   const meta = SECTIONS.find((s) => s.id === id);
   return (
     <ScrollArea className="h-full">
       <div className="mx-auto min-w-0 max-w-3xl space-y-4 overflow-x-hidden p-3 pb-[max(1rem,var(--sai-bottom,0px))] sm:space-y-5 sm:p-5">
-        {meta && (
-          <header className="space-y-0.5">
-            <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>
-            <p className="text-xs text-muted-foreground">{meta.blurb}</p>
-          </header>
-        )}
+        {meta &&
+          (isPhone ? (
+            <h1 className="px-1 pt-1 text-[26px] font-bold leading-none tracking-tight">{meta.label}</h1>
+          ) : (
+            <header className="space-y-0.5">
+              <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>
+              <p className="text-xs text-muted-foreground">{meta.blurb}</p>
+            </header>
+          ))}
         <SectionBody id={id} />
       </div>
     </ScrollArea>

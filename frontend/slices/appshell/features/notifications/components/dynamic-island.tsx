@@ -17,7 +17,12 @@ export function DynamicIsland() {
   const tone = a.tone ?? "active";
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-1.5 z-[60] flex justify-center">
+    <div
+      className="pointer-events-none absolute inset-x-0 z-[60] flex justify-center"
+      // Sit at the safe-area top so a live activity clears the phone notch
+      // (iOS floors --sai-top to the notch height); desktop keeps the 6px inset.
+      style={{ top: "max(0.375rem, var(--sai-top))" }}
+    >
       <Button
         type="button"
         variant="ghost"
