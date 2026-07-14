@@ -4,10 +4,11 @@
    restore), mirroring real taskbar click behavior. */
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, LayoutGrid, ArrowUpRight, Minimize2, X, Settings, Lock } from "lucide-react";
 import { useApps } from "../../../lib/registry";
-import { useWindowOrder, useWindow, useFocused } from "../../../hooks/use-shell";
+import { useWindowOrder, useWindow, useWindowsMap, useFocused } from "../../../hooks/use-shell";
+import type { AppDescriptor } from "../../../lib/types";
 import { focusWindow, minimizeWindow, restoreWindow, closeWindow, toggleNotificationCenter, openWindow } from "../../../lib/store";
 import { lock } from "../../../lib/lock";
 import { AppIcon } from "../../app-icon";
@@ -20,6 +21,13 @@ export const TASKBAR_H = 48;
 export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
   const [startOpen, setStartOpen] = useState(false);
   const order = useWindowOrder();
+  const wins = useWindowsMap();
+  const apps = useApps();
+  // Pinned quick-launch (manifest `pinned` apps) sit before running windows;
+  // a pinned+running app shows once, on its pin, so filter it out of `order`.
+  const pinnedApps = useMemo(() => apps.filter((a) => a.pinned && !a.noDock), [apps]);
+  const pinnedIds = useMemo(() => new Set(pinnedApps.map((a) => a.id)), [pinnedApps]);
+  const runningApps = useMemo(() => new Set(Object.values(wins).map((w) => w.app)), [wins]);
   const tbMenu = useContextMenu();
   useEffect(() => {
     if (!startOpen) return;
@@ -54,7 +62,11 @@ export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
               <LayoutGrid className="size-4" />
             </Button>
           )}
-          {order.map((id) => (
+          {pinnedApps.length > 0 && <span className="mx-1 h-6 w-px bg-border" />}
+          {pinnedApps.map((app) => (
+            <PinnedApp key={app.id} app={app} running={runningApps.has(app.id)} />
+          ))}
+          {order.filter((id) => !pinnedIds.has(wins[id]?.app)).map((id) => (
             <TaskButton key={id} id={id} />
           ))}
         </div>
@@ -92,12 +104,32 @@ function StartButton({ open, onClick, onTaskView }: { open: boolean; onClick: ()
       >
         <span className="grid grid-cols-2 gap-[2px]">
           {[0, 1, 2, 3].map((i) => (
-            <span key={i} className="size-1.5 rounded-[1px] bg-info" />
+            <span key={i} className="size-1.5 rounded-[1px] bg-primary" />
           ))}
         </span>
       </Button>
       <ContextMenu pos={menu.pos} onClose={menu.close} items={items} />
     </>
+  );
+}
+
+// Pinned quick-launch icon — click opens the app (or focuses the singleton via
+// openWindow's reuse); a running app shows the accent underline like a taskbar tab.
+function PinnedApp({ app, running }: { app: AppDescriptor; running: boolean }) {
+  return (
+    <Button type="button" variant="ghost"
+      onClick={() => openWindow(app.id, app.title, app.defaultSize, undefined, { multi: app.multi })}
+      title={app.title}
+      aria-label={app.title}
+      className={cn(`h-auto p-0 font-normal hover:bg-transparent relative grid size-9 place-items-center rounded-md hover:bg-muted ${running ? "bg-muted" : ""}`)}
+    >
+      <span className="size-5">
+        <AppIcon app={app} />
+      </span>
+      <span
+        className={cn(`absolute bottom-[1px] left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-primary transition-all ${running ? "w-2 opacity-70" : "w-0 opacity-0"}`)}
+      />
+    </Button>
   );
 }
 
@@ -130,7 +162,7 @@ function TaskButton({ id }: { id: string }) {
           )}
           <span className="max-w-[120px] truncate text-xs">{win.title}</span>
           <span
-            className={cn(`absolute bottom-[1px] left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-info transition-all ${active ? "w-5" : "w-2 opacity-60"}`)}
+            className={cn(`absolute bottom-[1px] left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-primary transition-all ${active ? "w-5" : "w-2 opacity-60"}`)}
           />
         </Button>
         {/* Win11-style hover flyout: a static <WindowPreview> floats above the

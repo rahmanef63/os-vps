@@ -249,7 +249,7 @@ right-click the desktop → keyboard-nav the menu + "Desktop widgets…"; hot co
 | P3 Theme quick-picker | ✅ done (2026-07-12) | `os-shell/theme-quick-picker.tsx` — Palette popover in the menu-bar status cluster (preset grid + swatches + Stock reset), mounted via the `menuBarStatus` slot as a **consumer feature** (keeps appshell brand-free; it can't import `@/lib/appearance`). |
 | P3 Auto-lock | ✅ done (2026-07-12) | **Check result: os-vps already had a *better* lock mechanism than shell** (`lib/lock.ts` — guard-injectable idle auto-lock, `useLocked`/`requestUnlock`, lock-screen owns the timer) — it just lacked a config UI. Added `setAutoLockMinutes` + an `AutoLockRow` (Off/1/5/15/30 min Select) in Settings → Devices. |
 | P3 Thirds-tiling | ✅ done (2026-07-13) | **Check result: os-vps already had the thirds *geometry*** (`snapRect` l13/r23/l23/r13) but nothing triggered it. Added a pure `cycleSnap()` + wired ⌘/Ctrl+Arrow to cycle ½ → ⅔ → ⅓ → ½ per side (great for a cockpit: terminal + editor + monitor). Unit-tested. |
-| P4 Windows chrome extras | ⏸ optional | Windows-persona only (action-center/run-dialog/task-view/tray). Low priority. |
+| P4 Windows chrome extras | 🟡 partial (2026-07-14) | **Start-menu depth + Fluent accent + pinned taskbar shipped** (§8) — closes the "Windows start button + openable apps" gap. Remaining optional: Win+R run-dialog, system tray, Mica token. |
 | Deferred: FE sidebar-tree | ⛔ deferred | constraint #2 |
 
 ---
@@ -310,3 +310,42 @@ white on pale pink, literally illegible). `muted-foreground`/`primary`/`destruct
 text never failed.
 
 fs-zip WIP still untouched (file-explorer, constraint #2).
+
+---
+
+## 8. Windows persona depth pass (`designwindowsandroid.md`, 2026-07-14)
+
+The uploaded Windows/Android design guide (Fluent 2 + Material 3 Expressive) prompted a
+head-to-head of the **Windows persona** against shell.rahmanef.com. os-vps was
+**structurally complete but shallow**: a working Start menu that was only an app-grid+search,
+a placeholder Start glyph in the wrong accent, and a taskbar that showed running windows only.
+Closed the exact gap the owner flagged ("os-vps belum sama dari windows start button dan apps
+yang bisa di buka"):
+
+- **Start menu → Win11-authentic** (`shells/windows/start-menu.tsx`): added a **Pinned ⇄ All apps**
+  toggle (All apps = alphabetical list — every launchable app now discoverable), a **Recommended**
+  row driven by the existing `useRecents()`, and a **footer band** with the user tile
+  (`useBrand().name` → Settings) + a **Power** button (→ `lock()`; a headless VPS has no
+  power-off). Was 58 lines → ~185, still one file, no new deps.
+- **Fluent accent threaded** (`shells/windows/taskbar.tsx`): the Start glyph + the running/focused
+  underline were hardcoded to `bg-info` (`#0a84ff`, an iOS blue). Switched to `bg-primary` so the
+  Windows persona's **accent** actually drives its Start/taskbar affordances (Fluent §7 is
+  accent-first), matching shell's `--os-accent`.
+- **Pinned taskbar quick-launch** (`shells/windows/taskbar.tsx`): manifest-`pinned` apps
+  (Files/Terminal/Monitor/Settings) now sit as icon shortcuts before the running tabs, with a
+  running underline; a pinned+running app is de-duped out of the window list so it shows once
+  (real Win11 behavior). Uses the shared store's `openWindow` singleton-reuse — no new WM state.
+
+**Deliberately skipped (essence / YAGNI):** a system tray with Wi-Fi/battery glyphs — **fake on a
+headless VPS** (shell has a real battery because it runs on laptops; os-vps must not fabricate one);
+Win+R run-dialog (Start search already launches apps); a dedicated Mica material token (the
+acrylic-blur bars read correctly; cosmetic-only). All Fluent geometry (`8px`/`4px` corners) + the
+Segoe font stack were already present.
+
+Verified live on prod `:4005` via headless Playwright (seeded `sv:shell=windows`): Start menu
+default (pinned grid + Recommended + user/Power footer), All-apps alphabetical list, and the
+taskbar crop (accent Start glyph + 4 pinned icons + Terminal running-underline, deduped). `pnpm
+typecheck` + `eslint` clean; built + `systemctl restart`, root 200.
+
+The two design-guide references now live in-repo under `design-md/` (Apple HIG + Windows/Android),
+mirroring shell.rahmanef.com so both forks carry the same design SSOT.
