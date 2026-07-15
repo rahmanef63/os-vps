@@ -72,7 +72,6 @@ export function FileView({
     return (
       <FileItem
         key={entry.name}
-        ios={ios}
         entry={entry}
         view={view}
         dirPath={dir}
@@ -99,7 +98,7 @@ export function FileView({
     return (
       <div
         {...bgDrop}
-        className={`@container grid min-h-full grid-cols-3 content-start gap-2 p-3 sm:grid-cols-4 @max-[430px]:grid-cols-2 ${bgRing}`}
+        className={`@container grid min-h-full grid-cols-[repeat(auto-fill,minmax(96px,1fr))] content-start gap-2 p-3 @max-[430px]:grid-cols-2 ${bgRing}`}
       >
         {entries.map((entry, i) => renderRow(entry, i))}
       </div>

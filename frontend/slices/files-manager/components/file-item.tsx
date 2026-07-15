@@ -41,7 +41,6 @@ function RenameInput({
 }
 
 export function FileItem({
-  ios,
   entry,
   view,
   dirPath,
@@ -59,7 +58,6 @@ export function FileItem({
   onDragLeave,
   onDrop,
 }: {
-  ios: boolean;
   entry: FsEntry;
   view: ViewMode;
   dirPath?: string;
@@ -134,9 +132,9 @@ export function FileItem({
           <Folder
             className={cn(
               "size-12 shrink-0 fill-current drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition-transform",
-              // iOS folders are the fixed system folder-blue (#57b3ff), NOT the
-              // user accent (a fixed category color, like the app-icon gradients).
-              selected ? "" : ios ? "text-[#57b3ff]" : "text-primary",
+              // Folders use the fixed system folder-blue (#57b3ff) on every shell
+              // (Finder + Files) — a fixed category color, not the user accent.
+              selected ? "" : "text-[#57b3ff]",
               dropActive && "scale-110",
             )}
           />

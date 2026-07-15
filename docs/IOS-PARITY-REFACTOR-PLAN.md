@@ -684,6 +684,20 @@ The iOS parity refactor is **substantially complete**: every high-value iOS (iPh
 
 ---
 
+## 10. Both-surface completeness audit — macOS + iOS (2026-07-15)
+
+Owner asked to ensure BOTH desktop (macOS) and mobile (iOS) carry all the mock's features. A 9-agent audit (`both-surface-parity-audit`) compared each surface × area vs the mock. **Verdict: both surfaces substantially complete — ZERO high-severity gaps.** macOS chrome (menu bar, window, dock, sidebars, context menu) already matches or EXCEEDS the mock (Radix a11y, real wired actions, a live Window-menu list the mock lacks); iOS matched the shipped refactor. Closed the meaningful gaps (Batch A+B):
+
+- **iOS Files sidebar regression (functional, MED)** — the P3b-cont slim toolbar had DROPPED the sidebar toggle, making Favorites/roots unreachable on the phone. Restored a leading **Browse** (PanelLeft, tint) button → `onOpenSidebar`. Verified present.
+- **macOS app menu (MED)** — the signature bold app-name menu was nearly empty (a lone disabled "About"). Added **Settings…(⌘,) · Hide (⌘H) · Quit (⌘Q)** with shortcut hints; brand "Log Out" gained **⇧⌘Q**. Verified the bar shows the "Settings" app menu when focused.
+- **macOS Settings detail title (LOW)** — 14px → **22px/700** macOS large title (mock `notPhone` spec); Windows stays compact. Verified 22px/700.
+- **Files folders always system-blue (LOW)** — `#57b3ff` on macOS Finder too (was the user accent — Finder blue is a fixed category color). Dropped the now-obsolete `ios` prop on FileItem.
+- **macOS Finder grid density (LOW)** — fixed 3/4-col → fluid `repeat(auto-fill,minmax(96px,1fr))` on desktop; phone stays 2-col.
+
+**Remaining = documented OPTIONAL (real mock features, low ROI — owner can request):** macOS menu **roving open-on-hover** (needs a controlled-DropdownMenu refactor), context-menu **keyboard-shortcut hint column** (registry data-model change), a **desktop Control Center popover** (~80 LOC; real toggles already sit in the menu cluster), dock launch-bounce + rich file-type thumbnails (decorative). **Essence-skips the audit CONFIRMED (NOT gaps):** the mock's macOS Control Center brightness/volume/wifi/bt/AirDrop/mirroring sliders, status-bar wifi/battery, and Apple-menu Sleep/Restart/Shut Down are all **fabricated hardware** os-vps correctly omits.
+
+---
+
 *Compiled 2026-07-15 from a 19-agent audit (`ios-parity-audit`, 1.6M tokens). SSOT verified against
 `mock-os/Apple-clone-app/{shared/theme.js,shared/config.js,support.js}` + the `.dc.html` screens.
 This is the extraction contract: **mock → os-vps iOS surface only**, everything else held constant.*

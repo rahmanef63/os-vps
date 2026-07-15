@@ -46,6 +46,11 @@ export function FilesToolbar(props: {
   if (props.ios) {
     return (
       <div className="flex h-11 items-center gap-1.5 border-b border-border px-3">
+        {/* Browse: opens the Favorites / roots drawer — the slim bar must keep
+            this or those locations become unreachable on the phone. */}
+        <Button variant="ghost" size="icon" onClick={props.onOpenSidebar} aria-label="Browse" className="size-9 shrink-0 text-primary">
+          <PanelLeft className="size-5" />
+        </Button>
         <Button variant="ghost" size="icon" disabled={!props.canBack} onClick={props.onBack} aria-label="Back" className="size-9 shrink-0 text-primary disabled:text-muted-foreground">
           <ChevronRight className="size-5 rotate-180" />
         </Button>

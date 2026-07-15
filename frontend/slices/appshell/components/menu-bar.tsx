@@ -3,11 +3,12 @@
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { useApps } from "../lib/registry";
 import { useBrand } from "../registry/brand";
 import { useFocused } from "../hooks/use-shell";
-import { shellStore, openWindow, closeWindow, toggleMaximize } from "../lib/store";
+import { shellStore, openWindow, closeWindow, toggleMaximize, minimizeWindow } from "../lib/store";
 import { StatusCluster } from "./menu-bar-status";
 import { AppMenus, DefaultMenus, WindowMenu, HelpMenu, Menu } from "./menu-bar-menus";
 
@@ -45,11 +46,24 @@ export function MenuBar() {
           System Settings…
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => void signOut()}>Log Out</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void signOut()}>
+          Log Out<DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+        </DropdownMenuItem>
       </Menu>
 
       <Menu label={appName} bold>
         <DropdownMenuItem disabled>About {appName}</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => openWindow("os-settings", "Settings")}>
+          Settings…<DropdownMenuShortcut>⌘,</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem disabled={!focusedId} onSelect={() => focusedId && minimizeWindow(focusedId)}>
+          Hide {appName}<DropdownMenuShortcut>⌘H</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={!focusedId} onSelect={closeFocused}>
+          Quit {appName}<DropdownMenuShortcut>⌘Q</DropdownMenuShortcut>
+        </DropdownMenuItem>
       </Menu>
 
       {focusedApp?.menus?.length ? (

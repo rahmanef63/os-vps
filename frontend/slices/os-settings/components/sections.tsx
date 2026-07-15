@@ -72,7 +72,7 @@ export function SectionDetail({ id }: { id: SectionId }) {
             <h1 className={cn("px-1 pt-1 leading-none", shellId === "ios" ? "text-[32px] font-extrabold tracking-[-0.02em] pb-1" : "text-[26px] font-bold tracking-tight")}>{meta.label}</h1>
           ) : (
             <header className="space-y-0.5">
-              <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>
+              <h2 className={cn("leading-tight", shellId === "macos" ? "text-[22px] font-bold tracking-tight" : "text-sm font-semibold")}>{meta.label}</h2>
               <p className="text-xs text-muted-foreground">{meta.blurb}</p>
             </header>
           ))}
