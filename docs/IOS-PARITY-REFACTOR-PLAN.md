@@ -651,8 +651,11 @@ Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + ve
 
 ### P2 — Shell chrome · ✅ COMPLETE (P2a + P2b)
 
-### P3 — Apps · ⏳ next
-### P4 — Polish + ratify skips · ☐ pending
+### P3 — Apps · 🟡 in progress
+**P3a — Monitor + App Store double-title · ✅ shipped 2026-07-15.** Both apps rendered their OWN in-content title header ON TOP of the shell nav's app title = double title on iOS. On `id==='ios'`: dropped the redundant in-content icon+title, kept controls — **system-monitor** = slim chip(cores)+Refresh row; **app-store** = count + search field → borderless **`--fill` systemFill pill**. Desktop/other shells keep the full header (`!ios` branch = today's markup). Verified: each shows ONE title (the nav), store search `border:0` bg `--fill`. *Note: the app-store agent's "large-title" step was deliberately NOT taken — our shell nav ALWAYS shows the app title (unlike the mock's collapse-into-nav), so an in-content large title of the same text = the double-title we're removing. Full large-title-collapse = a shell-frame rearchitecture, noted for later.*
+- **P3b** files-manager (iOS grid tile, folder `#57b3ff`, search) · **P3c** browser (Safari chrome) + assistant (Messages bubbles) · **P3d** code-editor + media + editors-misc + terminal · ⏳ remaining
+
+### P4 — Polish + ratify skips (+ dialog→sheet batch) · ☐ pending
 
 ---
 

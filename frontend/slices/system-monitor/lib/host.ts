@@ -10,3 +10,4 @@ export { usePublishInspector } from "@/features/os-shell";
 export { useOsApi, type SysStats, type Process } from "@/features/os-shell";
 export { useResponsive, ResponsiveToolbar } from "@/features/os-shell";
 export type { ToolbarItem } from "@/features/os-shell";
+export { useActiveShell } from "@/features/os-shell";

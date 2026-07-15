@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, Store } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { AppFrame, useContainer } from "@/features/os-shell";
+import { AppFrame, useContainer, useActiveShell } from "@/features/os-shell";
 import { UninstallConfirm } from "./components/uninstall-confirm";
 import { usePublishInspector } from "./lib/host";
 import {
@@ -32,6 +32,9 @@ export default function AppStore() {
   // measurement, and the chips live inside the AppFrame's own @container.
   const [paneRef, pane] = useContainer<HTMLDivElement>();
   const compact = pane === "xs" || pane === "sm";
+  // iOS shell nav already shows the app icon + "App Store" → drop the in-content
+  // title (double-title fix); the search field becomes a systemFill pill.
+  const ios = useActiveShell().id === "ios";
 
   const rows = useApps();
   const disabled = useDisabledIds();
@@ -96,8 +99,8 @@ export default function AppStore() {
         header={
           <header className="space-y-3 p-4">
             <div className="flex items-center gap-2">
-              <Store className="size-4 text-primary" />
-              <h2 className="text-sm font-semibold">App Store</h2>
+              {!ios && <Store className="size-4 text-primary" />}
+              {!ios && <h2 className="text-sm font-semibold">App Store</h2>}
               <span className="ml-auto text-[11px] text-muted-foreground">
                 {count} {count === 1 ? noun : `${noun}s`}
               </span>
@@ -108,7 +111,7 @@ export default function AppStore() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={isSystem ? `Search ${noun}s` : "Search apps"}
-                className="h-9 pl-8"
+                className={ios ? "h-9 border-0 bg-[var(--fill)] pl-8" : "h-9 pl-8"}
               />
             </div>
             {compact && <StoreFilterChips value={filter} onChange={setFilter} />}
