@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSession } from "@/lib/auth/require-session";
-import { resolveApiKey, resolveModel } from "@/lib/config/store";
+import { resolveModelRef, hostCredentialStore } from "@/lib/config/store";
+import { resolveModel } from "@/lib/models";
 import { rateLimited } from "@/lib/host/rate-limit";
 
 // SSE streaming chat for the "Alfa" assistant. BYOK: the Anthropic key comes
@@ -91,11 +92,21 @@ export async function POST(req: Request) {
   if (messages.length === 0) return Response.json({ error: "empty" }, { status: 400 });
   const sys = typeof body.system === "string" && body.system.trim() ? body.system.slice(0, 4000) : SYSTEM;
 
-  const key = await resolveApiKey();
-  const model = await resolveModel();
-  if (!key) return Response.json({ error: "no_api_key" }, { status: 501 });
+  // Resolve model + BYOK key + host-gated endpoint through @rahmanef/models. The
+  // registry pins each provider's key to its own baseUrl (key can't be redirected).
+  let resolved;
+  try {
+    resolved = await resolveModel(await resolveModelRef(), { store: hostCredentialStore() });
+  } catch {
+    // resolveModel throws when no BYOK key is set for the selected provider.
+    return Response.json({ error: "no_api_key" }, { status: 501 });
+  }
+  // The lib's chat() is buffered, so we keep the Anthropic SDK for SSE streaming;
+  // openai-protocol providers need a streaming adapter (deferred) → fenced here.
+  if (resolved.protocol !== "anthropic")
+    return Response.json({ error: "provider_not_wired" }, { status: 501 });
 
-  const anthropic = new Anthropic({ apiKey: key });
+  const anthropic = new Anthropic({ apiKey: resolved.apiKey, baseURL: resolved.baseUrl });
   const encoder = new TextEncoder();
   const sse = (event: string, data: unknown) =>
     encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -115,7 +126,7 @@ export async function POST(req: Request) {
       try {
         ai = anthropic.messages.stream(
           {
-            model: model || "claude-opus-4-8",
+            model: resolved.model,
             max_tokens: 4096,
             system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
             messages,

@@ -1,20 +1,28 @@
 import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
+import { envCredentialStore } from "@/lib/models";
 
-// Owner config (BYOK Anthropic key + model), replacing the Convex `appConfig`
-// table. A host JSON file (chmod 600) read server-side only — the raw key never
-// reaches the browser. Same self-contained model as the Control Room.
+// Owner config (BYOK keys + selected provider/model), replacing the Convex
+// `appConfig` table. A host JSON file (chmod 600) read server-side only — raw keys
+// never reach the browser. `keys` is the per-provider SSOT; `anthropicApiKey`
+// stays a read-only alias so existing installs migrate for free.
 
 export interface OsConfig {
-  anthropicApiKey?: string;
+  /** Per-provider BYOK keys — the SSOT. */
+  keys?: Record<string, string>;
+  /** Selected provider id (e.g. "anthropic"). */
+  provider?: string;
   model?: string;
+  /** @deprecated back-compat read alias for keys.anthropic. */
+  anthropicApiKey?: string;
 }
 
 const CONFIG_PATH =
   process.env.OS_CONFIG_STORE ?? path.join(os.homedir(), ".os-vps", "config.json");
 
 export const DEFAULT_MODEL = "claude-opus-4-8";
+export const DEFAULT_PROVIDER = "anthropic";
 
 export async function readConfig(): Promise<OsConfig> {
   try {
@@ -39,6 +47,32 @@ export async function resolveApiKey(): Promise<string> {
   return cfg.anthropicApiKey || process.env.ANTHROPIC_API_KEY || "";
 }
 
-export async function resolveModel(): Promise<string> {
-  return (await readConfig()).model || DEFAULT_MODEL;
+// The selected model as a "provider/model" ref for @rahmanef/models resolveModel().
+export async function resolveModelRef(): Promise<string> {
+  const c = await readConfig();
+  return `${c.provider || DEFAULT_PROVIDER}/${c.model || DEFAULT_MODEL}`;
+}
+
+// A @rahmanef/models CredentialStore over the 0600 host config file, per-provider,
+// with the env chain as fallback. Single-owner → tenantId ignored. The stored BYOK
+// key wins; legacy anthropicApiKey is a read fallback; else env (ANTHROPIC_API_KEY…).
+export function hostCredentialStore() {
+  const env = envCredentialStore();
+  return {
+    async getKey(_tenant: string | undefined, provider: string) {
+      const c = await readConfig();
+      const fromFile = c.keys?.[provider] ?? (provider === "anthropic" ? c.anthropicApiKey : undefined);
+      return fromFile || (await env.getKey(_tenant, provider));
+    },
+    async setKey(_tenant: string | undefined, provider: string, key: string) {
+      const c = await readConfig();
+      await writeConfig({ keys: { ...(c.keys ?? {}), [provider]: key } });
+    },
+    async deleteKey(_tenant: string | undefined, provider: string) {
+      const c = await readConfig();
+      const keys = { ...(c.keys ?? {}) };
+      delete keys[provider];
+      await writeConfig({ keys });
+    },
+  };
 }

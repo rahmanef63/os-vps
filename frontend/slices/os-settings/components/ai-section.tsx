@@ -4,10 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { Sparkles, Check } from "lucide-react";
 import { toast } from "@/features/os-shell";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { SettingsSection, SettingsRow, SettingsBlock } from "@/features/shell-settings";
 
-type Cfg = { hasApiKey: boolean; apiKeyMasked: string; model: string };
+type Cfg = { hasApiKey: boolean; apiKeyMasked: string; model: string; provider?: string };
+
+// Current Anthropic model ids (first slice is Anthropic-only; the catalog-driven
+// multi-provider list lands with the openai-protocol adapter).
+const ANTHROPIC_MODELS = ["claude-opus-4-8", "claude-sonnet-5", "claude-haiku-4-5-20251001", "claude-fable-5"];
 
 // BYOK Anthropic config for the Alfa assistant. The raw key is write-only from
 // here — GET /api/config returns only a masked preview. Empty key field on save
@@ -50,8 +55,9 @@ export function AiSection() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          provider: "anthropic",
           // Empty string clears a stored key; undefined leaves it untouched.
-          ...(key.trim() ? { anthropicApiKey: key.trim() } : {}),
+          ...(key.trim() ? { apiKey: key.trim() } : {}),
           ...(model.trim() ? { model: model.trim() } : {}),
         }),
       });
@@ -93,12 +99,16 @@ export function AiSection() {
         />
       </SettingsRow>
       <SettingsRow label="Model">
-        <Input
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          placeholder={cfg?.model ?? "claude-opus-4-8"}
-          className="sm:w-56"
-        />
+        <Select value={model || cfg?.model || "claude-opus-4-8"} onValueChange={setModel}>
+          <SelectTrigger className="sm:w-56">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ANTHROPIC_MODELS.map((m) => (
+              <SelectItem key={m} value={m}>{m}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </SettingsRow>
       <SettingsBlock className="flex justify-end">
         <Button size="sm" onClick={onSave} disabled={cfg === null || busy}>
