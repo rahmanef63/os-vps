@@ -11,7 +11,7 @@ import KeyBar, { type KeyInterceptor } from "./key-bar";
 // xterm is dynamic-imported inside the effect — it touches the DOM at
 // construction and must never run during SSR. `gen` bumps re-run the whole
 // effect for a fresh session (Restart).
-export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) => void }) {
+export default function PtyTerminal({ onFallback, initialCommand }: { onFallback: (msg: string) => void; initialCommand?: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<PtyStatus>({ kind: "connecting" });
   const [gen, setGen] = useState(0);
@@ -82,6 +82,8 @@ export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) 
         return;
       }
       handleRef.current = handle;
+      // Auto-run the preset command (e.g. Claude Code) once the PTY is connected.
+      if (initialCommand) handle.write(initialCommand + "\r");
       term.onData((d) => handle?.write(interceptRef.current ? interceptRef.current(d) : d));
       term.onBinary((d) => handle?.write(d));
       ro = new ResizeObserver(() => {
@@ -104,7 +106,7 @@ export default function PtyTerminal({ onFallback }: { onFallback: (msg: string) 
       handle?.dispose(); // kills the server-side shell too
       term?.dispose();
     };
-  }, [gen]);
+  }, [gen, initialCommand]);
 
   // `@container` so the key bar's @max-md variant tracks the WINDOW width
   // (compact pane), not the viewport. Root padding already absorbs

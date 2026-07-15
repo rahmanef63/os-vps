@@ -7,7 +7,7 @@ import { DEFAULT_FEATURES } from "@/features/appshell";
 import { filesManagerApp } from "@/features/files-manager";
 import { browserApp } from "@/features/browser";
 import { codeEditorApp } from "@/features/code-editor";
-import { osTerminalApp } from "@/features/os-terminal";
+import { osTerminalApp, claudeCodeApp } from "@/features/os-terminal";
 import { mediaStudioApp } from "@/features/media-studio";
 import { reelEditorApp } from "@/features/reel-editor";
 import { mediaViewerApp } from "@/features/media-viewer";
@@ -41,6 +41,7 @@ export const BUILTIN_APPS: AppDescriptor[] = [
   withSlug(browserApp, "browser"),
   withSlug(codeEditorApp, "code"),
   pin(withSlug(osTerminalApp, "terminal")),
+  pin(withSlug(claudeCodeApp, "claude")),
   withSlug(mediaStudioApp, "studio"),
   withSlug(reelEditorApp, "reel"),
   withSlug(mediaViewerApp, "viewer"),

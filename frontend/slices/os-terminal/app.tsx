@@ -11,7 +11,9 @@ import PtyTerminal from "./components/pty-terminal";
 // simulated shell untouched. If the PTY can't open (route error, session cap,
 // old server build), we show why and fall back to the legacy one-shot exec
 // terminal so live never regresses below the old behaviour.
-export default function TerminalApp() {
+// `initialCommand` (optional) is written to the live PTY once it connects — used
+// by the Claude Code app to auto-run `claude` on open. Normal Terminal passes none.
+export function Terminal({ initialCommand }: { initialCommand?: string } = {}) {
   const api = useOsApi();
   const [ptyError, setPtyError] = useState<string | null>(null);
   // A mode flip (Settings → Server) re-arms the PTY attempt (render-time
@@ -23,7 +25,7 @@ export default function TerminalApp() {
   }
 
   if (api.mode === "live" && ptyError === null)
-    return <PtyTerminal onFallback={setPtyError} />;
+    return <PtyTerminal onFallback={setPtyError} initialCommand={initialCommand} />;
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -48,4 +50,9 @@ export default function TerminalApp() {
       </div>
     </div>
   );
+}
+
+// Default export = the plain Terminal (the app-manifest loader expects a default).
+export default function TerminalApp() {
+  return <Terminal />;
 }
