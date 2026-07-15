@@ -77,6 +77,7 @@ export * from "./lib/commands";
 export * from "./lib/badges";
 export * from "./lib/layouts";
 export * from "./lib/recents";
+export { useDockPrefs, setDockPrefs, DOCK_SIZE_PX, type DockSize, type DockPrefs } from "./lib/dock-prefs";
 export * from "./lib/window-commands";
 export * from "./lib/window-title";
 export * from "./lib/spaces";

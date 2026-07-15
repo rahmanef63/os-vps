@@ -5,8 +5,9 @@ import { LayoutGrid, Grid3x3 } from "lucide-react";
 import { useApps } from "../lib/registry";
 import { useWindowOrder, useFocused, useWindowsMap } from "../hooks/use-shell";
 import { setLauncherOpen } from "../lib/store";
+import { useDockPrefs, DOCK_SIZE_PX } from "../lib/dock-prefs";
 import { useQuickLinks } from "../registry/capabilities";
-import { BASE, DockIcon, PlainIcon } from "./dock-parts";
+import { DockIcon, PlainIcon } from "./dock-parts";
 import { QuicklinkIcon } from "./quicklink-icon";
 import type { AppDescriptor, WindowState } from "../lib/types";
 
@@ -22,7 +23,6 @@ import type { AppDescriptor, WindowState } from "../lib/types";
 const SEP_W = 13; // divider slot px
 const GAP = 8; // px between slots
 const MAG_SIGMA = 100; // bell-curve spread (≈3 icons each side ripple)
-const DOCK_EXTRA = 340; // pool px shared by gaussian weight (peak icon ≈ +DOCK_EXTRA/restNorm)
 
 type Slot =
   | { kind: "app"; app: AppDescriptor; windows: WindowState[] }
@@ -39,6 +39,12 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
   const winMap = useWindowsMap();
   const wins = order.map((id) => winMap[id]).filter(Boolean) as WindowState[];
   const rowRef = useRef<HTMLDivElement>(null);
+  // Dock size + magnification are user prefs (Settings → Appearance). The magnify
+  // pool derives from the base size → peak icon ≈ 1.5× (subtler than the old fixed
+  // 340px that ballooned peaks to ~2.6× — the "too lebay" hover the owner flagged).
+  const { size, magnify } = useDockPrefs();
+  const base = DOCK_SIZE_PX[size];
+  const dockExtra = magnify ? Math.round(base * 2.2) : 0;
 
   const slots: Slot[] = [
     ...apps.map((app): Slot => ({ kind: "app", app, windows: wins.filter((w) => w.app === app.id) })),
@@ -79,7 +85,7 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
   ];
 
   // Each slot's resting centre, as an offset from the row centre (fixed geometry).
-  const restW = (s: Slot) => (s.kind === "sep" ? SEP_W : BASE);
+  const restW = (s: Slot) => (s.kind === "sep" ? SEP_W : base);
   const totalRest = slots.reduce((a, s) => a + restW(s), 0) + GAP * (slots.length - 1);
   let acc = 0;
   const restOffset = slots.map((s) => {
@@ -126,7 +132,7 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
       if (s.kind === "sep") return;
       // Normalise by the constant restNorm (not Σ weights) → consistent icon size
       // at every position; the bar's total growth eases off naturally at the edges.
-      const w = BASE + (hovering ? DOCK_EXTRA * (weights[i] / restNorm) : 0);
+      const w = base + (hovering ? dockExtra * (weights[i] / restNorm) : 0);
       const slot = slotEls.current[i];
       const zone = zoneEls.current[i];
       if (slot) slot.style.width = `${w}px`;
@@ -163,9 +169,9 @@ export function Dock({ onMissionControl }: { onMissionControl?: () => void }) {
           const slotRef = (el: HTMLDivElement | null) => { slotEls.current[i] = el; };
           const zoneRef = (el: HTMLDivElement | null) => { zoneEls.current[i] = el; };
           return s.kind === "app" ? (
-            <DockIcon key={s.app.id} app={s.app} windows={s.windows} focused={focused} slotRef={slotRef} zoneRef={zoneRef} />
+            <DockIcon key={s.app.id} app={s.app} windows={s.windows} focused={focused} base={base} slotRef={slotRef} zoneRef={zoneRef} />
           ) : (
-            <PlainIcon key={s.id} label={s.label} onClick={s.onClick} slotRef={slotRef} zoneRef={zoneRef}>{s.node}</PlainIcon>
+            <PlainIcon key={s.id} label={s.label} onClick={s.onClick} base={base} slotRef={slotRef} zoneRef={zoneRef}>{s.node}</PlainIcon>
           );
         })}
       </div>

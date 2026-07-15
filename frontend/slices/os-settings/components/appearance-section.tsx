@@ -14,9 +14,15 @@ import {
   type Wallpaper,
 } from "@/lib/appearance";
 import { ImagePickerButton, imageStyle, type ImageValue } from "@/features/image-picker";
-import { setShell, shellsForSurface, useShellPrefs, type ShellId } from "@/features/os-shell";
+import { setShell, shellsForSurface, useShellPrefs, useActiveShell, useDockPrefs, setDockPrefs, type ShellId, type DockSize } from "@/features/os-shell";
 import { SettingsRow as Row, SettingsSection as Section, SettingsBlock } from "@/features/shell-settings";
 import { LiveWallpaperRows } from "./live-wallpaper-rows";
+
+const DOCK_SIZE_OPTIONS: { value: DockSize; label: string }[] = [
+  { value: "small", label: "Small" },
+  { value: "medium", label: "Medium" },
+  { value: "large", label: "Large" },
+];
 
 function ChoiceCard({
   active,
@@ -57,6 +63,8 @@ function WallpaperPreview({ wallpaper, custom }: { wallpaper: Wallpaper; custom:
 export function AppearanceSection() {
   const { tweaks, setTweaks, setWallpaperImage } = useAppearance();
   const prefs = useShellPrefs();
+  const dock = useDockPrefs();
+  const { surface: activeSurface } = useActiveShell();
   const customWallpaper = tweaks.wallpaperImage;
   const shellOpts = (surface: "desktop" | "mobile") => shellsForSurface(surface);
 
@@ -137,6 +145,17 @@ export function AppearanceSection() {
         <Row label="Reduce transparency">
           <Switch checked={tweaks.reduceGlass} onCheckedChange={(reduceGlass) => setTweaks({ reduceGlass })} />
         </Row>
+        {/* Dock controls apply to the macOS dock (desktop surface only). */}
+        {activeSurface === "desktop" && (
+          <>
+            <Row label="Dock size">
+              <Segmented options={DOCK_SIZE_OPTIONS} value={dock.size} onChange={(v) => setDockPrefs({ size: v as DockSize })} />
+            </Row>
+            <Row label="Dock magnification">
+              <Switch checked={dock.magnify} onCheckedChange={(magnify) => setDockPrefs({ magnify })} />
+            </Row>
+          </>
+        )}
       </Section>
     </div>
   );
