@@ -134,10 +134,10 @@ export function AppsGrid({
           onClick={() => { if (held.current) { held.current = false; return; } onLaunch(app); }}
           className="h-auto p-0 hover:bg-transparent flex flex-col items-center gap-1.5"
         >
-          <span className="aspect-square w-full max-w-[62px]">
+          <span className="aspect-square w-full max-w-[58px]">
             <AppIcon app={app} />
           </span>
-          <span className="max-w-full truncate text-[11px] font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+          <span className="max-w-full truncate text-[12px] font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
             {app.title}
           </span>
         </Button>
@@ -150,10 +150,10 @@ export function AppsGrid({
           onClick={() => openLink(link)}
           className="h-auto p-0 hover:bg-transparent flex flex-col items-center gap-1.5"
         >
-          <span className="aspect-square w-full max-w-[62px]">
+          <span className="aspect-square w-full max-w-[58px]">
             <QuicklinkIcon link={link} />
           </span>
-          <span className="max-w-full truncate text-[11px] font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+          <span className="max-w-full truncate text-[12px] font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
             {link.title}
           </span>
         </Button>

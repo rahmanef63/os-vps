@@ -25,8 +25,8 @@ export function FolderCard({
   return (
     <Button type="button" variant="ghost" onClick={onExpand} className="h-auto p-0 hover:bg-transparent flex flex-col items-center gap-1.5" aria-label={`${name} folder`}>
       <div
-        className="grid aspect-square w-full grid-cols-2 grid-rows-2 gap-2 rounded-[22px] border border-white/15 p-2.5 backdrop-blur-xl"
-        style={{ background: "rgba(255,255,255,.14)" }}
+        className="glass grid aspect-square w-full grid-cols-2 grid-rows-2 gap-2 rounded-[22px] border border-white/15 p-2.5"
+        style={{ background: "var(--glass-panel)" }}
       >
         {big.map((a) => (
           <span

@@ -114,8 +114,8 @@ export function MobileHome({
 
       {dockApps.length > 0 && (
         <div
-          className="glass mx-3 mb-3.5 flex justify-around rounded-[30px] border border-white/30 px-3.5 py-3"
-          style={{ background: "rgba(255,255,255,.18)" }}
+          className="glass mx-3 mb-3.5 flex justify-around rounded-[30px] border border-white/15 px-3.5 py-3"
+          style={{ background: "var(--glass-bar)", boxShadow: "inset 0 0.5px 0 var(--glass-hi), 0 12px 34px rgba(0,0,0,0.30)" }}
         >
           {dockApps.map((app) => (
             <Button key={app.id} type="button" variant="ghost" size="icon" aria-label={app.title} onClick={() => onLaunch(app)} className="h-auto w-auto hover:bg-transparent size-[60px] p-0">

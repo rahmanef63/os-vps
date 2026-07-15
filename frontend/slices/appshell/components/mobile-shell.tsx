@@ -204,19 +204,24 @@ export function MobileShell() {
               in-content large title to fade in. */}
           <header
             className={cn(
-              "flex shrink-0 items-center gap-2.5 border-b px-3.5 transition-[background-color,border-color] duration-200",
-              appScrolled ? "border-border bg-[var(--glass-bar)] backdrop-blur-xl" : "border-transparent bg-transparent",
+              "shrink-0 border-b transition-[background-color,border-color] duration-200",
+              appScrolled ? "glass border-border bg-[var(--glass-bar)]" : "border-transparent bg-transparent",
             )}
-            style={{ height: "calc(3rem + var(--sai-top))", paddingTop: "var(--sai-top)" }}
+            style={{ paddingTop: "var(--sai-top)" }}
           >
-            <span className="size-[30px] shrink-0">
-              <AppIcon app={activeApp} />
-            </span>
-            <strong className="flex-1 truncate text-base">{activeApp.title}</strong>
-            {/* primary exit control — text keeps it wide; bump height to the 44pt HIG touch target */}
-            <Button type="button" variant="ghost" onClick={goHome} className="h-11 min-w-11 rounded-md px-3 text-sm font-medium text-primary">
-              Done
-            </Button>
+            {/* iOS nav bar: 46px band below the notch. Title CENTERED (16/600);
+                the leading app-icon (cockpit identity) + trailing Done are absolute
+                so they never shift the centered title. */}
+            <div className="relative flex h-[46px] items-center px-3.5">
+              <span className="absolute left-3.5 top-1/2 size-[30px] -translate-y-1/2">
+                <AppIcon app={activeApp} />
+              </span>
+              <span className="mx-auto max-w-[55%] truncate text-[16px] font-semibold">{activeApp.title}</span>
+              {/* primary exit control — 44pt HIG touch target */}
+              <Button type="button" variant="ghost" onClick={goHome} className="absolute right-2 top-1/2 h-11 min-w-11 -translate-y-1/2 rounded-md px-3 text-sm font-medium text-primary">
+                Done
+              </Button>
+            </div>
           </header>
           {/* The home-indicator overlays the content edge-to-edge (real-iOS), so
               raise --sai-bottom INSIDE the app pane to include its 34px zone —

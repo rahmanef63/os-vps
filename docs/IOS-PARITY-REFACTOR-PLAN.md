@@ -636,7 +636,12 @@ Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + ve
 - **os-settings sections** (`id==='ios'` branches in `sections.tsx`): iOS large title **32/800/-0.02em** (Android keeps 26px); index rows min-h-46 py-11, hairline→16px, chevron 15px, borderless card, 18px gaps, pane→`--grouped`.
 - **Verified** (Playwright `:4005` dark): iOS About title = **32px / 800 / -0.64px**, label 16px, value 15px, pane `#000`, index hairline 16px; **Android index unchanged** (hairline 3.5rem/49px, pane `bg-muted`, chevron 18px). Screenshot = grouped cards on the black page + colored tiles + large title = authentic iOS System Settings. `typecheck`+`eslint` clean; build+restart, root 200.
 
-### P2 — Shell chrome · ⏳ next
+### P2a — Shell frame + Springboard · ✅ shipped 2026-07-15
+- **shell-frame** (`mobile-shell.tsx`, iOS-exclusive by mount): app nav bar rebuilt iOS-style — title **centered** (`centerX 201 = vw/2`), weight **600** (was `<strong>` 700), 16px, in a 46px band below the notch; leading app-icon + trailing Done **absolute** (never shift the centered title); frost swapped `backdrop-blur-xl`→`.glass` (honors `var(--blur)`/Reduce-Transparency + saturate).
+- **springboard** (`mobile-home.tsx` / `-parts` / `app-library-parts`): dock fill hardcoded white `.18` → theme-aware **`var(--glass-bar)`** + inner top-highlight (`--glass-hi`) + soft float shadow + hairline; grid label 11→12px, icon cap 62→58px; App-Library well raw rgba → `var(--glass-panel)` + `.glass`.
+- **Verified** (Playwright `:4005` dark): nav `Terminal` fw 600 centerX 201/402; dock bg `oklab(.27 / .62)` = `--glass-bar` + inset highlight + drop shadow. Screenshots = centered nav + floating frosted dock. All files iOS-exclusive-by-mount → zero cross-shell risk. `typecheck`+`eslint` clean; build+restart 200.
+
+### P2b — System surfaces + widgets · ⏳ next
 ### P3 — Apps · ☐ pending
 ### P4 — Polish + ratify skips · ☐ pending
 
