@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getSession } from "@/lib/auth/require-session";
 import { resolveModelRef, hostCredentialStore } from "@/lib/config/store";
 import { resolveModel } from "@/lib/models";
+import { streamOpenAI } from "@/lib/ai/openai-stream";
 import { rateLimited } from "@/lib/host/rate-limit";
 
 // SSE streaming chat for the "Alfa" assistant. BYOK: the Anthropic key comes
@@ -88,8 +89,8 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "bad_request" }, { status: 400 });
   }
-  const messages = toAnthropic((body.messages ?? []).slice(-40));
-  if (messages.length === 0) return Response.json({ error: "empty" }, { status: 400 });
+  const rawMessages = (body.messages ?? []).slice(-40);
+  if (rawMessages.length === 0) return Response.json({ error: "empty" }, { status: 400 });
   const sys = typeof body.system === "string" && body.system.trim() ? body.system.slice(0, 4000) : SYSTEM;
 
   // Resolve model + BYOK key + host-gated endpoint through @rahmanef/models. The
@@ -101,11 +102,9 @@ export async function POST(req: Request) {
     // resolveModel throws when no BYOK key is set for the selected provider.
     return Response.json({ error: "no_api_key" }, { status: 501 });
   }
-  // The lib's chat() is buffered, so we keep the Anthropic SDK for SSE streaming;
-  // openai-protocol providers need a streaming adapter (deferred) → fenced here.
-  if (resolved.protocol !== "anthropic")
-    return Response.json({ error: "provider_not_wired" }, { status: 501 });
-
+  // Anthropic streams via its SDK; every openai-protocol provider (OpenAI + ~30
+  // compatible) streams via our adapter. Both emit the same neutral
+  // delta|tool_use|done|error SSE vocab, so the client is provider-agnostic.
   const anthropic = new Anthropic({ apiKey: resolved.apiKey, baseURL: resolved.baseUrl });
   const encoder = new TextEncoder();
   const sse = (event: string, data: unknown) =>
@@ -123,30 +122,38 @@ export async function POST(req: Request) {
       const safeEnqueue = (chunk: Uint8Array) => {
         if (!closed && !req.signal.aborted) controller.enqueue(chunk);
       };
+      const emit = (event: string, data: unknown) => safeEnqueue(sse(event, data));
       try {
-        ai = anthropic.messages.stream(
-          {
-            model: resolved.model,
-            max_tokens: 4096,
-            system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
-            messages,
-            ...(tools ? { tools: tools as Anthropic.Tool[] } : {}),
-          },
-          { signal: req.signal },
-        );
-        for await (const ev of ai) {
-          if (req.signal.aborted) break;
-          if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
-            safeEnqueue(sse("delta", ev.delta.text));
-          }
-        }
-        if (!req.signal.aborted) {
-          const final = await ai.finalMessage();
-          const uses = final.content.filter(
-            (b: Anthropic.ContentBlock): b is Anthropic.ToolUseBlock => b.type === "tool_use",
+        if (resolved.protocol === "anthropic") {
+          ai = anthropic.messages.stream(
+            {
+              model: resolved.model,
+              max_tokens: 4096,
+              system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
+              messages: toAnthropic(rawMessages),
+              ...(tools ? { tools: tools as Anthropic.Tool[] } : {}),
+            },
+            { signal: req.signal },
           );
-          for (const u of uses) safeEnqueue(sse("tool_use", { id: u.id, name: u.name, input: u.input }));
-          safeEnqueue(sse("done", { stopReason: final.stop_reason }));
+          for await (const ev of ai) {
+            if (req.signal.aborted) break;
+            if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
+              emit("delta", ev.delta.text);
+            }
+          }
+          if (!req.signal.aborted) {
+            const final = await ai.finalMessage();
+            const uses = final.content.filter(
+              (b: Anthropic.ContentBlock): b is Anthropic.ToolUseBlock => b.type === "tool_use",
+            );
+            for (const u of uses) emit("tool_use", { id: u.id, name: u.name, input: u.input });
+            emit("done", { stopReason: final.stop_reason });
+          }
+        } else {
+          // openai-protocol: the adapter POSTs {baseUrl}/chat/completions
+          // {stream:true} with the host-gated BYOK key and emits the same events.
+          // req.signal cancels the upstream fetch (billing cutoff on abort).
+          await streamOpenAI({ resolved, messages: rawMessages, tools, system: sys, signal: req.signal, emit });
         }
       } catch (err) {
         // Abort isn't an error to report — the consumer is already gone.

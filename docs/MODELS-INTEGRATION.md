@@ -35,15 +35,29 @@ all **untouched**; every client speaks the neutral `delta|tool_use|done|error` v
 API key set…" (the resolveModel path ran + threw → 501). With a key (config file or `ANTHROPIC_API_KEY`
 in `.env.local`) Alfa streams via the resolved provider/model. Build bundles the vendored ESM cleanly.
 
-## Deferred (documented, not built)
-- **Slice 2 — openai-protocol streaming adapter** (`lib/ai/`): `POST {baseUrl}/chat/completions
-  {stream:true}`, parse `choices[].delta`, translate tool schemas + `tool_use`/`tool_result` both ways.
-  Unlocks all ~35 OpenAI-compatible providers (OpenAI/OpenRouter/Groq/DeepSeek/xAI/Mistral/…) behind
-  the same seam. *This is why slice 1 fences non-anthropic with a 501.*
-- **Slice 3 — multi-provider picker**: a provider `<Select>` + catalog-driven model list via a new
-  `GET /api/models` (`listModels()` from the offline-tolerant models.dev cache; set
-  `MODELS_CACHE_DIR=~/.os-vps/models-cache`).
-- **Out of scope:** usage/spend stats, OAuth device-code/PKEC sign-in, simultaneous multi-model.
+## Slices 2 + 3 — SHIPPED (2026-07-15)
+- **Slice 2 — openai-protocol streaming adapter** (`lib/ai/openai-stream.ts`): native `fetch`
+  `POST {baseUrl}/chat/completions {stream:true}`, parses `choices[].delta` → `delta`, accumulates
+  `tool_calls[]` by index → `tool_use`+`done`; `toOpenAITools`/`toOpenAIMessages` translate tools +
+  `tool_use`/`tool_result` both ways. The `route.ts` 501 fence is **gone** — it now branches on
+  `resolved.protocol` (anthropic = SDK, else = adapter), sharing the SSE writer / abort / rate-limit;
+  the client's `delta|tool_use|done|error` vocab is unchanged (zero client changes). Unit-tested
+  (`openai-stream.test.ts`: cross-read SSE buffering + split tool_call reassembly). **Unlocks OpenAI
+  + ~34 compatible providers** (`registry.js`).
+- **Slice 3 — provider picker**: `GET /api/models[?provider=]` (`app/api/models/route.ts`,
+  session-gated, `listModels()` from the offline-tolerant models.dev cache) + a provider `<Select>`
+  in `ai-section.tsx` (8 curated providers) with catalog-backed free-text model suggestions
+  (`<datalist>`, so an id absent from the catalog still works offline). `config/route.ts` +
+  `store.ts` already persisted keys per-provider → unchanged. (Optional: `MODELS_CACHE_DIR=~/.os-vps/models-cache`.)
+- **Verified live:** `/api/models?provider=openai` → 56 models; picker lists Anthropic / OpenAI /
+  OpenRouter / Google / Groq / xAI / DeepSeek / Mistral; Alfa streams via the resolved provider once
+  a key is set (Settings → AI or the provider env var).
+
+## Out of scope
+Usage/spend stats, simultaneous multi-model, and **OAuth sign-in**: the OpenAI *platform* API
+(`/v1`) is **BYOK-key-only** — there is no OAuth flow that mints `/v1` credentials. The only "OpenAI
+OAuth" that exists is the ChatGPT-*consumer* device-auth (Codex backend, unofficial / ToS-gray, NOT
+`/v1`) — a separate, large, fragile effort against an unofficial API, deliberately not bundled here.
 
 ## Files
 `lib/models/` (vendored), `lib/config/store.ts`, `app/api/assistant/route.ts`,
