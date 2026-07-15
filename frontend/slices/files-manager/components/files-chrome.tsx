@@ -16,9 +16,10 @@ type Dnd = ReturnType<typeof useDnd>;
 // Toolbar header: nav + view/sort + new/upload, then UploadBar, then error.
 // Extracted from app.tsx purely to keep that file ≤200 LOC; no behavior change.
 export function FilesHeader({
-  fs, cmd, dnd, view, sort, setView, setSort, openPicker, openFolderPicker, openSidebar, clearSel,
+  ios, fs, cmd, dnd, view, sort, setView, setSort, openPicker, openFolderPicker, openSidebar, clearSel,
   selectedCount, onDownload,
 }: {
+  ios: boolean;
   fs: Fs; cmd: Cmd; dnd: Dnd;
   view: ViewMode; sort: SortKey;
   setView: (v: ViewMode) => void;
@@ -33,6 +34,7 @@ export function FilesHeader({
   return (
     <>
       <FilesToolbar
+        ios={ios}
         path={fs.path}
         canBack={fs.canBack}
         canForward={fs.canForward}

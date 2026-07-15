@@ -102,6 +102,7 @@ export default function FilesManager({ payload }: AppProps) {
         safeArea={false}
         toolbar={
           <FilesHeader
+            ios={shellId === "ios"}
             fs={fs} cmd={cmd} dnd={dnd}
             view={view} sort={sort}
             setView={setView} setSort={setSort}

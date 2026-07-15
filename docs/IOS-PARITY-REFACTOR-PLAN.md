@@ -661,7 +661,10 @@ Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + ve
 - **image-editor + reel-editor**: compact bottom-sheet panels (Props/Adjust/Effects/Export + reel panes) now pad `var(--sai-bottom)` so their last row clears the home indicator (Layers already did; the siblings didn't).
 - **os-terminal**: no change — the diff's own recommendation (nav inherited from the shell, notch/home-indicator already handled via `--sai-top`/`--sai-bottom`, `--font-mono-ui` already names SF Mono).
 - **Deferred to P3d-cont:** media now-playing (Music-mock centered column, new component) + audio-art color; create-app grouped inset card; code-editor close-guard→sheet (P4 batch).
-- **Remaining:** **P3d-cont** (media + create-app) · P3b-cont (files toolbar) · **P4** polish + sheet batch · ⏳
+**P3b-cont — files-manager toolbar · ✅ shipped 2026-07-15.** The dense desktop Finder toolbar (sidebar-toggle + back/forward + breadcrumb + grid/list + sort + paste + new + download + upload) collapses on `id==='ios'` to a slim iOS bar: **tint back chevron + path + iOS grid/list segment + one `+` overflow menu** (New/Upload/Paste/Download/Sort consolidated). In-place early-return in files-toolbar.tsx (185 LOC, no new file); `ios` threaded app→FilesHeader→FilesToolbar. Verified: back+segment+`+` present, standalone Sort/Upload buttons gone. Desktop keeps the full bar. Data flow untouched. **Files iOS story now complete** (folder-blue + slim toolbar).
+- **Remaining (long-tail, lower ROI):** media now-playing (new component, low-freq audio surface) · create-app grouped form (low-freq, complex controls don't fit inline rows) · **P4** dialog→sheet batch + global 44px sweep + ratify skips · ⏳
+
+### P3 — Apps · ✅ substantially COMPLETE (P3a–d + P3b-cont; media/create-app = documented long-tail)
 
 ### P4 — Polish + ratify skips (+ dialog→sheet batch) · ☐ pending
 
