@@ -39,6 +39,7 @@ export function FileContextMenu({
   downloadCount,
   onClose,
   onOpen,
+  onOpenClaudeCode,
   onRename,
   onNewFolder,
   onUpload,
@@ -55,6 +56,7 @@ export function FileContextMenu({
   downloadCount: number;
   onClose: () => void;
   onOpen: () => void;
+  onOpenClaudeCode: () => void;
   onRename: () => void;
   onNewFolder: () => void;
   onUpload: () => void;
@@ -101,7 +103,11 @@ export function FileContextMenu({
 
   const groups: Action[][] = ctx.entry
     ? [
-        [{ label: "Open", run: onOpen }, { label: "Rename", shortcut: "↵", run: onRename }],
+        [
+          { label: "Open", run: onOpen },
+          ...(ctx.entry.kind === "dir" ? [{ label: "Open with Claude Code", run: onOpenClaudeCode }] : []),
+          { label: "Rename", shortcut: "↵", run: onRename },
+        ],
         [
           { label: "Cut", shortcut: "⌘X", run: onCut },
           { label: "Copy", shortcut: "⌘C", run: onCopy },

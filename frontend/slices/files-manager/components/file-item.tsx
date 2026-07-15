@@ -99,6 +99,7 @@ export function FileItem({
     return (
       <button
         draggable
+        data-name={entry.name}
         onDragStart={onDragStart}
         {...dropProps}
         onClick={onTap}
@@ -162,6 +163,7 @@ export function FileItem({
   return (
     <div
       draggable
+      data-name={entry.name}
       onDragStart={onDragStart}
       {...dropProps}
       onClick={onTap}

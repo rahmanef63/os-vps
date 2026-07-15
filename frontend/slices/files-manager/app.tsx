@@ -18,6 +18,7 @@ import { useFileSelection } from "./hooks/use-file-selection";
 import { useFileCommands } from "./hooks/use-file-commands";
 import { useDnd } from "./hooks/use-dnd";
 import { useWindowDrop } from "./hooks/use-window-drop";
+import { useTypeahead } from "./hooks/use-typeahead";
 import { sortEntries, type SortKey, type ViewMode } from "./lib/types";
 
 // Optional `{ path }` payload (e.g. from Spotlight) opens the manager there.
@@ -31,17 +32,14 @@ function initialPath(payload: unknown): string | undefined {
 
 export default function FilesManager({ payload }: AppProps) {
   const fs = useFiles(initialPath(payload));
-  const sel = useFileSelection(fs.entries);
-  const cmd = useFileCommands(fs, sel);
-  const dnd = useDnd(sel.selected, sel.selectOne, fs.move, fs.upload);
-  const uploadRef = useRef<HTMLInputElement>(null);
-  const folderRef = useRef<HTMLInputElement>(null);
   // Per-shell default view (same explorer, shell-idiomatic first impression):
   // macOS Finder + iOS Files open in the icon grid, Windows Explorer in the
   // details list. The user can still toggle; this only seeds the initial mode.
   const { id: shellId } = useActiveShell();
   const [view, setView] = useState<ViewMode>(shellId === "windows" ? "list" : "grid");
   const [sort, setSort] = useState<SortKey>("name");
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Mobile pulls the FileDetails strip out of the footer (path + size + copy
   // are recoverable from the row's context menu / long-press); the saved
@@ -49,10 +47,30 @@ export default function FilesManager({ payload }: AppProps) {
   // 380px-wide window.
   const { isMobile } = useResponsive();
 
+  // Sort, then filter by the search query. `visible` is the array actually
+  // rendered — selection, the row index that drives shift-range, and the
+  // type-ahead are all keyed to it, so they track what's on screen (not the raw
+  // fs order, which sorting/filtering diverge from).
   const ordered = useMemo(
     () => (fs.entries ? sortEntries(fs.entries, sort) : null),
     [fs.entries, sort],
   );
+  const visible = useMemo(() => {
+    if (!ordered) return null;
+    const q = query.trim().toLowerCase();
+    return q ? ordered.filter((e) => e.name.toLowerCase().includes(q)) : ordered;
+  }, [ordered, query]);
+
+  const sel = useFileSelection(visible);
+  const cmd = useFileCommands(fs, sel);
+  const dnd = useDnd(sel.selected, sel.selectOne, fs.move, fs.upload);
+  // Finder-style type-ahead: bare printable keys jump the selection to the first
+  // visible entry whose name starts with what you typed (composed into the root
+  // onKeyDown below, next to cmd.onKey).
+  const onTypeahead = useTypeahead(visible ?? [], sel.selectOne);
+  const uploadRef = useRef<HTMLInputElement>(null);
+  const folderRef = useRef<HTMLInputElement>(null);
+
   const cutNames =
     fs.clip?.mode === "cut" && fs.clip.from === fs.path ? new Set(fs.clip.names) : new Set<string>();
   const selectedEntry =
@@ -71,10 +89,11 @@ export default function FilesManager({ payload }: AppProps) {
     <div
       className="relative flex h-full outline-none"
       tabIndex={0}
-      onKeyDown={cmd.onKey}
+      onKeyDown={(e) => { cmd.onKey(e); onTypeahead(e); }}
       onDragOver={winDrop.onDragOver}
       onDragLeave={winDrop.onDragLeave}
       onDrop={winDrop.onDrop}
+      onDropCapture={winDrop.onDropCapture}
     >
       {winDrop.dragActive && <DropOverlay />}
       {/* Left nav: inline rail on wide windows, left Sheet on narrow/mobile. */}
@@ -106,6 +125,8 @@ export default function FilesManager({ payload }: AppProps) {
             fs={fs} cmd={cmd} dnd={dnd}
             view={view} sort={sort}
             setView={setView} setSort={setSort}
+            query={query} setQuery={setQuery}
+            searchOpen={searchOpen} onToggleSearch={() => setSearchOpen((o) => !o)}
             openPicker={openPicker} openFolderPicker={openFolderPicker}
             openSidebar={() => setSidebarOpen(true)}
             clearSel={sel.clear}
@@ -117,7 +138,7 @@ export default function FilesManager({ payload }: AppProps) {
           <FilesFooter
             fs={fs} isMobile={isMobile}
             selectedEntry={selectedEntry}
-            orderedLen={ordered ? ordered.length : null}
+            orderedLen={visible ? visible.length : null}
             selectedCount={sel.selected.size}
           />
         }
@@ -134,14 +155,14 @@ export default function FilesManager({ payload }: AppProps) {
                 Retry
               </Button>
             </div>
-          ) : ordered === null ? (
+          ) : visible === null ? (
             <div className="flex h-full items-center justify-center gap-2 p-8 text-xs text-muted-foreground">
               <Loader2 className="size-4 animate-spin" /> Loading…
             </div>
           ) : (
             <FileView
               ios={shellId === "ios"}
-              entries={ordered}
+              entries={visible}
               view={view}
               dir={fs.path}
               selected={sel.selected}
@@ -165,6 +186,7 @@ export default function FilesManager({ payload }: AppProps) {
           inTrash={cmd.inTrash}
           onClose={() => cmd.setCtx(null)}
           onOpen={() => cmd.ctx?.entry && cmd.open(cmd.ctx.entry)}
+          onOpenClaudeCode={() => cmd.ctx?.entry && cmd.openInClaudeCode(cmd.ctx.entry)}
           onRename={() => cmd.ctx?.entry && cmd.setRenaming(cmd.ctx.entry.name)}
           onNewFolder={cmd.newFolder}
           onUpload={openPicker}

@@ -50,6 +50,17 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
     [fs.path, go],
   );
 
+  // "Open with Claude Code" on a folder → a fresh Claude Code PTY (multi:true so
+  // each folder gets its own session) cd'd into that folder. Dir-only; the
+  // terminal only actually runs the CLI in live mode (host-gated).
+  const openInClaudeCode = useCallback(
+    (entry: FsEntry) => {
+      if (entry.kind !== "dir") return;
+      openWindow("claude-code", entry.name, undefined, { cwd: joinPath(fs.path, entry.name) }, { multi: true });
+    },
+    [fs.path],
+  );
+
   // Open by absolute path (from the sidebar tree, which yields full paths).
   // Routes known exts to their app via the same openWindow flow as `open`;
   // unknown types just navigate to the file's parent dir.
@@ -192,6 +203,6 @@ export function useFileCommands(fs: UseFiles, sel: UseFileSelection) {
 
   return {
     renaming, setRenaming, ctx, setCtx, inTrash, zipPrompt, setZipPrompt,
-    go, open, openPath, onContext, targets, cut, copy, del, download, confirmZip, emptyTrash, doRename, newFolder, onKey,
+    go, open, openInClaudeCode, openPath, onContext, targets, cut, copy, del, download, confirmZip, emptyTrash, doRename, newFolder, onKey,
   };
 }

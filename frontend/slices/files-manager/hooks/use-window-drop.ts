@@ -21,5 +21,11 @@ export function useWindowDrop(dnd: UseDnd, path: string) {
     setDragActive(false);
     if (isFileDrag(e)) dnd.onDrop(e, path);
   };
-  return { dragActive, onDragOver, onDragLeave, onDrop };
+  // Inner drop targets (grid/folder/sidebar) call e.stopPropagation() to route
+  // the upload/move, which also stops the bubble onDrop above from ever clearing
+  // the overlay. A capture-phase reset runs top-down BEFORE any stopPropagation,
+  // so the overlay always clears; the bubble onDrop still handles toolbar/padding
+  // drops. Side-effect-free (only flips the flag) so it can't double-fire uploads.
+  const onDropCapture = () => setDragActive(false);
+  return { dragActive, onDragOver, onDragLeave, onDrop, onDropCapture };
 }

@@ -105,6 +105,11 @@ export function useFileOps(opts: {
   const trash = useCallback(
     (names: string[]) =>
       guard(async () => {
+        // ~/.Trash may not exist on the live host; create it first (idempotent
+        // recursive mkdir) or fs.move throws ENOENT on the missing dest parent and
+        // the delete silently no-ops. Mock seeds /.Trash so this only bit live —
+        // the "delete sometimes doesn't work" report.
+        await api.fs.mkdir(TRASH_PATH);
         const list = await api.fs.list(TRASH_PATH).catch(() => ({ entries: [] }));
         const seen = new Set(list.entries.map((e) => e.name));
         for (const name of names) {

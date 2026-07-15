@@ -1,5 +1,5 @@
 import { type DragEvent } from "react";
-import { ChevronRight, PanelLeft, Plus, Upload, Download, FolderUp, FileUp, LayoutGrid, List, ArrowUpDown, ClipboardPaste } from "lucide-react";
+import { ChevronRight, PanelLeft, Plus, Upload, Download, FolderUp, FileUp, LayoutGrid, List, ArrowUpDown, ClipboardPaste, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -38,6 +38,8 @@ export function FilesToolbar(props: {
   onCrumbDragOver: (e: DragEvent, dest: string) => void;
   onCrumbDragLeave: (dest: string) => void;
   onCrumbDrop: (e: DragEvent, dest: string) => void;
+  onToggleSearch: () => void;
+  searchOpen?: boolean;
   ios?: boolean;
 }) {
   // iOS Files: a slim bar — tint back chevron + path + iOS grid/list segment +
@@ -70,6 +72,9 @@ export function FilesToolbar(props: {
             <List className="size-3.5" />
           </Button>
         </div>
+        <Button variant="ghost" size="icon" aria-label="Search" onClick={props.onToggleSearch} className={cn("size-9 shrink-0 text-primary", props.searchOpen && "bg-secondary")}>
+          <Search className="size-5" />
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="More actions" className="size-9 shrink-0 text-primary">
@@ -133,6 +138,9 @@ export function FilesToolbar(props: {
           <List className="size-3.5" />
         </Button>
       </div>
+      <Button variant="ghost" size="icon" aria-label="Search" onClick={props.onToggleSearch} className={cn("size-7 [@media(pointer:coarse)]:size-9", props.searchOpen && "bg-secondary")}>
+        <Search className="size-3.5" />
+      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" aria-label="Sort" className="size-7 [@media(pointer:coarse)]:size-9">

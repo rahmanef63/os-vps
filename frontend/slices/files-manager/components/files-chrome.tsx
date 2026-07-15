@@ -1,5 +1,6 @@
 "use client";
 
+import { Search, X } from "lucide-react";
 import { FilesToolbar } from "./files-toolbar";
 import { UploadBar } from "./upload-bar";
 import { FileDetails } from "./file-details";
@@ -16,14 +17,18 @@ type Dnd = ReturnType<typeof useDnd>;
 // Toolbar header: nav + view/sort + new/upload, then UploadBar, then error.
 // Extracted from app.tsx purely to keep that file ≤200 LOC; no behavior change.
 export function FilesHeader({
-  ios, fs, cmd, dnd, view, sort, setView, setSort, openPicker, openFolderPicker, openSidebar, clearSel,
-  selectedCount, onDownload,
+  ios, fs, cmd, dnd, view, sort, setView, setSort, query, setQuery, searchOpen, onToggleSearch,
+  openPicker, openFolderPicker, openSidebar, clearSel, selectedCount, onDownload,
 }: {
   ios: boolean;
   fs: Fs; cmd: Cmd; dnd: Dnd;
   view: ViewMode; sort: SortKey;
   setView: (v: ViewMode) => void;
   setSort: (s: SortKey) => void;
+  query: string;
+  setQuery: (v: string) => void;
+  searchOpen: boolean;
+  onToggleSearch: () => void;
   openPicker: () => void;
   openFolderPicker: () => void;
   openSidebar: () => void;
@@ -57,7 +62,34 @@ export function FilesHeader({
         onCrumbDragOver={dnd.onDragOver}
         onCrumbDragLeave={dnd.onDragLeave}
         onCrumbDrop={dnd.onDrop}
+        searchOpen={searchOpen}
+        onToggleSearch={onToggleSearch}
       />
+      {searchOpen && (
+        <div className="flex items-center gap-2 border-b border-border px-3 py-1.5">
+          <Search className="size-3.5 shrink-0 text-muted-foreground" />
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              // Isolate the search field from the list's ⌘-shortcuts + type-ahead.
+              e.stopPropagation();
+              if (e.key === "Escape") { setQuery(""); onToggleSearch(); }
+            }}
+            placeholder="Search this folder"
+            aria-label="Search this folder"
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+          <button
+            onClick={() => { setQuery(""); onToggleSearch(); }}
+            aria-label="Close search"
+            className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      )}
       <UploadBar />
       {fs.error && (
         <div className="border-t border-destructive/30 bg-destructive/10 px-3 py-1 text-[11px] text-destructive">
