@@ -54,14 +54,29 @@ export function useWindowDrag(id: WinId, ref: RefObject<HTMLDivElement | null>) 
         cancelAnimationFrame(raf.current); raf.current = 0;
         setZone(null);
         const el = ref.current;
-        if (el) { el.style.transform = ""; el.style.transition = ""; } // drop live transform; restore .win-geo glide
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
-        if (z) snapWindow(id, z);
-        // Commit from the pointer delta in win-coords (the section-relative space
-        // win.x/win.y live in). NOT offsetLeft: the transform left the layout box
-        // at win.x, so offsetLeft would commit the original position.
-        else moveWindow(id, ox + dx, oy + ndy);
+        if (z) {
+          if (el) { el.style.transform = ""; el.style.transition = ""; } // let it glide into the snap zone
+          snapWindow(id, z);
+        } else {
+          // Atomic transform→left/top handoff. Clearing the transform reverts the
+          // box to its frozen left/top (the drag origin); if .win-geo's transition
+          // is live when the store then commits the NEW left/top, the window snaps
+          // back to origin and glides forward (the reported glitch). So bake the
+          // delta into the box's own inline left/top and drop the transform in the
+          // SAME frame while transition is still "none", then re-arm .win-geo next
+          // frame. moveWindow commits the identical numbers → the re-render is a
+          // no-op and nothing animates. (Commit from the pointer delta, NOT
+          // offsetLeft: the transform left the layout box at win.x.)
+          if (el) {
+            el.style.left = ox + dx + "px";
+            el.style.top = oy + ndy + "px";
+            el.style.transform = "";
+            requestAnimationFrame(() => { if (ref.current) ref.current.style.transition = ""; });
+          }
+          moveWindow(id, ox + dx, oy + ndy);
+        }
       };
       window.addEventListener("pointermove", move, { passive: true });
       window.addEventListener("pointerup", up);

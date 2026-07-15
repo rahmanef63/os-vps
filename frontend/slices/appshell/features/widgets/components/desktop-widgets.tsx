@@ -90,7 +90,13 @@ function DesktopWidget({ id, size, pos }: { id: string; size: WidgetSize; pos: W
 
   return (
     <div
-      className={cn("pointer-events-auto absolute touch-none cursor-grab active:cursor-grabbing", SIZE_W[size])}
+      className={cn(
+        // Elevation so a widget reads as the same floating surface family as
+        // windows (which carry --shadow-win). filter drop-shadow — not box-shadow
+        // — follows the inner card's rounded alpha; this square wrapper has no radius.
+        "pointer-events-auto absolute touch-none cursor-grab active:cursor-grabbing drop-shadow-[0_8px_24px_rgba(0,0,0,0.28)]",
+        SIZE_W[size],
+      )}
       style={{ left: pos.x + (offset?.dx ?? 0), top: pos.y + (offset?.dy ?? 0) }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
