@@ -28,7 +28,7 @@ export function TabStrip({
   };
 
   return (
-    <div className="flex min-h-9 items-stretch overflow-x-auto border-b border-[#2a2a30] bg-[#16161a]">
+    <div className="flex min-h-9 items-stretch overflow-x-auto border-b border-[#2a2a30] bg-[#16161a] [@media(pointer:coarse)]:min-h-[44px]">
       {tabs.map((p) => {
         const on = p === active;
         const dirty = dirtyOf(p);
@@ -53,7 +53,7 @@ export function TabStrip({
               onClick={(e) => closeTab(p, e)}
               // Coarse pointers: 36px hit area (glyph stays 12px); the min-h-9 tab
               // row grows ~3px to wrap it — taller touch tabs, no clipping.
-              className="grid size-4 shrink-0 place-items-center rounded p-0 text-[#9aa0aa] hover:bg-[#2a2a30] hover:text-[#e6e6e6] [@media(pointer:coarse)]:size-9"
+              className="grid size-4 shrink-0 place-items-center rounded p-0 text-[#9aa0aa] hover:bg-[#2a2a30] hover:text-[#e6e6e6] [@media(pointer:coarse)]:size-[44px]"
             >
               {dirty ? (
                 <span className="text-[13px] leading-none text-primary">●</span>
@@ -71,7 +71,7 @@ export function TabStrip({
         title="New file"
         aria-label="New file"
         onClick={onNew}
-        className="grid h-auto w-8 shrink-0 place-items-center rounded-none p-0 text-[#9aa0aa] hover:bg-[#1b1b20]"
+        className="grid h-auto w-8 shrink-0 place-items-center rounded-none p-0 text-[#9aa0aa] hover:bg-[#1b1b20] [@media(pointer:coarse)]:w-[44px]"
       >
         <Plus className="size-4" />
       </Button>

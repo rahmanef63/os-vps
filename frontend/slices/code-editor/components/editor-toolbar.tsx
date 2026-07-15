@@ -38,7 +38,7 @@ export function EditorToolbar({
         onClick={onOpenExplorer}
         className={cn(
           "size-7 place-items-center rounded-md p-0 text-[#9aa0aa] hover:bg-[#2a2a30]",
-          "hidden @max-[600px]:grid [@media(pointer:coarse)]:size-9",
+          "hidden @max-[600px]:grid [@media(pointer:coarse)]:size-[44px]",
         )}
       >
         <PanelLeft className="size-4" />
@@ -55,12 +55,13 @@ export function EditorToolbar({
             onClick={onTogglePreview}
             title="Toggle live preview (CDN deps)"
             aria-pressed={previewing}
+            className="[@media(pointer:coarse)]:h-[44px]"
           >
             <Eye />
             Preview
           </Button>
         )}
-        <Button size="sm" onClick={onSave} disabled={!canSave || !dirty}>
+        <Button size="sm" onClick={onSave} disabled={!canSave || !dirty} className="[@media(pointer:coarse)]:h-[44px]">
           <Save />
           Save
         </Button>

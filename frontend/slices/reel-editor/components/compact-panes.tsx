@@ -63,7 +63,7 @@ export function CompactPanes({
             </TabsTrigger>
           ))}
         </TabsList>
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden [padding-bottom:var(--sai-bottom,0px)]">
           {tab === "timeline" && timeline}
           {tab === "edit" && panel("editor")}
           {tab === "ai" && panel("ai")}

@@ -73,10 +73,10 @@ export function MobileShell({ stage, onSave, onSaveAs }: { stage: ReactNode; onS
           </TabsList>
           {/* AI + Layers manage their own scroll; the others share a ScrollArea. */}
           <TabsContent value="layers" className="m-0 min-h-0 flex-1 overflow-hidden"><LayersPanel /></TabsContent>
-          <TabsContent value="props" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full"><PropertiesPanel /></ScrollArea></TabsContent>
-          <TabsContent value="adjust" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full"><AdjustPanel /></ScrollArea></TabsContent>
-          <TabsContent value="style" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full"><LayerStylesPanel /></ScrollArea></TabsContent>
-          <TabsContent value="export" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full"><ExportPanel /></ScrollArea></TabsContent>
+          <TabsContent value="props" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full [padding-bottom:var(--sai-bottom,0px)]"><PropertiesPanel /></ScrollArea></TabsContent>
+          <TabsContent value="adjust" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full [padding-bottom:var(--sai-bottom,0px)]"><AdjustPanel /></ScrollArea></TabsContent>
+          <TabsContent value="style" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full [padding-bottom:var(--sai-bottom,0px)]"><LayerStylesPanel /></ScrollArea></TabsContent>
+          <TabsContent value="export" className="m-0 min-h-0 flex-1 overflow-hidden"><ScrollArea className="h-full [padding-bottom:var(--sai-bottom,0px)]"><ExportPanel /></ScrollArea></TabsContent>
           <TabsContent value="ai" className="m-0 min-h-0 flex-1 overflow-hidden"><AiPanel /></TabsContent>
         </Tabs>
       </div>
