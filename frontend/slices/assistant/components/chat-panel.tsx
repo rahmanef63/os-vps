@@ -11,6 +11,7 @@ import {
 } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useActiveShell } from "@/features/os-shell";
 import { runToolAgent, useOsApi, type AgentMsg } from "../lib/host";
 import { toolById } from "../lib/tools";
 import type { Agent, Automation } from "../lib/types";
@@ -56,6 +57,7 @@ export function ChatPanel({
   ref?: Ref<ChatHandle>;
 }) {
   const api = useOsApi();
+  const ios = useActiveShell().id === "ios";
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -199,12 +201,12 @@ export function ChatPanel({
         </div>
       ) : (
         <ScrollArea className="flex-1">
-          <div className="flex flex-col gap-4 p-4">
+          <div className={cn("flex flex-col p-4", ios ? "gap-1.5" : "gap-4")}>
             {messages.map((m) =>
               m.role === "tool" ? (
                 <ApprovalCard key={m.id} message={m} onResolve={resolve} />
               ) : (
-                <MessageBubble key={m.id} message={m} />
+                <MessageBubble key={m.id} message={m} ios={ios} />
               ),
             )}
             <div ref={bottomRef} />
