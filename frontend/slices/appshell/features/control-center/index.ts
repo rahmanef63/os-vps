@@ -1,9 +1,12 @@
 import { defineFeature } from "@/features/appshell";
 import { ControlCenter } from "./components/control-center";
+import { ControlCenterDesktop } from "./components/control-center-desktop";
 
-// Control Center — iOS-style pull-down toggles (mobile only). Open state is
-// owned by the mobile surface and read via the shell-UI context.
+// Control Center — the SAME real toggles on both surfaces: an iOS-style pull-down
+// Sheet (controlCenter slot, mobile) + a macOS menu-bar popover (menuBarStatus
+// slot, which only the macOS menu bar renders). Open state for the mobile Sheet is
+// owned by the mobile surface via the shell-UI context; the desktop popover is local.
 export const controlCenterFeature = defineFeature({
   id: "control-center",
-  slots: { controlCenter: ControlCenter },
+  slots: { controlCenter: ControlCenter, menuBarStatus: ControlCenterDesktop },
 });
