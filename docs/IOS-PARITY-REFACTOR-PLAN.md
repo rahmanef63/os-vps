@@ -641,8 +641,17 @@ Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + ve
 - **springboard** (`mobile-home.tsx` / `-parts` / `app-library-parts`): dock fill hardcoded white `.18` → theme-aware **`var(--glass-bar)`** + inner top-highlight (`--glass-hi`) + soft float shadow + hairline; grid label 11→12px, icon cap 62→58px; App-Library well raw rgba → `var(--glass-panel)` + `.glass`.
 - **Verified** (Playwright `:4005` dark): nav `Terminal` fw 600 centerX 201/402; dock bg `oklab(.27 / .62)` = `--glass-bar` + inset highlight + drop shadow. Screenshots = centered nav + floating frosted dock. All files iOS-exclusive-by-mount → zero cross-shell risk. `typecheck`+`eslint` clean; build+restart 200.
 
-### P2b — System surfaces + widgets · ⏳ next
-### P3 — Apps · ☐ pending
+### P2b — System surfaces + widgets · ✅ shipped 2026-07-15
+- **Notification Center** (`mobile-notifications.tsx`): raw `rgba(20,22,38,.62)` + inline `blur(28px)` → token **`--glass-nc`** + the `.glass` helper (now honors `var(--blur)`/Reduce-Transparency). Kept dark-over-wallpaper (iOS NC is dark in both themes). **Completes S2** — CC + DI + NC all honor `--blur`.
+- **Spotlight** (`spotlight.tsx`, `id==='ios'` branch): iOS = top-anchored (below notch) + full-width; input → a `--fill` systemFill pill with a leading search glyph. Desktop keeps the centered `max-w-xl` palette byte-for-byte.
+- **widget-picker** (surface-branch): phone copy fixed — "Desktop widgets"→**"Add Widget"**, dropped the "drag on the desktop" line, "Show desktop widgets"→"Show widgets".
+- **Today** (`mobile-widgets.tsx`): heading 18/700 → **28/800/-0.02em** large title.
+- **Verified** (Playwright `:4005` dark): Spotlight pill bg `--fill` + glyph + top 19px (was ~152); Today 28px/800; picker "Add Widget" + truthful desc; NC dark glass. `typecheck`+`eslint` clean; build+restart 200. iOS-exclusive-by-mount / `id==='ios'`-gated (Spotlight desktop branch untouched).
+- **Deferred to P4 (share one pattern):** the dialog→bottom-sheet conversions (widget-picker, reel Settings, code-editor close-guard, image-picker); CC/dock glass inner-edge opt-in; widget layered-glass + empty state.
+
+### P2 — Shell chrome · ✅ COMPLETE (P2a + P2b)
+
+### P3 — Apps · ⏳ next
 ### P4 — Polish + ratify skips · ☐ pending
 
 ---

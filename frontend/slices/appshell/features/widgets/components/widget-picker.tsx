@@ -7,6 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { WIDGET_META, setPickerOpen, setWidgetsOn, toggleWidget, usePickerOpen, useWidgetState } from "../widget-registry";
 import { WIDGET_RENDER } from "./widgets-defs";
+// Intra-slice import (not the @/features/appshell barrel) to avoid a self-cycle.
+import { useActiveShell } from "../../../registry/shells";
 
 // A real widget mounted mini can throw (or a poll can fail mid-render); a crash
 // guard keeps one bad preview from taking down the whole picker.
@@ -31,16 +33,23 @@ class PreviewBoundary extends Component<{ children: ReactNode }, { failed: boole
 export function WidgetPicker() {
   const open = usePickerOpen();
   const { on, enabled } = useWidgetState();
+  // On the phone Today view there is no "desktop" and no drag-to-arrange — the
+  // shared picker relabels for that surface (its only per-shell divergence).
+  const mobile = useActiveShell().surface === "mobile";
   return (
     <Dialog open={open} onOpenChange={setPickerOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Desktop widgets</DialogTitle>
-          <DialogDescription>Click a widget to add or remove it. Drag widgets on the desktop to arrange.</DialogDescription>
+          <DialogTitle>{mobile ? "Add Widget" : "Desktop widgets"}</DialogTitle>
+          <DialogDescription>
+            {mobile
+              ? "Tap a widget to add or remove it."
+              : "Click a widget to add or remove it. Drag widgets on the desktop to arrange."}
+          </DialogDescription>
         </DialogHeader>
 
         <label className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
-          <span className="font-medium">Show desktop widgets</span>
+          <span className="font-medium">{mobile ? "Show widgets" : "Show desktop widgets"}</span>
           <Switch checked={on} onCheckedChange={setWidgetsOn} />
         </label>
 

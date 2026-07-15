@@ -24,7 +24,7 @@ export function MobileWidgets() {
   return (
     <div className="flex h-full flex-col gap-3 overflow-y-auto px-4 py-3 [scrollbar-width:none]">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-lg font-bold text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Today</h2>
+        <h2 className="text-[28px] font-extrabold tracking-[-0.02em] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">Today</h2>
         {/* Edit the glanceable VPS telemetry set right from the phone — opens the
             shared widget picker (add/remove Clock/Notes/Quicklinks/CPU/Mem/…). */}
         <Button

@@ -55,6 +55,9 @@
   --fill2: rgba(118, 118, 128, 0.24);
   --glass-hi: rgba(255, 255, 255, 0.95);
   --glass-stroke: rgba(255, 255, 255, 0.7);
+  /* Notification Center — a dark glass panel over the wallpaper in BOTH themes
+     (iOS lock-screen aesthetic), so it is not redefined under dark. */
+  --glass-nc: rgba(20, 22, 38, 0.62);
 
   --glass-bar: rgba(250, 250, 252, 0.62);
   --glass-panel: rgba(252, 252, 254, 0.78);

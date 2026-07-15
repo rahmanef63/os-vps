@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   useApps,
+  useActiveShell,
   useCommands,
   useSpotlightOpen,
   useShellAppearance,
@@ -38,6 +41,7 @@ function SpotlightPanel() {
   const [recents] = useState(loadRecents);
   const inputRef = useRef<HTMLInputElement>(null);
   const LISTBOX_ID = "spotlight-listbox";
+  const ios = useActiveShell().id === "ios"; // iOS = top-anchored full-width search over the wallpaper
 
   // Debounced folder search under ~/projects (live) — opens Files at the hit.
   // Results are state, but "no query → no hits" is derived below (stale hits
@@ -147,27 +151,37 @@ function SpotlightPanel() {
 
   return (
     <div
-      className="absolute inset-0 z-[var(--z-spotlight)] flex items-start justify-center bg-black/20 pt-[18vh]"
+      className={cn(
+        "absolute inset-0 z-[var(--z-spotlight)] flex items-start justify-center bg-black/20",
+        ios ? "pt-[calc(var(--sai-top)_+_0.5rem)]" : "pt-[18vh]",
+      )}
       onClick={close}
     >
       <div
-        className="glass w-full max-w-xl overflow-hidden rounded-2xl border border-border shadow-2xl"
+        className={cn(
+          "glass w-full overflow-hidden rounded-2xl border border-border shadow-2xl",
+          ios ? "max-w-[calc(100%_-_1.5rem)]" : "max-w-xl",
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <input
-          ref={inputRef}
-          role="combobox"
-          aria-label="Spotlight search"
-          aria-expanded={results.length > 0}
-          aria-controls={LISTBOX_ID}
-          aria-activedescendant={results.length > 0 ? `spotlight-option-${selIdx}` : undefined}
-          aria-autocomplete="list"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={onKey}
-          placeholder="Search apps, folders, actions…"
-          className="w-full bg-transparent px-5 py-4 text-base outline-none placeholder:text-muted-foreground"
-        />
+        {/* iOS: input becomes a systemFill pill with a leading search glyph. */}
+        <div className={cn("flex items-center", ios && "m-3 gap-2 rounded-xl bg-[var(--fill)] px-3")}>
+          {ios && <Search className="size-[15px] shrink-0 text-muted-foreground" />}
+          <input
+            ref={inputRef}
+            role="combobox"
+            aria-label="Spotlight search"
+            aria-expanded={results.length > 0}
+            aria-controls={LISTBOX_ID}
+            aria-activedescendant={results.length > 0 ? `spotlight-option-${selIdx}` : undefined}
+            aria-autocomplete="list"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={onKey}
+            placeholder="Search apps, folders, actions…"
+            className={cn("w-full bg-transparent text-base outline-none placeholder:text-muted-foreground", ios ? "py-2.5" : "px-5 py-4")}
+          />
+        </div>
         {results.length > 0 && (
           <ResultList id={LISTBOX_ID} results={results} selIdx={selIdx} onHover={setSel} onPick={runAt} />
         )}

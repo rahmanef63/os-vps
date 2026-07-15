@@ -40,7 +40,7 @@ export function MobileNotifications({ open, onClose }: { open: boolean; onClose:
   if (!open) return null;
 
   return (
-    <div className="absolute inset-0 z-[40] flex flex-col [animation:appOpen_var(--shell-dur)_var(--shell-ease)]" style={{ background: "rgba(20,22,38,.62)", backdropFilter: "blur(28px) saturate(160%)", WebkitBackdropFilter: "blur(28px) saturate(160%)" }}>
+    <div className="glass absolute inset-0 z-[40] flex flex-col [animation:appOpen_var(--shell-dur)_var(--shell-ease)]" style={{ background: "var(--glass-nc)" }}>
       <header className="flex items-center px-5 pb-2 pt-10 text-white">
         <h2 className="text-[22px] font-bold">Notifications</h2>
         {items.length > 0 && (
