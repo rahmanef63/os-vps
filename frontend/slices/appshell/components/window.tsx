@@ -56,10 +56,10 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
   // lights / caption buttons plus pin.
   const menuItems: MenuItem[] = [
     { label: win.maximized ? "Restore" : "Maximize", icon: win.maximized ? Minimize2 : Maximize2, onClick: () => toggleMaximize(id) },
-    { label: "Minimize", icon: Minus, onClick: beginMinimize },
+    { label: "Minimize", icon: Minus, onClick: beginMinimize, shortcut: "⌘M" },
     { label: win.pinned ? "Unpin from Top" : "Keep on Top", icon: win.pinned ? PinOff : Pin, onClick: () => togglePin(id) },
     { type: "sep" },
-    { label: "Close", icon: X, onClick: beginClose },
+    { label: "Close", icon: X, onClick: beginClose, shortcut: "⌘W" },
   ];
   const anim =
     phase === "closing"

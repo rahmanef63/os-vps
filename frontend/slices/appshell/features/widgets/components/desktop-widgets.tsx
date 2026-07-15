@@ -84,7 +84,7 @@ function DesktopWidget({ id, size, pos }: { id: string; size: WidgetSize; pos: W
     { label: "Medium", icon: size === "m" ? Check : undefined, onClick: () => setWidgetSize(id, "m") },
     { label: "Large", icon: size === "l" ? Check : undefined, onClick: () => setWidgetSize(id, "l") },
     { type: "sep" },
-    { label: "Remove widget", icon: Trash2, onClick: () => toggleWidget(id) },
+    { label: "Remove widget", icon: Trash2, onClick: () => toggleWidget(id), danger: true },
     { label: "Desktop widgets…", icon: LayoutGrid, onClick: () => setPickerOpen(true) },
   ];
 

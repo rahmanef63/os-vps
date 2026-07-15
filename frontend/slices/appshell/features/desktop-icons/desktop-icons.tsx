@@ -92,7 +92,7 @@ function IconButton({ icon, selected }: { icon: DesktopIcon; selected: boolean }
   const items: MenuItem[] = [
     { label: "Open", icon: ExternalLink, onClick: open },
     { type: "sep" },
-    { label: "Remove", icon: Trash2, onClick: () => removeIcons([icon.id]) },
+    { label: "Remove", icon: Trash2, onClick: () => removeIcons([icon.id]), danger: true },
   ];
 
   return (

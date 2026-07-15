@@ -137,7 +137,8 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
               disabled={it.disabled}
               onClick={() => { it.onClick(); onClose(); }}
               className={cn(
-                "group flex w-full items-center gap-2.5 px-2.5 text-left text-foreground/90 outline-none transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-foreground/90",
+                "group flex w-full items-center gap-2.5 px-2.5 text-left outline-none transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:bg-primary focus-visible:text-primary-foreground disabled:opacity-40 disabled:hover:bg-transparent",
+                it.danger ? "text-destructive-text" : "text-foreground/90",
                 itemMetrics,
               )}
             >
@@ -150,7 +151,11 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
               ) : (
                 it.icon && <it.icon className={cn(iconSize, "shrink-0 text-primary group-hover:text-primary-foreground group-focus-visible:text-primary-foreground")} />
               )}
-              <span className="truncate">{it.label}</span>
+              <span className="min-w-0 flex-1 truncate">{it.label}</span>
+              {/* macOS-style right-aligned keyboard hint (display only). */}
+              {it.shortcut && (
+                <span className="shrink-0 pl-4 text-xs tabular-nums opacity-50 group-hover:opacity-80">{it.shortcut}</span>
+              )}
             </button>
           ),
         )}

@@ -9,7 +9,17 @@ import type { LucideIcon } from "lucide-react";
 import type { ShellId, ShellSurface } from "../registry/shells";
 
 export type MenuItem =
-  | { type?: "item"; label: string; icon?: LucideIcon; onClick: () => void; disabled?: boolean }
+  | {
+      type?: "item";
+      label: string;
+      icon?: LucideIcon;
+      onClick: () => void;
+      disabled?: boolean;
+      /** macOS-style keyboard hint shown right-aligned, e.g. "⌘I". Display only. */
+      shortcut?: string;
+      /** Destructive action — rendered in system red (Move to Trash, Delete). */
+      danger?: boolean;
+    }
   | { type: "sep" };
 
 // Context handed to a provider when the menu opens.
