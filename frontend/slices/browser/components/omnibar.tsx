@@ -22,8 +22,9 @@ import {
 import { cn } from "@/lib/utils";
 import { isSecure } from "../lib/url";
 import { BrowserMenu } from "./browser-menu";
+import { OmnibarIos } from "./omnibar-ios";
 
-type OmnibarProps = {
+export type OmnibarProps = {
   url: string;
   isNewTab: boolean;
   loading: boolean;
@@ -41,9 +42,15 @@ type OmnibarProps = {
   onHistory: () => void;
   onCopyLink: () => void;
   onClearHistory: () => void;
+  ios?: boolean;
 };
 
+// Dispatcher (no hooks) → iOS Safari glass pill vs the desktop Chrome-style bar.
 export function Omnibar(props: OmnibarProps) {
+  return props.ios ? <OmnibarIos {...props} /> : <OmnibarDesktop {...props} />;
+}
+
+function OmnibarDesktop(props: OmnibarProps) {
   const { url, isNewTab, loading, canBack, canForward, bookmarked } = props;
   // Mirror the active tab's URL while not typing: the user's edit is keyed to
   // the tab state it started from, so a navigation (key change) derives back to

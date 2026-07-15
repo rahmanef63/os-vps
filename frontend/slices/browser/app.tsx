@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppFrame } from "@/features/os-shell";
+import { AppFrame, useActiveShell } from "@/features/os-shell";
 import { useBrowserMode } from "./lib/host";
 import { useBrowserInspector } from "./lib/use-inspector";
 import { MockPane } from "./components/mock-pane";
@@ -41,6 +41,8 @@ export default function Browser() {
 // page, so there are no tabs — we render its screenshot and forward input.
 function LiveBrowser() {
   const rb = useRemoteBrowser();
+  // iOS = Safari: single glass address bar, no desktop tab strip / bookmark row.
+  const ios = useActiveShell().id === "ios";
   const [bookmarks, setBookmarks] = usePersistent<Bookmark[]>(
     "os-vps:browser.bookmarks",
     DEFAULT_BOOKMARKS,
@@ -116,19 +118,22 @@ function LiveBrowser() {
     <AppFrame
       className="bg-card"
       header={
-        <TabBar
-          tabs={rb.tabs}
-          activeId={rb.activeId}
-          aiOpen={aiOpen}
-          onSwitch={rb.switchTab}
-          onClose={rb.closeTab}
-          onNew={rb.newTab}
-          onToggleAi={() => setAiOpen((o) => !o)}
-        />
+        ios ? undefined : (
+          <TabBar
+            tabs={rb.tabs}
+            activeId={rb.activeId}
+            aiOpen={aiOpen}
+            onSwitch={rb.switchTab}
+            onClose={rb.closeTab}
+            onNew={rb.newTab}
+            onToggleAi={() => setAiOpen((o) => !o)}
+          />
+        )
       }
       toolbar={
         <>
           <Omnibar
+            ios={ios}
             url={url}
             isNewTab={blank}
             loading={rb.busy}
@@ -152,7 +157,7 @@ function LiveBrowser() {
             onCopyLink={copyLink}
             onClearHistory={() => setHistory([])}
           />
-          <BookmarkBar bookmarks={bookmarks} onOpen={navigate} />
+          {!ios && <BookmarkBar bookmarks={bookmarks} onOpen={navigate} />}
         </>
       }
       bodyClassName="relative overflow-hidden bg-background"
