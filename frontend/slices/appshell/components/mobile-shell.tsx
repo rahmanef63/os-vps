@@ -218,7 +218,7 @@ export function MobileShell() {
               </span>
               <span className="mx-auto max-w-[55%] truncate text-[16px] font-semibold">{activeApp.title}</span>
               {/* primary exit control — 44pt HIG touch target */}
-              <Button type="button" variant="ghost" onClick={goHome} className="absolute right-2 top-1/2 h-11 min-w-11 -translate-y-1/2 rounded-md px-3 text-sm font-medium text-primary">
+              <Button type="button" variant="ghost" onClick={goHome} className="absolute right-2 top-1/2 h-[44px] min-w-[44px] -translate-y-1/2 rounded-md px-3 text-sm font-medium text-primary">
                 Done
               </Button>
             </div>

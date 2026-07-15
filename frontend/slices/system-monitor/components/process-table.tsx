@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const COLS = "grid grid-cols-[3rem_1fr_5rem_4rem_4.5rem] gap-2";
 
 const cpuTone = (cpu: number) =>
-  cpu > 50 ? "text-destructive" : "text-[color:var(--text-dim)]";
+  cpu > 50 ? "text-destructive-text" : "text-[color:var(--text-dim)]";
 
 // Live data via /api/v1/sys/processes (`ps`, top 40); mock mode seeds rows.
 // mem arrives in MB per the adapter; render as-is. Wide panes get the grid

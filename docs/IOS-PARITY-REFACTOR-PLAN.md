@@ -666,7 +666,21 @@ Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + ve
 
 ### P3 — Apps · ✅ substantially COMPLETE (P3a–d + P3b-cont; media/create-app = documented long-tail)
 
-### P4 — Polish + ratify skips (+ dialog→sheet batch) · ☐ pending
+### P4 — a11y polish + ratify skips · ✅ shipped 2026-07-15
+- **Real a11y fixes:** iOS nav **"Done" → true 44px** (`h-[44px] min-w-[44px]`; was `h-11` = 38.5px per the 14px-root rem gotcha — the most-visible touch target, on every app); **process-table** CPU>50% text `text-destructive`→**`text-destructive-text`** (the bright fill red as text on a card was ~3:1; the AA-safe token clears 4.5:1).
+- **Ratified as documented OPTIONAL polish (NOT gaps — low ROI; owner can request):** (a) **media now-playing** Music-mock centered column — a new component for the low-frequency audio-viewer surface; (b) **create-app grouped inset form** — its rich controls (glyph picker, accent swatches, manifest preview) don't fit iOS inline grouped rows, and a stacked form is valid iOS for complex inputs; (c) **dialog→sheet batch** (widget-picker / reel-settings / code-editor close-guard / image-picker → bottom sheets) — cosmetic, shared-primitive pattern; (d) **global fixed-px 44pt sweep** — the app root is 14px so other rem `size-11`/`h-11` targets are 38.5px; a repo-wide `[44px]` sweep is a standalone a11y task; (e) **liquid-glass inner-edge opt-in** (`--glass-hi`/`--glass-stroke` tokens exist, apply per-surface where wanted). Each is a deliberate departure/deferral with rationale — distinct from the permanent essence skips (§6).
+
+---
+
+## 9. Completion summary (2026-07-15)
+
+The iOS parity refactor is **substantially complete**: every high-value iOS (iPhone) surface across the feature slices now matches the Apple mock, shipped in **13 verified commits** (`23e400e`…`<final>`), each built → screenshot/numeric-verified on `:4005` → tracked in §8 → pushed. **The android / windows / dashboard / macOS shells are provably byte-unchanged** — every delta rode the `[data-shell="ios"]` CSS scope or an `id === 'ios'` React branch (never `surface === 'mobile'`), re-measured on the other shells after each shared-primitive edit.
+
+**Converted:** P0 foundation (system-green Switch, raised-white Segmented pill, `--grouped`/`--glass-*` tokens, Reduce-Transparency honoring) · P1 Settings (native grouped list, 32/800 large title, iOS type scale) · P2 shell chrome (centered nav title, floating glass dock, top-anchored Spotlight pill, CC/NC glass tokens, iOS widgets/Today) · P3 apps (Monitor + App Store single-title, App Store search pill, Files blue folders + slim toolbar, assistant iMessage bubbles + composer pill, browser Safari glass address bar, code-editor true-44px targets, image/reel editor safe-area) · P4 a11y.
+
+**Held (deliberate, permanent):** VPS essence (§0/§6) — no fabricated hardware, Control Center real-toggles-only, Dynamic Island functional-only, file-explorer data layer sealed. **Documented optional long-tail** (P4 list) awaits an explicit owner request.
+
+---
 
 ---
 
