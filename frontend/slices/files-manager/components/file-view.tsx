@@ -17,6 +17,7 @@ const VIRTUALIZE_THRESHOLD = 200;
 const LIST_ROW_HEIGHT = 28;
 
 export function FileView({
+  ios,
   entries,
   view,
   dir,
@@ -30,6 +31,7 @@ export function FileView({
   onRename,
   onRenameCancel,
 }: {
+  ios: boolean;
   entries: FsEntry[];
   view: ViewMode;
   dir: string;
@@ -55,9 +57,9 @@ export function FileView({
     return (
       <div
         {...bgDrop}
-        className={`flex h-full items-center justify-center p-8 text-center text-xs text-muted-foreground ${bgRing}`}
+        className={`flex h-full items-center justify-center p-8 text-center text-muted-foreground ${ios ? "text-[15px]" : "text-xs"} ${bgRing}`}
       >
-        Drop files or folders here to upload
+        {ios ? "No Items" : "Drop files or folders here to upload"}
       </div>
     );
   }
@@ -70,6 +72,7 @@ export function FileView({
     return (
       <FileItem
         key={entry.name}
+        ios={ios}
         entry={entry}
         view={view}
         dirPath={dir}

@@ -139,6 +139,7 @@ export default function FilesManager({ payload }: AppProps) {
             </div>
           ) : (
             <FileView
+              ios={shellId === "ios"}
               entries={ordered}
               view={view}
               dir={fs.path}
