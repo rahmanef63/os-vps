@@ -631,8 +631,12 @@ Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + ve
 - **Deferred from P0:** the broad `[data-shell="ios"] .glass` inner-highlight edge — an inset `box-shadow` clobbers existing `shadow-*`; it lands per-surface as an opt-in class in P2/P3.
 - **Verified** (Playwright `:4005`, seeded dark): iOS switch ON `rgb(48,209,88)` 47×29 knob 25 @translateX20; iOS segmented sel = neutral `--card` 14px; **Android segmented sel = accent `oklch(.57 .13 …)` 10.5px — byte-unchanged** (the `[data-shell="ios"]` scope holds). `typecheck` + `eslint` clean; build + `systemctl restart`, root 200.
 
-### P1 — Settings · ⏳ next
-### P2 — Shell chrome · ☐ pending
+### P1 — Settings · ✅ shipped 2026-07-15
+- **shell-settings primitives** (portable slice; iOS look via `[data-shell="ios"]` CSS + inert `data-slot` — signatures byte-stable, portability contract held): row label **16/500**, value **15**, section-title **13**, footnote **12.5/inset-16/lh-1.42**; borderless `settings-card` + `--grouped` `settings-pane`; 0.5px `--sep` hairline inset to **16px** (unifies primitive rows + the index). `data-slot` added to `section/row/block/action-row`.
+- **os-settings sections** (`id==='ios'` branches in `sections.tsx`): iOS large title **32/800/-0.02em** (Android keeps 26px); index rows min-h-46 py-11, hairline→16px, chevron 15px, borderless card, 18px gaps, pane→`--grouped`.
+- **Verified** (Playwright `:4005` dark): iOS About title = **32px / 800 / -0.64px**, label 16px, value 15px, pane `#000`, index hairline 16px; **Android index unchanged** (hairline 3.5rem/49px, pane `bg-muted`, chevron 18px). Screenshot = grouped cards on the black page + colored tiles + large title = authentic iOS System Settings. `typecheck`+`eslint` clean; build+restart, root 200.
+
+### P2 — Shell chrome · ⏳ next
 ### P3 — Apps · ☐ pending
 ### P4 — Polish + ratify skips · ☐ pending
 

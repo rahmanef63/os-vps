@@ -60,15 +60,16 @@ function SectionBody({ id }: { id: SectionId }) {
 // from the shell nav bar's "Settings", so no double title); on macOS/Windows a
 // compact title + blurb above the same shared grouped-card body.
 export function SectionDetail({ id }: { id: SectionId }) {
-  const { surface } = useActiveShell();
+  const { id: shellId, surface } = useActiveShell();
   const isPhone = surface === "mobile";
   const meta = SECTIONS.find((s) => s.id === id);
   return (
     <ScrollArea className="h-full">
-      <div className="mx-auto min-w-0 max-w-3xl space-y-4 overflow-x-hidden p-3 pb-[max(1rem,var(--sai-bottom,0px))] sm:space-y-5 sm:p-5">
+      <div data-slot="settings-pane" className="mx-auto min-w-0 max-w-3xl space-y-4 overflow-x-hidden p-3 pb-[max(1rem,var(--sai-bottom,0px))] sm:space-y-5 sm:p-5">
         {meta &&
           (isPhone ? (
-            <h1 className="px-1 pt-1 text-[26px] font-bold leading-none tracking-tight">{meta.label}</h1>
+            // iOS large title (32/800, §3.9); Android keeps the 26px title.
+            <h1 className={cn("px-1 pt-1 leading-none", shellId === "ios" ? "text-[32px] font-extrabold tracking-[-0.02em] pb-1" : "text-[26px] font-bold tracking-tight")}>{meta.label}</h1>
           ) : (
             <header className="space-y-0.5">
               <h2 className="text-sm font-semibold leading-tight">{meta.label}</h2>
@@ -94,6 +95,8 @@ export function SectionList({
   active: SectionId | null;
   onSelect: (id: SectionId) => void;
 }) {
+  const { id: shellId } = useActiveShell();
+  const ios = shellId === "ios";
   // Grouped cards echo iOS's visual grouping, bucketed by each section's
   // semantic `group` (personalization / services / system) — reorder-safe,
   // unlike an index slice. Consecutive same-group sections share a card.
@@ -107,10 +110,14 @@ export function SectionList({
     <div
       role="tablist"
       aria-label="Settings sections"
-      className="mx-auto min-h-full max-w-2xl space-y-6 bg-muted/25 p-4 pb-[max(1rem,var(--sai-bottom,0px))]"
+      data-slot="settings-pane"
+      className={cn(
+        "mx-auto min-h-full max-w-2xl bg-muted/25 p-4 pb-[max(1rem,var(--sai-bottom,0px))]",
+        ios ? "space-y-[18px]" : "space-y-6",
+      )}
     >
       {groups.map((group, gi) => (
-        <div key={gi} className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
+        <div key={gi} data-slot="settings-card" className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
           {group.map((s) => {
             const Icon = s.icon;
             const on = s.id === active;
@@ -120,9 +127,11 @@ export function SectionList({
                 type="button"
                 role="tab"
                 aria-selected={on}
+                data-slot="settings-row"
                 onClick={() => onSelect(s.id)}
                 className={cn(
-                  "relative flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors",
+                  "relative flex w-full items-center gap-3 px-4 text-left transition-colors",
+                  ios ? "min-h-[46px] py-[11px]" : "py-2.5",
                   "after:absolute after:inset-x-0 after:bottom-0 after:left-[3.5rem] after:h-px after:bg-border/60 last:after:hidden",
                   on ? "bg-accent" : "hover:bg-accent/60",
                 )}
@@ -134,7 +143,7 @@ export function SectionList({
                   <Icon className="size-[17px] text-white" />
                 </span>
                 <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-tight">{s.label}</span>
-                <ChevronRight className="size-[18px] shrink-0 text-muted-foreground/45" />
+                <ChevronRight className={cn("shrink-0", ios ? "size-[15px] text-muted-foreground/40" : "size-[18px] text-muted-foreground/45")} />
               </button>
             );
           })}

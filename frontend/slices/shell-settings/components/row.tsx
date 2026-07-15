@@ -18,13 +18,14 @@ export function SettingsRow({
 }) {
   return (
     <div
+      data-slot="settings-row"
       className={cn(
         "relative flex min-h-[46px] flex-col gap-2 px-4 py-[11px] sm:flex-row sm:items-center sm:justify-between",
         "after:absolute after:inset-x-0 after:bottom-0 after:left-4 after:h-px after:bg-border/60 last:after:hidden",
         className,
       )}
     >
-      <span className="text-sm text-foreground">{label}</span>
+      <span data-slot="settings-row-label" className="text-sm text-foreground">{label}</span>
       <div className="min-w-0 w-full sm:w-auto sm:shrink-0">{children}</div>
     </div>
   );
@@ -44,14 +45,15 @@ export function SettingsValueRow({
 }) {
   return (
     <div
+      data-slot="settings-row"
       className={cn(
         "relative flex min-h-[46px] items-center justify-between gap-3 px-4 py-[11px]",
         "after:absolute after:inset-x-0 after:bottom-0 after:left-4 after:h-px after:bg-border/60 last:after:hidden",
         className,
       )}
     >
-      <span className="shrink-0 text-sm text-foreground">{label}</span>
-      <span className="min-w-0 truncate text-right text-[13px] text-muted-foreground">{value}</span>
+      <span data-slot="settings-row-label" className="shrink-0 text-sm text-foreground">{label}</span>
+      <span data-slot="settings-value" className="min-w-0 truncate text-right text-[13px] text-muted-foreground">{value}</span>
     </div>
   );
 }

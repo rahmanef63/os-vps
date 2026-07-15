@@ -30,11 +30,11 @@ export function SettingsSection({
     <section className={cn("space-y-2", className)}>
       <div className="flex items-center gap-2 px-1 text-muted-foreground">
         <span className="[&_svg]:size-3.5">{icon}</span>
-        <span className="text-[11px] font-semibold uppercase tracking-wide">{title}</span>
+        <span data-slot="settings-section-title" className="text-[11px] font-semibold uppercase tracking-wide">{title}</span>
       </div>
-      {bare ? children : <div className="overflow-hidden rounded-xl border bg-card">{children}</div>}
+      {bare ? children : <div data-slot="settings-card" className="overflow-hidden rounded-xl border bg-card">{children}</div>}
       {footnote && (
-        <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">{footnote}</p>
+        <p data-slot="settings-footnote" className="px-1 text-[11px] leading-relaxed text-muted-foreground">{footnote}</p>
       )}
     </section>
   );

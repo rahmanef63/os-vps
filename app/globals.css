@@ -321,6 +321,38 @@ body {
   color: var(--foreground);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
+
+/* iOS Settings grouped-list body. The shell-settings primitives render the SAME
+   markup in every shell; the iOS type scale + borderless-card-on-grouped-page
+   look lives here (scoped) so the portable slice stays brand/shell-free.
+   Row/section-title/value/footnote sizes are px in scoped CSS — the tokens-not-hex
+   rule governs colors (which stay --sep/--grouped/--card), not sizes. */
+[data-shell="ios"] [data-slot="settings-row-label"] { font-size: 16px; font-weight: 500; }
+[data-shell="ios"] [data-slot="settings-value"] { font-size: 15px; }
+[data-shell="ios"] [data-slot="settings-section-title"] { font-size: 13px; }
+[data-shell="ios"] [data-slot="settings-footnote"] {
+  font-size: 12.5px;
+  padding-left: 16px;
+  padding-right: 16px;
+  line-height: 1.42;
+}
+/* Borderless grouped card on a distinct --grouped page (the tonal step reads as
+   "grouped"); the consumer paints the pane via data-slot="settings-pane". */
+[data-shell="ios"] [data-slot="settings-card"] {
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+[data-shell="ios"] [data-slot="settings-pane"] { background: var(--grouped); }
+/* 0.5px hairline at the full --sep alpha, inset to 16px (row padding, not past
+   the icon tile) — overrides both the primitive rows (already 16px) and the
+   index rows (56px on other shells) to one iOS inset. */
+[data-shell="ios"] [data-slot="settings-row"]::after {
+  left: 16px;
+  background: var(--sep);
+  height: 1px;
+  transform: scaleY(0.5);
+  transform-origin: bottom;
+}
 [data-shell="windows"] {
   --shell-font: "Segoe UI Variable Text", "Segoe UI", system-ui, var(--font-ui);
   --shell-radius-win: 8px;

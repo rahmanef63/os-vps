@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 export function SettingsBlock({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
+      data-slot="settings-row"
       className={cn(
         "relative px-4 py-3",
         "after:absolute after:inset-x-0 after:bottom-0 after:left-4 after:h-px after:bg-border/60 last:after:hidden",

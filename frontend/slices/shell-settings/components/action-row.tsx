@@ -33,6 +33,7 @@ export function SettingsActionRow({
   return (
     <button
       type="button"
+      data-slot="settings-row"
       onClick={onClick}
       disabled={disabled || busy}
       aria-busy={busy}
@@ -44,7 +45,7 @@ export function SettingsActionRow({
       )}
     >
       {icon && <span className="shrink-0 [&_svg]:size-4">{icon}</span>}
-      <span className="flex-1">{label}</span>
+      <span data-slot="settings-row-label" className="flex-1">{label}</span>
       {busy ? <Loader2 role="status" aria-label="Working…" className="size-4 shrink-0 animate-spin" /> : trailing ?? null}
     </button>
   );
