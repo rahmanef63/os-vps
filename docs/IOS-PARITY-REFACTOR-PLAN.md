@@ -620,6 +620,24 @@ Every agent independently confirmed these. They are **deliberate**, not gaps —
 
 ---
 
+## 8. Progress log
+
+Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + verified + pushed.
+
+### P0 — Systemic foundation · ✅ shipped 2026-07-15
+- **S1 · iOS Switch + Segmented** (`[data-shell="ios"]` CSS in `globals.css` + inert attrs). Switch ON = system-green `#30d158`, **47×29** track + **25px** knob (`translateX(20px)`), OFF = `--fill2`. Segmented selected = raised **`--card` white pill** (not tint fill — Golden Rule 5) at 14px/500 on a `--fill` r9 track. Added `data-slot="segmented"/"segmented-option"` + `data-selected` to `components/ui/segmented.tsx` (render-inert).
+- **S3 · tokens** — added `--grouped` / `--fill` / `--fill2` / `--glass-hi` / `--glass-stroke` (light + dark) to `globals.css`. Inert until referenced (S1 uses `--fill`/`--fill2`/`--card`; the grouped-page + glass-edge land in P1/P2).
+- **S2 · Reduce-Transparency** — Control Center + Dynamic Island swapped fixed `backdrop-blur-xl`/`backdrop-blur` → the `.glass` helper (reads `var(--blur)`, so `.reduce-glass` collapses it). **Deferred:** NC blur-bypass → P2 (entangled with NC surface tokenization); browser/code-editor blur → P3.
+- **Deferred from P0:** the broad `[data-shell="ios"] .glass` inner-highlight edge — an inset `box-shadow` clobbers existing `shadow-*`; it lands per-surface as an opt-in class in P2/P3.
+- **Verified** (Playwright `:4005`, seeded dark): iOS switch ON `rgb(48,209,88)` 47×29 knob 25 @translateX20; iOS segmented sel = neutral `--card` 14px; **Android segmented sel = accent `oklch(.57 .13 …)` 10.5px — byte-unchanged** (the `[data-shell="ios"]` scope holds). `typecheck` + `eslint` clean; build + `systemctl restart`, root 200.
+
+### P1 — Settings · ⏳ next
+### P2 — Shell chrome · ☐ pending
+### P3 — Apps · ☐ pending
+### P4 — Polish + ratify skips · ☐ pending
+
+---
+
 *Compiled 2026-07-15 from a 19-agent audit (`ios-parity-audit`, 1.6M tokens). SSOT verified against
 `mock-os/Apple-clone-app/{shared/theme.js,shared/config.js,support.js}` + the `.dc.html` screens.
 This is the extraction contract: **mock → os-vps iOS surface only**, everything else held constant.*

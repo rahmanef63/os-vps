@@ -48,6 +48,14 @@
   --sep: rgba(0, 0, 0, 0.1);
   --sep-strong: rgba(0, 0, 0, 0.16);
 
+  /* iOS grouped-list + systemFill + liquid-glass edge. Referenced only by
+     [data-shell="ios"] rules → inert for the android/windows/dashboard shells. */
+  --grouped: #f2f2f7;
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill2: rgba(118, 118, 128, 0.24);
+  --glass-hi: rgba(255, 255, 255, 0.95);
+  --glass-stroke: rgba(255, 255, 255, 0.7);
+
   --glass-bar: rgba(250, 250, 252, 0.62);
   --glass-panel: rgba(252, 252, 254, 0.78);
   --glass-menu: rgba(252, 252, 254, 0.86);
@@ -118,6 +126,12 @@
   --text-faint: rgba(242, 242, 245, 0.4);
   --sep: rgba(255, 255, 255, 0.1);
   --sep-strong: rgba(255, 255, 255, 0.18);
+
+  --grouped: #000000;
+  --fill: rgba(120, 120, 128, 0.24);
+  --fill2: rgba(120, 120, 128, 0.36);
+  --glass-hi: rgba(255, 255, 255, 0.2);
+  --glass-stroke: rgba(255, 255, 255, 0.14);
 
   --glass-bar: rgba(28, 28, 32, 0.6);
   --glass-panel: rgba(34, 34, 40, 0.74);
@@ -268,6 +282,44 @@ body {
 /* Shared app-icon tile corner: a plain rounded-rect at the per-shell radius. */
 .shell-icon-tile {
   border-radius: var(--shell-icon-radius);
+}
+
+/* ── iOS component parity (scoped to the iOS surface ONLY) ─────────────────
+   Shared primitives (Switch, Segmented) carry accent-tinted states that suit
+   Material/Fluent; iOS wants system-green switches + a raised WHITE segmented
+   pill (Golden Rule 5: tint is not a fill). Scoping to [data-shell="ios"] on
+   #main-content (desktop.tsx) means android/windows/dashboard/macos never match
+   → their computed styles stay byte-identical. #30d158 is a fixed semantic
+   category color (accepted raw-hex exception, like the traffic lights). */
+[data-shell="ios"] [role="switch"] {
+  width: 47px;
+  height: 29px;
+}
+[data-shell="ios"] [role="switch"][aria-checked="true"] { background: #30d158; }
+[data-shell="ios"] [role="switch"][aria-checked="false"] { background: var(--fill2); }
+[data-shell="ios"] [role="switch"] > span {
+  width: 25px;
+  height: 25px;
+  transform: translateX(2px);
+}
+[data-shell="ios"] [role="switch"][aria-checked="true"] > span {
+  transform: translateX(20px);
+}
+[data-shell="ios"] [data-slot="segmented"] {
+  background: var(--fill);
+  border-color: transparent;
+  border-radius: 9px;
+  gap: 0;
+}
+[data-shell="ios"] [data-slot="segmented-option"] {
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 7px;
+}
+[data-shell="ios"] [data-slot="segmented-option"][data-selected="true"] {
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 [data-shell="windows"] {
   --shell-font: "Segoe UI Variable Text", "Segoe UI", system-ui, var(--font-ui);

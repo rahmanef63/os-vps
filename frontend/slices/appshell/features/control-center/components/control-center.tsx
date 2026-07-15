@@ -33,7 +33,7 @@ export function ControlCenter() {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="top"
-        className="rounded-b-3xl border-border bg-[var(--glass-menu)] p-4 pt-9 backdrop-blur-xl"
+        className="glass rounded-b-3xl border-border bg-[var(--glass-menu)] p-4 pt-9"
       >
         <SheetTitle className="sr-only">Control Center</SheetTitle>
         <SheetDescription className="sr-only">Quick system toggles</SheetDescription>

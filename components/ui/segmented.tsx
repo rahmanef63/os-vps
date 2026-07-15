@@ -18,6 +18,7 @@ function Segmented<T extends string>({
 }) {
   return (
     <div
+      data-slot="segmented"
       className={cn(
         "inline-flex gap-1 rounded-lg border border-border bg-secondary p-0.5",
         className,
@@ -27,6 +28,8 @@ function Segmented<T extends string>({
         <button
           key={o.value}
           type="button"
+          data-slot="segmented-option"
+          data-selected={value === o.value}
           onClick={() => onChange(o.value)}
           className={cn(
             "flex-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors min-h-9 sm:min-h-8",
