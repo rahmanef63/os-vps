@@ -55,10 +55,10 @@ Registry already wires openai + ~30 OpenAI-compatible providers (`lib/models/reg
 
 ### Status — ALL SHIPPED + VERIFIED (2026-07-15, deployed to :4005)
 - **1** widget elevation — `drop-shadow` on the desktop widget wrapper; class live on the wrapper (screenshot: CPU/Memory/Storage cards now float). ✅
-- **2** drop-overlay — capture-phase `onDropCapture` clears `dragActive` before inner `stopPropagation`; typecheck. (DnD interaction — logic-verified.) ✅
-- **3** window drag — atomic transform→inline left/top handoff, `.win-geo` transition re-armed next rAF so the commit doesn't glide; typecheck. (DnD — logic-verified.) ✅
+- **2** drop-overlay — capture-phase `onDropCapture` clears `dragActive` before inner `stopPropagation`; typecheck. Logic-verified only: a synthetic `DragEvent` can't populate `dataTransfer.types` with `"Files"`, so Playwright can't fabricate a trusted OS file-drag to exercise it end-to-end. ✅
+- **3** window drag — atomic transform→inline left/top handoff, `.win-geo` transition re-armed next rAF. **VERIFIED live**: dragged the Files window +140/+90 and read its rect immediately on mouseup → landed exactly at target, NOT at origin (the precise fixed-vs-buggy discriminator; the old bug reads ~origin then glides). ✅
 - **4** search + type-ahead — VERIFIED live: search filter 83→39 rows on "a"; type-ahead jumped selection to `actions-runner-…`. ✅
-- **5a** delete — `mkdir(~/.Trash)` before the move (idempotent; host-gated — mock seeds `/.Trash` so only live bit). ✅
+- **5a** delete — `mkdir(~/.Trash)` before the move (idempotent). **DEFINITIVELY VERIFIED live**: `~/.Trash` was *absent* on the host (`trashExistedBefore:false`), yet Move-to-Trash created it and the folder moved (`movedToTrash:true`) — the exact silent-ENOENT bug, reproduced-as-absent then proven fixed. ✅
 - **5b** Open with Claude Code — VERIFIED live: dir-only context row on folder `.9router`; opens a fresh PTY `cd "$HOME"'…' && claude --dangerously-skip-permissions`. ✅
 - **6** OpenAI BYOK — VERIFIED live: `/api/models?provider=openai` → 56 models; picker lists 8 providers incl. OpenAI; openai-protocol adapter unit-tested (2/2). OAuth-for-`/v1` clarified as non-existent. ✅
 
