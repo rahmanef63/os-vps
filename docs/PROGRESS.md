@@ -7,6 +7,35 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 — Shell action contract (drawer + OS menu) + BYOK add-provider (DONE)
+
+Closed the gap the Apple mock flagged: feature slices now feed the shell's
+menu/drawer format, and BYOK matches models-rahmanef-com's "add provider". Built
+from a 3-probe audit → `DRAWER-MENU-BYOK-PLAN.md`. tsc + lint + vitest (299) green;
+behaviorally verified on an isolated `:4011` dev server (prod never touched).
+
+- **Shell action contract — one bus, both surfaces.** The AI-Inspector bus already
+  publishes live per-app `actions` (all 14 apps). Surfaced them as (a) the desktop
+  menu-bar app menu (`menu-bar.tsx` reads `useInspectorInfo(focusedId).actions`) and
+  (b) a mobile in-app bottom-sheet drawer — a trailing "•••" in the iOS
+  (`mobile-shell.tsx`) + Android (`android-shell.tsx`) app headers opens the new
+  `AppActionsSheet` (shadcn Sheet side=bottom). No per-slice edits, no new bus. Did
+  NOT rebuild to the mock's `prepare(ctx)→os` merge model. Verified: iOS/Android
+  "•••" → New folder/Refresh/Empty Trash for Files; desktop Files menu lists the same.
+- **BYOK add-provider — custom endpoint + validate + list/delete.** Streaming already
+  consumed `resolved.baseUrl`+`protocol`; added the storage+UI: `OsConfig.customProviders`
+  (`lib/config/store.ts`), SSRF guard (`lib/host/ssrf.ts` + test), a `protocol` override on
+  `resolveModel` (`lib/models/resolve.js`), `/api/config` GET-list / POST-custom / DELETE,
+  `/api/models/test` (1-token validation), and the Settings AI panel: custom-provider form
+  (`custom-provider-form.tsx` + `custom-provider-config.ts` + test, ported from
+  models-rahmanef-com), connected-provider list with delete (`provider-list.tsx`), Test badge.
+  **OAuth deferred** (Phase D — big lift; the mock's "Sign in with OpenAI" is Codex device-code,
+  not the platform API).
+- Guards: iOS/Android edits live in their single-mount shells; the desktop menu addition is
+  additive (empty actions → nothing renders); a null custom conn keeps built-ins registry-pinned
+  → macOS/Windows/Dashboard byte-unchanged. **Not redeployed** — `pnpm build` + `sudo systemctl
+  restart os-vps.service` to activate.
+
 ## 2026-06-15 — upload-DoS P0 closed (independent QA loop)
 
 An independent QA `/loop` rated os-vps and shipped the one **P0 a parallel audit

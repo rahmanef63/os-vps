@@ -1,12 +1,20 @@
 import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
-import { envCredentialStore } from "@/lib/models";
+import { envCredentialStore, PROVIDERS } from "@/lib/models";
 
 // Owner config (BYOK keys + selected provider/model), replacing the Convex
 // `appConfig` table. A host JSON file (chmod 600) read server-side only — raw keys
 // never reach the browser. `keys` is the per-provider SSOT; `anthropicApiKey`
 // stays a read-only alias so existing installs migrate for free.
+
+/** A user-added OpenAI-compatible / Anthropic-Messages endpoint. The key stays in
+ *  OsConfig.keys[slug] (same per-provider SSOT as built-ins); this holds the wiring. */
+export interface CustomProviderConn {
+  baseUrl: string;
+  protocol?: "openai" | "anthropic";
+  models?: string[];
+}
 
 export interface OsConfig {
   /** Per-provider BYOK keys — the SSOT. */
@@ -14,6 +22,8 @@ export interface OsConfig {
   /** Selected provider id (e.g. "anthropic"). */
   provider?: string;
   model?: string;
+  /** User-added custom providers: slug → connection (key stays in keys[slug]). */
+  customProviders?: Record<string, CustomProviderConn>;
   /** @deprecated back-compat read alias for keys.anthropic. */
   anthropicApiKey?: string;
 }
@@ -75,4 +85,38 @@ export function hostCredentialStore() {
       await writeConfig({ keys });
     },
   };
+}
+
+// ── Custom providers ─────────────────────────────────────────────────────────
+// A slug for a user-named provider: lowercase, alnum + dashes, ≤40 chars.
+export function slugifyProvider(name: string): string {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+}
+
+// True if `slug` is a registry built-in — a custom provider must NOT shadow one,
+// else resolveModel would pin the key to the built-in's baseUrl, not the user's.
+export function isBuiltinProvider(slug: string): boolean {
+  return Object.prototype.hasOwnProperty.call(PROVIDERS, slug);
+}
+
+// The custom-provider connection for the SELECTED provider, else null. Threaded
+// into resolveModel so a custom key resolves against its own baseUrl+protocol;
+// built-ins return null → stay registry-pinned.
+export async function selectedCustomConn(): Promise<CustomProviderConn | null> {
+  const c = await readConfig();
+  const p = c.provider || DEFAULT_PROVIDER;
+  return c.customProviders?.[p] ?? null;
+}
+
+export async function upsertCustomProvider(slug: string, conn: CustomProviderConn): Promise<void> {
+  const c = await readConfig();
+  await writeConfig({ customProviders: { ...(c.customProviders ?? {}), [slug]: conn } });
+}
+
+export async function removeCustomProvider(slug: string): Promise<void> {
+  const c = await readConfig();
+  if (!c.customProviders?.[slug]) return;
+  const next = { ...c.customProviders };
+  delete next[slug];
+  await writeConfig({ customProviders: next });
 }

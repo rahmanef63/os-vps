@@ -11,6 +11,7 @@ import { useFocused } from "../hooks/use-shell";
 import { shellStore, openWindow, closeWindow, toggleMaximize, minimizeWindow } from "../lib/store";
 import { StatusCluster } from "./menu-bar-status";
 import { AppMenus, DefaultMenus, WindowMenu, HelpMenu, Menu } from "./menu-bar-menus";
+import { useInspectorInfo } from "../lib/inspector";
 
 // macOS-style menu bar: logo · app menus · right status cluster (sys + clock).
 export function MenuBar() {
@@ -25,6 +26,9 @@ export function MenuBar() {
     (a) => a.id === (focusedId ? shellStore.getWindow(focusedId)?.app : null),
   );
   const appName = focusedApp?.title ?? brand.idleAppName ?? brand.name;
+  // The focused app's live inspector actions become its menu-bar app-menu items —
+  // the same bus that feeds the mobile in-app "•••" drawer (one source, both OSes).
+  const appActions = useInspectorInfo(focusedApp?.id)?.actions ?? [];
   const closeFocused = () => focusedId && closeWindow(focusedId);
   const maximizeFocused = () => focusedId && toggleMaximize(focusedId);
 
@@ -54,6 +58,16 @@ export function MenuBar() {
       <Menu label={appName} bold>
         <DropdownMenuItem disabled>About {appName}</DropdownMenuItem>
         <DropdownMenuSeparator />
+        {appActions.length > 0 && (
+          <>
+            {appActions.map((a) => (
+              <DropdownMenuItem key={a.id} onSelect={() => void a.run()}>
+                {a.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onSelect={() => openWindow("os-settings", "Settings")}>
           Settings…<DropdownMenuShortcut>⌘,</DropdownMenuShortcut>
         </DropdownMenuItem>

@@ -4,7 +4,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useUrlHome } from "../hooks/use-url-home";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
 import { useApps } from "../lib/registry";
+import { useInspectorInfo } from "../lib/inspector";
+import { AppActionsSheet } from "./app-actions-sheet";
 import { useWindowOrder, useFocused, useWindow } from "../hooks/use-shell";
 import { shellStore, openWindow, focusApp, minimizeWindow, restoreWindow, toggleSpotlight } from "../lib/store";
 import { AppIcon } from "./app-icon";
@@ -28,6 +31,7 @@ export function MobileShell() {
   const [nc, setNc] = useState(false); // notification center (pull down, left half)
   const [appScrolled, setAppScrolled] = useState(false); // iOS nav-bar frost-on-scroll
   const [closing, setClosing] = useState(false); // playing the dismiss-to-home zoom
+  const [actionsOpen, setActionsOpen] = useState(false); // in-app "•••" action drawer
 
   // Dock = manifest-pinned apps (AppDescriptor.pinned — the generic shell never
   // hardcodes project app ids); falls back to the first 4 dockable apps.
@@ -56,6 +60,9 @@ export function MobileShell() {
   const top = useWindow(topId ?? "__none__"); // reactive: re-renders on the active window's own payload/title changes
   const showApp = !home && top;
   const activeApp = top ? apps.find((a) => a.id === top.app) : null;
+  // The running app's live inspector actions → the in-app "•••" drawer (same bus
+  // as the desktop menu-bar app menu). Empty ⇒ no "•••" button renders.
+  const appActions = useInspectorInfo(activeApp?.id)?.actions ?? [];
 
   // SSOT navigation: open / resume bring a window to the front; home minimises.
   // Resume-don't-duplicate (real-iOS): a home tap brings the existing window
@@ -217,6 +224,12 @@ export function MobileShell() {
                 <AppIcon app={activeApp} />
               </span>
               <span className="mx-auto max-w-[55%] truncate text-[16px] font-semibold">{activeApp.title}</span>
+              {/* app-provided actions (inspector bus) → in-app drawer; sits left of Done */}
+              {appActions.length > 0 && (
+                <Button type="button" variant="ghost" aria-label="Actions" onClick={() => setActionsOpen(true)} className="absolute right-[54px] top-1/2 grid h-[44px] w-[44px] -translate-y-1/2 place-items-center rounded-md text-primary">
+                  <MoreHorizontal className="size-5" />
+                </Button>
+              )}
               {/* primary exit control — 44pt HIG touch target */}
               <Button type="button" variant="ghost" onClick={goHome} className="absolute right-2 top-1/2 h-[44px] min-w-[44px] -translate-y-1/2 rounded-md px-3 text-sm font-medium text-primary">
                 Done
@@ -242,6 +255,9 @@ export function MobileShell() {
 
       {switcher && <MobileSwitcher onPick={resume} onHome={goHome} />}
       <MobileNotifications open={nc} onClose={() => setNc(false)} />
+      {activeApp && (
+        <AppActionsSheet app={activeApp} actions={appActions} open={actionsOpen} onOpenChange={setActionsOpen} />
+      )}
       <Slot region="controlCenter" />
       <Slot region="topPill" />
       </div>

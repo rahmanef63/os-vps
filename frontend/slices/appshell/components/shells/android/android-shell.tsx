@@ -12,7 +12,7 @@
 import { Button } from "@/components/ui/button";
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useUrlHome } from "../../../hooks/use-url-home";
-import { Search, ArrowLeft, Bot } from "lucide-react";
+import { Search, ArrowLeft, Bot, MoreHorizontal } from "lucide-react";
 import { useApps } from "../../../lib/registry";
 import { usePullDown } from "../../../hooks/use-pull-down";
 import { useWindowOrder, useFocused, useWindow } from "../../../hooks/use-shell";
@@ -26,6 +26,8 @@ import { Clock } from "../../clock";
 import { AppCell, AppDrawer, NavBar, Recents } from "./android-parts";
 import { ShellContextMenu, useShellContextMenu } from "../context-menu";
 import type { AppDescriptor } from "../../../lib/types";
+import { useInspectorInfo } from "../../../lib/inspector";
+import { AppActionsSheet } from "../../app-actions-sheet";
 
 function AndroidShell() {
   const apps = useApps();
@@ -34,6 +36,7 @@ function AndroidShell() {
   const [drawer, setDrawer] = useState(false);
   const [cc, setCc] = useState(false); // control center (pull down on home)
   const [recents, setRecents] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false); // in-app "•••" action drawer
   const gridRef = useRef<HTMLDivElement>(null);
 
   // URL → surface (same derivation as the iOS shell): a pathname naming an app
@@ -52,6 +55,9 @@ function AndroidShell() {
   const top = useWindow(topId ?? "__none__"); // reactive: re-renders on the active window's own payload/title changes
   const showApp = !home && !!top;
   const activeApp = top ? apps.find((a) => a.id === top.app) : null;
+  // Running app's live inspector actions → the M3 top-app-bar "•••" drawer (same
+  // bus as iOS + the desktop menu-bar). Empty ⇒ no overflow button renders.
+  const appActions = useInspectorInfo(activeApp?.id)?.actions ?? [];
 
   const launch = useCallback(
     (app: AppDescriptor) => {
@@ -158,6 +164,9 @@ function AndroidShell() {
             >
               <Button type="button" variant="ghost" onClick={goHome} aria-label="Back" className="-ml-2 h-auto p-0 font-normal hover:bg-transparent grid size-12 place-items-center"><ArrowLeft className="size-5" /></Button>
               <span className="flex-1 truncate text-[19px] font-normal">{activeApp.title}</span>
+              {appActions.length > 0 && (
+                <Button type="button" variant="ghost" aria-label="Actions" onClick={() => setActionsOpen(true)} className="-mr-2 h-auto p-0 font-normal hover:bg-transparent grid size-12 place-items-center"><MoreHorizontal className="size-5" /></Button>
+              )}
             </header>
             <main className="relative min-h-0 flex-1 overflow-auto [container-type:inline-size]">
               <WindowContent app={top.app} payload={top.payload} />
@@ -168,6 +177,9 @@ function AndroidShell() {
 
         {drawer && <AppDrawer apps={dockable} onLaunch={launch} onClose={() => setDrawer(false)} />}
         {recents && <Recents order={order} apps={apps} onResume={resume} onHome={goHome} />}
+        {activeApp && (
+          <AppActionsSheet app={activeApp} actions={appActions} open={actionsOpen} onOpenChange={setActionsOpen} />
+        )}
         <Slot region="controlCenter" />
         <ShellContextMenu state={menu.state} onClose={menu.close} />
       </div>

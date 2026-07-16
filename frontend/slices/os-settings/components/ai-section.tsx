@@ -1,20 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Sparkles, Check } from "lucide-react";
+import { Sparkles, Check, Plus } from "lucide-react";
 import { toast } from "@/features/os-shell";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { SettingsSection, SettingsRow, SettingsBlock } from "@/features/shell-settings";
+import { CustomProviderForm } from "./custom-provider-form";
+import { ProviderList, type ConnectedProvider } from "./provider-list";
 
-type Cfg = { hasApiKey: boolean; apiKeyMasked: string; model: string; provider?: string };
+type Cfg = { hasApiKey: boolean; apiKeyMasked: string; model: string; provider?: string; providers?: ConnectedProvider[] };
 type CatModel = { ref: string; provider: string; id: string };
 
-// Curated BYOK providers (the @rahmanef/models registry wires ~35; these are the
-// common ones). Every non-Anthropic provider streams through the openai-protocol
-// adapter. There is NO OAuth for these platform APIs — paste an API key.
-const PROVIDERS: { slug: string; label: string; keyHint: string }[] = [
+// Curated built-in BYOK providers (the @rahmanef/models registry wires ~35; these
+// are the common ones with nice labels/hints). Any other endpoint → "Add custom
+// provider" below. Non-Anthropic providers stream through the openai-protocol adapter.
+const BUILTINS: { slug: string; label: string; keyHint: string }[] = [
   { slug: "anthropic", label: "Anthropic (Claude)", keyHint: "sk-ant-…" },
   { slug: "openai", label: "OpenAI (GPT)", keyHint: "sk-…" },
   { slug: "openrouter", label: "OpenRouter", keyHint: "sk-or-…" },
@@ -25,22 +29,16 @@ const PROVIDERS: { slug: string; label: string; keyHint: string }[] = [
   { slug: "mistral", label: "Mistral", keyHint: "…" },
 ];
 
-// Sensible default model per provider so switching provider never leaves a
+// Sensible default model per built-in so switching provider never leaves a stale
 // cross-provider model id (e.g. anthropic's default paired with openai).
 const DEFAULT_MODEL: Record<string, string> = {
-  anthropic: "claude-opus-4-8",
-  openai: "gpt-4o",
-  openrouter: "openai/gpt-4o",
-  google: "gemini-2.0-flash",
-  groq: "llama-3.3-70b-versatile",
-  xai: "grok-2-latest",
-  deepseek: "deepseek-chat",
-  mistral: "mistral-large-latest",
+  anthropic: "claude-opus-4-8", openai: "gpt-4o", openrouter: "openai/gpt-4o",
+  google: "gemini-2.0-flash", groq: "llama-3.3-70b-versatile", xai: "grok-2-latest",
+  deepseek: "deepseek-chat", mistral: "mistral-large-latest",
 };
 
-// BYOK config for the Alfa assistant. The raw key is write-only from here — GET
-// /api/config returns only a masked preview. Empty key field on save keeps the
-// stored key (the route falls back to the provider's env var if none set).
+// BYOK config for the Alfa assistant. Raw keys are write-only from here — GET
+// /api/config returns only masked previews. Empty key on save keeps the stored one.
 export function AiSection() {
   const [cfg, setCfg] = useState<Cfg | null>(null);
   const [provider, setProvider] = useState("anthropic");
@@ -49,13 +47,15 @@ export function AiSection() {
   const [catalog, setCatalog] = useState<CatModel[]>([]);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [test, setTest] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const fetchCfg = useCallback(async (): Promise<Cfg | null> => {
     try {
       const r = await fetch("/api/config", { cache: "no-store" });
       return r.ok ? ((await r.json()) as Cfg) : null;
     } catch {
-      return null; /* leave null → Save stays disabled */
+      return null;
     }
   }, []);
 
@@ -63,7 +63,6 @@ export function AiSection() {
     setCfg(c);
     setProvider(c.provider || "anthropic");
   }, []);
-
   const load = useCallback(async () => {
     const c = await fetchCfg();
     if (c) applyCfg(c);
@@ -77,8 +76,8 @@ export function AiSection() {
     };
   }, [fetchCfg, applyCfg]);
 
-  // Model suggestions for the picked provider (models.dev catalog). Offline / no
-  // cache → empty; the model field stays free-text so it always works.
+  // Model suggestions for the picked provider (models.dev catalog); free-text field
+  // so it always works offline.
   useEffect(() => {
     let alive = true;
     fetch(`/api/models?provider=${encodeURIComponent(provider)}`, { cache: "no-store" })
@@ -90,6 +89,12 @@ export function AiSection() {
     };
   }, [provider]);
 
+  const customProviders = (cfg?.providers ?? []).filter((p) => p.kind === "custom");
+  const isCustom = customProviders.some((p) => p.id === provider);
+  const prov = BUILTINS.find((p) => p.slug === provider);
+  const onSavedProvider = provider === cfg?.provider;
+  const customModels = customProviders.find((p) => p.id === provider)?.models ?? [];
+
   async function onSave() {
     setBusy(true);
     try {
@@ -98,7 +103,6 @@ export function AiSection() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           provider,
-          // Empty string clears a stored key; undefined leaves it untouched.
           ...(key.trim() ? { apiKey: key.trim() } : {}),
           ...(model.trim() ? { model: model.trim() } : {}),
         }),
@@ -118,10 +122,19 @@ export function AiSection() {
     }
   }
 
-  const prov = PROVIDERS.find((p) => p.slug === provider);
-  // Only trust the masked preview / stored model when the picked provider still
-  // matches what's saved (before a save, switching provider shows placeholders).
-  const onSavedProvider = provider === cfg?.provider;
+  async function onTest() {
+    setBusy(true);
+    setTest(null);
+    try {
+      const r = await fetch("/api/models/test", { method: "POST" });
+      const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      setTest(d.ok ? { ok: true, msg: "Connected" } : { ok: false, msg: d.error || "Failed" });
+    } catch {
+      setTest({ ok: false, msg: "Couldn’t reach the server" });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <SettingsSection
@@ -129,10 +142,9 @@ export function AiSection() {
       title="AI (Alfa)"
       footnote={
         <>
-          Bring your own API key (stored server-side, never shown again). OpenAI &amp; the other
-          providers use a pasted key — there is no “sign in with OpenAI” for the platform API. If
-          the key field is empty, the matching server env var (e.g. <code>ANTHROPIC_API_KEY</code>,{" "}
-          <code>OPENAI_API_KEY</code>) is used.
+          Bring your own key (stored server-side, never shown again). Built-ins use a pasted key — there
+          is no “sign in with OpenAI” for the platform API. Add any OpenAI-compatible or Anthropic-Messages
+          endpoint below. If the key is empty, the matching server env var (e.g. <code>ANTHROPIC_API_KEY</code>) is used.
         </>
       }
     >
@@ -141,20 +153,29 @@ export function AiSection() {
           value={provider}
           onValueChange={(v) => {
             setProvider(v);
-            setModel(DEFAULT_MODEL[v] ?? ""); // avoid a stale cross-provider model id
+            setModel(DEFAULT_MODEL[v] ?? "");
+            setTest(null); // drop any stale connection-test result for the old provider
           }}
         >
           <SelectTrigger className="sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {PROVIDERS.map((p) => (
+            {BUILTINS.map((p) => (
               <SelectItem key={p.slug} value={p.slug}>{p.label}</SelectItem>
             ))}
+            {customProviders.length > 0 && (
+              <SelectGroup>
+                <SelectLabel>Custom</SelectLabel>
+                {customProviders.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.id}</SelectItem>
+                ))}
+              </SelectGroup>
+            )}
           </SelectContent>
         </Select>
       </SettingsRow>
-      <SettingsRow label={`${prov?.label ?? "Provider"} key`}>
+      <SettingsRow label={`${isCustom ? provider : prov?.label ?? "Provider"} key`}>
         <Input
           type="password"
           value={key}
@@ -172,17 +193,48 @@ export function AiSection() {
           className="sm:w-56"
         />
         <datalist id="ai-model-suggestions">
-          {catalog.map((m) => (
-            <option key={m.ref} value={m.id} />
+          {[...new Set([...customModels, ...catalog.map((m) => m.id)])].map((id) => (
+            <option key={id} value={id} />
           ))}
         </datalist>
       </SettingsRow>
-      <SettingsBlock className="flex justify-end">
+      <SettingsBlock className="flex items-center justify-end gap-2">
+        {test && (
+          <span className={`text-xs ${test.ok ? "text-emerald-500" : "text-destructive"}`}>
+            {test.ok ? "✓ " : "✕ "}
+            {test.msg}
+          </span>
+        )}
+        <Button size="sm" variant="outline" onClick={onTest} disabled={cfg === null || busy}>
+          Test
+        </Button>
         <Button size="sm" onClick={onSave} disabled={cfg === null || busy}>
           {saved ? <Check className="size-3.5" /> : null}
           {saved ? "Saved" : busy ? "Saving…" : "Save"}
         </Button>
       </SettingsBlock>
+
+      <SettingsBlock>
+        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setShowAdd((s) => !s)}>
+          <Plus className="size-3.5" /> Add custom provider
+        </Button>
+        {showAdd && (
+          <div className="mt-2">
+            <CustomProviderForm
+              onAdded={() => {
+                setShowAdd(false);
+                void load();
+              }}
+            />
+          </div>
+        )}
+      </SettingsBlock>
+
+      {(cfg?.providers?.length ?? 0) > 0 && (
+        <SettingsBlock>
+          <ProviderList providers={cfg!.providers!} selected={provider} onChanged={load} />
+        </SettingsBlock>
+      )}
     </SettingsSection>
   );
 }

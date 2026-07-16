@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSession } from "@/lib/auth/require-session";
-import { resolveModelRef, hostCredentialStore } from "@/lib/config/store";
+import { resolveModelRef, hostCredentialStore, selectedCustomConn } from "@/lib/config/store";
 import { resolveModel } from "@/lib/models";
 import { streamOpenAI } from "@/lib/ai/openai-stream";
 import { rateLimited } from "@/lib/host/rate-limit";
@@ -97,7 +97,14 @@ export async function POST(req: Request) {
   // registry pins each provider's key to its own baseUrl (key can't be redirected).
   let resolved;
   try {
-    resolved = await resolveModel(await resolveModelRef(), { store: hostCredentialStore() });
+    // Custom providers resolve against their own baseUrl+protocol; built-ins pass
+    // null and stay registry-pinned (a key can't be redirected to another host).
+    const custom = await selectedCustomConn();
+    resolved = await resolveModel(await resolveModelRef(), {
+      store: hostCredentialStore(),
+      baseUrl: custom?.baseUrl,
+      protocol: custom?.protocol,
+    });
   } catch {
     // resolveModel throws when no BYOK key is set for the selected provider.
     return Response.json({ error: "no_api_key" }, { status: 501 });
