@@ -18,6 +18,8 @@ PORT="${OSVPS_PORT:-4005}"
 SERVICE="os-vps.service"
 DO_SERVICE=1
 DO_UNINSTALL=0
+# Let corepack fetch the pnpm version pinned in package.json without a tty prompt.
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 # ---- pretty output (tty + NO_COLOR aware) ----
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
@@ -110,10 +112,13 @@ ensure_pnpm() {
   command -v pnpm >/dev/null 2>&1 && { info "pnpm $(pnpm -v) ok"; return; }
   info "enabling pnpm via corepack…"
   if command -v corepack >/dev/null 2>&1; then
-    corepack enable pnpm 2>/dev/null || sudo_do corepack enable pnpm
-    corepack prepare pnpm@latest --activate 2>/dev/null || true
+    # Do NOT force pnpm@latest: the repo pins pnpm via package.json's
+    # "packageManager" field and corepack honors it when pnpm runs in-project.
+    # Forcing latest (pnpm 11) drops pnpm.onlyBuiltDependencies/overrides →
+    # node-pty isn't compiled and the frozen lockfile mismatches.
+    corepack enable pnpm >/dev/null 2>&1 || sudo_do corepack enable pnpm
   else
-    sudo_do npm install -g pnpm
+    sudo_do npm install -g pnpm@10
   fi
   command -v pnpm >/dev/null 2>&1 || die "pnpm install failed."
 }
