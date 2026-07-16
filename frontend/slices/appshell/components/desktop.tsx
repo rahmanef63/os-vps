@@ -172,9 +172,11 @@ function DesktopChrome() {
       <MenuBar />
       <section
         className={cn("absolute inset-x-0 bottom-0 top-[30px] z-[10]", interactive && "pointer-events-none [&>*]:pointer-events-auto")}
-        // Only the empty desktop opens the menu — clicks inside a child layer (an
-        // app window OR a desktop widget) keep their own right-click handling.
-        onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e, baseItems); }}
+        // Open the desktop menu for any right-click NOT inside a window. Icons +
+        // widgets stopPropagation their own menus (never reach here); windows are
+        // excluded via [data-window]. The old `target===currentTarget` guard
+        // silently missed clicks whose target was a background descendant.
+        onContextMenu={(e) => { if (!(e.target as HTMLElement).closest("[data-window]")) menu.open(e, baseItems); }}
         onPointerDown={marquee.onPointerDown}
       >
         {/* Icons + widgets live INSIDE the section (behind windows: z-[4]/z-[5] <

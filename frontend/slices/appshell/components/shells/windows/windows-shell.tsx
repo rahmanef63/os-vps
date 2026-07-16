@@ -65,7 +65,10 @@ function WindowsShell() {
           wallpaper gets empty-desktop clicks; windows stay interactive. */}
       <section
         className={cn("absolute inset-0 z-[10]", interactive && "pointer-events-none [&>*]:pointer-events-auto")}
-        onContextMenu={(e) => { if (e.target === e.currentTarget) menu.open(e, baseItems); }}
+        // Any right-click not inside a window opens the desktop menu (icons/widgets
+        // stopPropagation; windows carry [data-window]). Generalizes the old strict
+        // target===currentTarget guard that missed background-descendant targets.
+        onContextMenu={(e) => { if (!(e.target as HTMLElement).closest("[data-window]")) menu.open(e, baseItems); }}
         onPointerDown={marquee.onPointerDown}
       >
         {/* Icons + widgets sit inside the section (behind windows) so their own

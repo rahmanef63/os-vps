@@ -80,6 +80,7 @@ export const Window = memo(function Window({ id, variant = "macos" }: { id: WinI
       )}
       <div
         ref={ref}
+        data-window
         className={cn(
           "win-geo absolute flex flex-col overflow-hidden border border-border bg-card shadow-[var(--shadow-win)]",
           "rounded-[var(--shell-radius-win)]",
