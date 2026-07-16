@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { SettingsSection, SettingsRow, SettingsBlock } from "@/features/shell-settings";
 import { type ConnectedProvider } from "./provider-list";
 import { ProviderManage } from "./provider-manage";
+import { ModelCatalog } from "./model-catalog";
 
 type Cfg = { hasApiKey: boolean; apiKeyMasked: string; model: string; provider?: string; providers?: ConnectedProvider[] };
 type CatModel = { ref: string; provider: string; id: string };
@@ -194,13 +195,16 @@ export function AiSection() {
         </SettingsRow>
       )}
       <SettingsRow label="Model">
-        <Input
-          list="ai-model-suggestions"
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          placeholder={(onSavedProvider && cfg?.model) || DEFAULT_MODEL[provider] || "model id"}
-          className="sm:w-56"
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            list="ai-model-suggestions"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            placeholder={(onSavedProvider && cfg?.model) || DEFAULT_MODEL[provider] || "model id"}
+            className="sm:w-56"
+          />
+          <ModelCatalog provider={provider} value={model} onPick={setModel} />
+        </div>
         <datalist id="ai-model-suggestions">
           {[...new Set([...customModels, ...catalog.map((m) => m.id)])].map((id) => (
             <option key={id} value={id} />

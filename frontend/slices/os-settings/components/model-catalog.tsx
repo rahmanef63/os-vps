@@ -1,0 +1,98 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+type CatModel = {
+  ref: string;
+  id: string;
+  name?: string;
+  context?: number;
+  inputCost?: number;
+  outputCost?: number;
+  tools?: boolean;
+  reasoning?: boolean;
+  vision?: boolean;
+};
+
+const fmtCtx = (n?: number) => (!n ? "—" : n >= 1e6 ? `${n / 1e6}M` : n >= 1e3 ? `${Math.round(n / 1e3)}K` : `${n}`);
+const fmtCost = (n?: number) => (n == null ? "—" : `$${n}`);
+
+// Searchable model browser over the models.dev catalog for the selected provider,
+// showing context window · $/M input+output · tool/reasoning/vision support. Pick →
+// sets the model id in the parent. Empty for custom/OAuth providers (not in the catalog).
+export function ModelCatalog({ provider, value, onPick }: { provider: string; value: string; onPick: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [models, setModels] = useState<CatModel[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    fetch(`/api/models?provider=${encodeURIComponent(provider)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { models: [] }))
+      .then((d) => alive && setModels((d.models ?? []) as CatModel[]))
+      .catch(() => alive && setModels([]));
+    return () => {
+      alive = false;
+    };
+  }, [open, provider]);
+
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return s ? models.filter((m) => m.id.toLowerCase().includes(s) || (m.name ?? "").toLowerCase().includes(s)) : models;
+  }, [models, q]);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button type="button" variant="outline" size="sm">Browse</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Models — {provider}</DialogTitle>
+        </DialogHeader>
+        <Input autoFocus placeholder="Search models…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <ScrollArea className="h-[50vh]">
+          {filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">No catalog for this provider.</p>
+          ) : (
+            <div className="space-y-1 pr-3">
+              {filtered.map((m) => (
+                <button
+                  key={m.ref}
+                  type="button"
+                  onClick={() => {
+                    onPick(m.id);
+                    setOpen(false);
+                  }}
+                  className={`flex w-full flex-col items-start gap-1 rounded-lg border p-2.5 text-left hover:bg-[var(--hover-strong)] ${m.id === value ? "border-primary" : "border-border"}`}
+                >
+                  <div className="flex w-full flex-wrap items-center gap-2">
+                    <span className="font-medium">{m.name || m.id}</span>
+                    {m.tools && <Badge>tools</Badge>}
+                    {m.reasoning && <Badge>reasoning</Badge>}
+                    {m.vision && <Badge>vision</Badge>}
+                  </div>
+                  <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                    <span className="font-mono">{m.id}</span>
+                    <span>ctx {fmtCtx(m.context)}</span>
+                    <span>in {fmtCost(m.inputCost)}/M</span>
+                    <span>out {fmtCost(m.outputCost)}/M</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Badge({ children }: { children: React.ReactNode }) {
+  return <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{children}</span>;
+}

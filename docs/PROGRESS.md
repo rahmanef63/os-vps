@@ -7,6 +7,20 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 (round 3) — Model catalog browser (DONE)
+
+First of three models-rahmanef-com feature ports the owner picked (catalog browser ·
+chat history · cross-session memory). tsc + lint + vitest green.
+
+- **Model catalog browser** — `/api/models` now carries capability/pricing meta (context
+  window, $/M input+output, tool/reasoning/vision support) from the models.dev catalog; a
+  searchable **Browse** dialog (`model-catalog.tsx`) in Settings → AI lists the selected
+  provider's models with that meta, click to set the model. Pure UI over the vendored
+  `@rahmanef/models` catalog; degrades to "No catalog" for custom/OAuth providers (not in
+  models.dev). **Not redeployed** — build + restart to activate.
+
+Chat history (YAML thread store) + cross-session memory are next.
+
 ## 2026-07-16 (round 2) — BYOK OAuth: "Sign in with OpenAI" (Codex device-code) (DONE)
 
 Phase D1 of DRAWER-MENU-BYOK-PLAN — the explicit ask ("oauth ai openai"). tsc + lint +
