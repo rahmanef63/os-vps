@@ -7,6 +7,15 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 (round 5) — "Alfa, remember this" tool (DONE)
+
+Alfa can now save facts to memory itself, not just via Settings: a `memory.remember`
+host-tool (read-tier — runs immediately, no approval card, since it's a benign owner-scoped
+write) that POSTs to `/api/memory`. One catalog entry (`host-tools/catalog.ts`) + a HOST_SYSTEM
+guidance line; the registry test covers it as a read tool. tsc + lint + vitest green. It
+complements the manual Settings → Alfa memory panel (both write the same `~/.os-vps/memory.json`).
+**Not redeployed** — build + restart to activate.
+
 ## 2026-07-16 (round 4) — Alfa chat history (YAML threads) + cross-session memory (DONE)
 
 Ports 2 & 3 of the models-rahmanef-com picks. tsc + lint + vitest (full suite + 4 new store
