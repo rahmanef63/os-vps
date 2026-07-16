@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { effectiveServerTarget, selectServerTarget, useAppearance } from "@/lib/appearance";
 import { useOsApi } from "@/lib/os-api";
 import { IS_DEMO } from "@/lib/demo";
@@ -26,6 +26,43 @@ function startVisiblePoll(poll: () => void, ms: number): () => void {
     clearInterval(t);
     if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVis);
   };
+}
+
+// ── Shared Today-telemetry poller ──────────────────────────────────────────
+// One poll for ALL Today widgets (was one 3s poll PER widget → N pollers
+// hammering the VPS behind an open app). Ref-counted: starts on the first
+// subscriber, stops on the last; restarts if the injected api changes.
+let statsState: SystemStats | null = null;
+const statsSubs = new Set<() => void>();
+const statsHist: { cpu: number[]; net: number[] } = { cpu: [], net: [] };
+let statsStop: (() => void) | null = null;
+let statsApi: ReturnType<typeof useOsApi> | null = null;
+
+function startSharedStats(api: ReturnType<typeof useOsApi>) {
+  if (statsStop && statsApi === api) return;
+  if (statsStop) statsStop(); // api changed → restart with the new adapter
+  statsApi = api;
+  const poll = async () => {
+    try {
+      const [sys, usage] = await Promise.all([api.sys.stats(), api.fs.usage()]);
+      const cpuPct = Math.round(sys.cpu.pct);
+      statsHist.cpu = [...statsHist.cpu.slice(-23), cpuPct];
+      if (sys.net) statsHist.net = [...statsHist.net.slice(-23), sys.net.rx + sys.net.tx];
+      statsState = {
+        cpu: { pct: cpuPct, cores: sys.cpu.cores },
+        mem: { used: sys.mem.used, total: sys.mem.total },
+        disk: { used: usage.used, total: usage.total },
+        net: sys.net,
+        uptime: sys.uptime,
+        cpuHistory: statsHist.cpu,
+        netHistory: statsHist.net,
+      };
+      statsSubs.forEach((l) => l());
+    } catch {
+      /* leave last value */
+    }
+  };
+  statsStop = startVisiblePoll(poll, 3000);
 }
 
 // Adapts os-vps's appearance store + host API + AI stream to the generic AppShell
@@ -78,42 +115,26 @@ export const topsideCapabilities: ShellCapabilities = {
       [api],
     );
   },
-  // Today-widget telemetry — sys.stats + fs.usage, polled.
+  // Today-widget telemetry — sys.stats + fs.usage. All widgets share ONE poll
+  // (the module-level shared poller above) instead of each spinning its own.
   useSystemStats: () => {
     const api = useOsApi();
-    const [s, setS] = useState<SystemStats | null>(null);
-    // Rolling history for sparkline widgets — accumulated in the poll callback
-    // (not during render), so widgets read it instead of tracking it themselves.
-    const hist = useRef<{ cpu: number[]; net: number[] }>({ cpu: [], net: [] });
-    useEffect(() => {
-      let alive = true;
-      const poll = async () => {
-        try {
-          const [sys, usage] = await Promise.all([api.sys.stats(), api.fs.usage()]);
-          if (!alive) return;
-          const cpuPct = Math.round(sys.cpu.pct);
-          hist.current.cpu = [...hist.current.cpu.slice(-23), cpuPct];
-          if (sys.net) hist.current.net = [...hist.current.net.slice(-23), sys.net.rx + sys.net.tx];
-          setS({
-            cpu: { pct: cpuPct, cores: sys.cpu.cores },
-            mem: { used: sys.mem.used, total: sys.mem.total },
-            disk: { used: usage.used, total: usage.total },
-            net: sys.net,
-            uptime: sys.uptime,
-            cpuHistory: hist.current.cpu,
-            netHistory: hist.current.net,
-          });
-        } catch {
-          /* leave last value */
-        }
-      };
-      const stop = startVisiblePoll(poll, 3000);
-      return () => {
-        alive = false;
-        stop();
-      };
-    }, [api]);
-    return s;
+    const subscribe = useCallback(
+      (l: () => void) => {
+        statsSubs.add(l);
+        startSharedStats(api);
+        return () => {
+          statsSubs.delete(l);
+          if (statsSubs.size === 0 && statsStop) {
+            statsStop();
+            statsStop = null;
+            statsApi = null;
+          }
+        };
+      },
+      [api],
+    );
+    return useSyncExternalStore(subscribe, () => statsState, () => null);
   },
   // Scoped Alfa chat — the wire stream passes straight through.
   useChat: () => streamReply,

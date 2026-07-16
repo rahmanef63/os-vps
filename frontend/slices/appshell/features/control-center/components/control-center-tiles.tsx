@@ -19,7 +19,7 @@ import {
 // optional server toggle, focus, spotlight, assistant, close-all-windows. NO
 // wifi/cellular/battery/brightness (fabricated hardware — VPS essence). `onClose`
 // dismisses the container after the actions that navigate away.
-export function ControlCenterTiles({ onClose }: { onClose: () => void }) {
+export function ControlCenterTiles({ onClose, onAssistant }: { onClose: () => void; onAssistant?: () => void }) {
   const { theme, setTheme } = useShellAppearance();
   const server = useServerToggle();
   const openCount = useWindowOrder().length;
@@ -53,7 +53,7 @@ export function ControlCenterTiles({ onClose }: { onClose: () => void }) {
         onClick={toggleFocusMode}
       />
       <Tile icon={Search} label="Search" value="Spotlight" onClick={() => { onClose(); toggleSpotlight(); }} />
-      <Tile icon={Sparkles} label="Assistant" value="AI Inspector" onClick={() => { onClose(); toggleInspector(); }} />
+      <Tile icon={Sparkles} label="Assistant" value="AI Inspector" onClick={() => { onClose(); (onAssistant ?? toggleInspector)(); }} />
       <Tile
         icon={Layers}
         label="Windows"

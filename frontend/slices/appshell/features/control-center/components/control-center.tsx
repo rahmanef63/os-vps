@@ -9,7 +9,7 @@ import { ControlCenterTiles } from "./control-center-tiles";
 // with the desktop menu-bar popover (control-center-tiles). Open state is owned by
 // the mobile surface and read via the shell-UI context.
 export function ControlCenter() {
-  const { controlCenterOpen: open, setControlCenterOpen: onOpenChange } = useShellUI();
+  const { controlCenterOpen: open, setControlCenterOpen: onOpenChange, openAppById } = useShellUI();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -20,7 +20,7 @@ export function ControlCenter() {
         <SheetTitle className="sr-only">Control Center</SheetTitle>
         <SheetDescription className="sr-only">Quick system toggles</SheetDescription>
         <div className="mx-auto w-full max-w-md">
-          <ControlCenterTiles onClose={() => onOpenChange(false)} />
+          <ControlCenterTiles onClose={() => onOpenChange(false)} onAssistant={() => openAppById("assistant")} />
         </div>
       </SheetContent>
     </Sheet>
