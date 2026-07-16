@@ -19,6 +19,8 @@ import { shellStore, openWindow, minimizeWindow, restoreWindow } from "../../../
 import { AppIcon } from "../../app-icon";
 import { WindowContent } from "../../window-content";
 import { ShellContextMenu, useShellContextMenu } from "../context-menu";
+import { useInspectorInfo } from "../../../lib/inspector";
+import { ResponsiveToolbar } from "../../../primitives/responsive-toolbar";
 import type { AppDescriptor } from "../../../lib/types";
 import { DashboardHome, NavItem, RunningRow, SidebarLabel } from "./dashboard-parts";
 
@@ -51,6 +53,9 @@ function DashboardShell() {
       : ([...order].reverse().find((id) => !shellStore.getWindow(id)?.minimized) ?? null);
   const top = useWindow(topId ?? "__none__"); // reactive: re-renders on the active window's payload/title changes
   const pane = !home && top ? top : null;
+  // The focused app's live actions (Refresh, Clear, Render…) — the same inspector
+  // bus the macOS menu + mobile ••• sheet use. Dashboard had no path to invoke them.
+  const paneActions = useInspectorInfo(pane?.app)?.actions ?? [];
 
   // SSOT navigation: open / resume bring a window to the front; Home minimizes.
   const launch = (app: AppDescriptor) => {
@@ -124,6 +129,13 @@ function DashboardShell() {
               <span className="text-muted-foreground/50">/</span>
               <span className="font-medium">{pane.title}</span>
             </>
+          )}
+          {pane && paneActions.length > 0 && (
+            <div className="ml-auto">
+              <ResponsiveToolbar
+                items={paneActions.map((a) => ({ id: a.id, label: a.label, onClick: () => void a.run() }))}
+              />
+            </div>
           )}
         </header>
         {/* container context is REQUIRED: app @container styles never match without it.
