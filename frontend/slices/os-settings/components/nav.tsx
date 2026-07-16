@@ -2,7 +2,6 @@
 
 import type { ComponentType } from "react";
 import {
-  Globe,
   Info,
   Link2,
   Paintbrush,
@@ -10,11 +9,12 @@ import {
   Server,
   ShieldCheck,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type SectionId =
-  | "appearance" | "theme" | "ai" | "quicklinks" | "devices" | "server" | "browser" | "about";
+  | "appearance" | "theme" | "ai" | "quicklinks" | "devices" | "server" | "cleanup" | "about";
 
 // Semantic buckets for the iOS grouped index (mobile). Reorder-safe: the mobile
 // cards derive from this field, not an index slice, so adding/reordering a
@@ -38,7 +38,7 @@ export const SECTIONS: ReadonlyArray<{
   { id: "quicklinks", label: "Quicklink", blurb: "Website shortcuts with favicons", icon: Link2, color: "#5e5ce6", group: "services" },
   { id: "devices", label: "Devices", blurb: "Approved browsers and sessions", icon: ShieldCheck, color: "#30d158", group: "system" },
   { id: "server", label: "Server", blurb: "Mock or live host data", icon: Server, color: "#ff9f0a", group: "system" },
-  { id: "browser", label: "Browser", blurb: "Remote Chromium runtime status", icon: Globe, color: "#64d2ff", group: "system" },
+  { id: "cleanup", label: "Cleanup", blurb: "Free disk space safely", icon: Trash2, color: "#64d2ff", group: "system" },
   { id: "about", label: "About", blurb: "System info and reset", icon: Info, color: "#8e8e93", group: "system" },
 ];
 

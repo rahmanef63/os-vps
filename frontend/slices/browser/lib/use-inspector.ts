@@ -1,6 +1,6 @@
 "use client";
 
-import { usePublishInspector } from "./host";
+import { usePublishInspector } from "@/features/os-shell";
 import { hostOf } from "./url";
 
 type BrowserInspector = {
@@ -13,14 +13,14 @@ type BrowserInspector = {
   home: () => void;
 };
 
-// Publishes the remote browser's live state + real handlers to the shell
-// Inspector (⌘I) so the scoped Alfa chat can reason about the open page.
+// Publishes the browser's state + real handlers to the shell Inspector (⌘I)
+// so the scoped Alfa chat can reason about the open page.
 export function useBrowserInspector(s: BrowserInspector): void {
   const blank = !s.url;
   usePublishInspector(
     "browser",
     {
-      subject: blank ? "Remote Browser" : hostOf(s.url),
+      subject: blank ? "Browser" : hostOf(s.url),
       props: [
         { label: "URL", value: blank ? "—" : s.url },
         { label: "Page title", value: s.title || "—" },
@@ -35,7 +35,7 @@ export function useBrowserInspector(s: BrowserInspector): void {
         },
         { id: "home", label: "Home", run: s.home },
       ],
-      context: `Remote browser showing ${blank ? "a blank page" : s.url}`,
+      context: `Browser showing ${blank ? "a blank page" : s.url}`,
       suggestions: ["Summarize this page", "Is this site safe?", "Find similar sites"],
     },
     [s.url, s.bookmarked, s.bookmarkCount],

@@ -1,5 +1,5 @@
 // SERVER-ONLY. Append-only audit trail for privileged actions (shell exec, file
-// mutations, browser actions, auth events). Single-owner tool that can run shell
+// mutations, cleanup runs, auth events). Single-owner tool that can run shell
 // commands MUST keep a tamper-evident record — if something goes wrong, this is
 // the only forensic trail. JSONL, one event per line, flushed best-effort.
 //
@@ -21,16 +21,7 @@ export type AuditAction =
   | "fs.mkdir"
   | "fs.upload"
   | "fs.zip"
-  | "browser.navigate"
-  | "browser.click"
-  | "browser.type"
-  | "browser.key"
-  | "browser.scroll"
-  | "browser.fill"
-  | "browser.clickSelector"
-  | "browser.back"
-  | "browser.forward"
-  | "browser.reload"
+  | "sys.cleanup"
   | "auth.login"
   | "auth.pending"
   | "auth.denied"

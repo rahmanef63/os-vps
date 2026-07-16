@@ -16,7 +16,7 @@
 
 > Service slug stays `os-vps` (deploy paths, systemd unit, domain); **Topside** is the product name shown in the UI.
 
-Control a headless VPS from any browser — especially a phone. A real terminal (full PTY — `vim`, `top`, `ssh` all work), file manager, system monitor, media preview and an optional remote browser, in a desktop-style shell. The point is **utility**: fast admin of a headless box without the weight of XRDP/VNC. It's a **single-owner** control plane for **one VPS you own** — not a real OS, not multi-tenant, not a SaaS. The desktop UI is a metaphor.
+Control a headless VPS from any browser — especially a phone. A real terminal (full PTY — `vim`, `top`, `ssh` all work), file manager, system monitor, media preview and an embedded web browser, in a desktop-style shell. The point is **utility**: fast admin of a headless box without the weight of XRDP/VNC. It's a **single-owner** control plane for **one VPS you own** — not a real OS, not multi-tenant, not a SaaS. The desktop UI is a metaphor.
 
 ![Topside desktop — Files and System Monitor windows with live CPU/memory/storage widgets, over the dock](./docs/media/hero-desktop.png)
 
@@ -32,7 +32,7 @@ One command on your VPS — installs prerequisites, builds, and sets up the syst
 curl -fsSL https://raw.githubusercontent.com/rahmanef63/os-vps/main/scripts/install.sh | bash
 ```
 
-It generates your credentials, prints the first-login password once, and tells you how to pair your first device. Options: `… | bash -s -- --port 4005 --no-service`; remove with `… | bash -s -- --uninstall`. Production details (TLS reverse proxy, browser service, hardware sizing, security checklist): **[docs/INSTALL.md](./docs/INSTALL.md)**.
+It generates your credentials, prints the first-login password once, and tells you how to pair your first device. Options: `… | bash -s -- --port 4005 --no-service`; remove with `… | bash -s -- --uninstall`. Production details (TLS reverse proxy, hardware sizing, security checklist): **[docs/INSTALL.md](./docs/INSTALL.md)**.
 
 ## Architecture
 
@@ -47,7 +47,6 @@ flowchart LR
     APP --> HOST["lib/host<br/>Node fs · child_process<br/>(filesystem-jailed)"]
     APP --> SLICES["feature slices<br/>Files · Terminal · Monitor · Editor"]
     APP --> AI["Alfa — AI assistant"]
-    APP -.->|optional| BROWSER["os-browser<br/>Playwright · :4002"]
   end
   U -->|"HTTPS · signed-cookie auth"| APP
   AI -->|BYOK| MODELS["@rahmanef/models registry"]
@@ -62,7 +61,7 @@ Deep dive: **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**.
 - **Terminal** — a real interactive PTY (`vim`/`top`/`ssh` work), not a one-shot command box.
 - **Alfa AI** — built-in assistant, **BYOK + multi-provider**: Anthropic, OpenAI and ~34 OpenAI-compatible providers via a vendored model registry.
 - **Multi-shell** — macOS · Windows · iOS · Android desktop metaphors (plus a Dashboard), switchable per surface.
-- **More apps** — system monitor, media viewer, layer-based image editor, glanceable widgets, optional real remote browser (Playwright).
+- **More apps** — system monitor, media viewer, layer-based image editor, glanceable widgets, a tabbed embedded web browser, and a one-tap safe disk Cleanup.
 
 ## How it compares
 
@@ -73,7 +72,6 @@ Each of these solves one slice of headless-VPS admin; Topside stitches the commo
 | Real PTY terminal | ✅ | ✅ | ✅ | — | — | ✅ |
 | File manager | ✅ | ~ | — | ✅ | — | — |
 | Live system metrics | ✅ | ✅ | — | — | ✅ | — |
-| Remote browser | ✅ | — | — | — | — | — |
 | Built-in AI (BYOK) | ✅ | — | — | — | — | — |
 | Mobile-first UI | ✅ | — | — | ~ | ~ | — |
 | No database / agent | ✅ | ✅ | ✅ | ✅ | ~ | n/a |
@@ -112,7 +110,7 @@ An authenticated session **is the box owner** — real shell and file access as 
 
 | Doc | What's in it |
 |---|---|
-| [INSTALL.md](./docs/INSTALL.md) | Production: credentials, systemd, TLS, browser service, hardware sizing, security checklist |
+| [INSTALL.md](./docs/INSTALL.md) | Production: credentials, systemd, TLS, hardware sizing, security checklist |
 | [DEVELOPMENT.md](./docs/DEVELOPMENT.md) | Local dev, quality gates, deploy + the build hazard, pnpm pin |
 | [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | AppShell framework, slices, seams, routing |
 | [MODELS-INTEGRATION.md](./docs/MODELS-INTEGRATION.md) | Alfa AI: BYOK, multi-provider model registry |

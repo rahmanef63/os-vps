@@ -12,12 +12,13 @@
     "frontend/slices/browser/lib/url.ts",
     "frontend/slices/browser/lib/storage.ts",
     "frontend/slices/browser/lib/use-inspector.ts",
-    "frontend/slices/browser/lib/use-remote-browser.ts",
     "frontend/slices/browser/components/favicon.tsx",
     "frontend/slices/browser/components/omnibar.tsx",
+    "frontend/slices/browser/components/omnibar-ios.tsx",
     "frontend/slices/browser/components/browser-menu.tsx",
     "frontend/slices/browser/components/bookmark-bar.tsx",
-    "frontend/slices/browser/components/remote-view.tsx",
+    "frontend/slices/browser/components/embed-view.tsx",
+    "frontend/slices/browser/components/tab-bar.tsx",
     "frontend/slices/browser/components/history-view.tsx"
   ],
   "convexFiles": []

@@ -41,7 +41,7 @@ export type SystemEntry = {
 export const SYSTEM_CATALOG: SystemEntry[] = [
   // ── Built-in apps ─────────────────────────────────────────────────────────
   { id: "files-manager", title: "Files", kind: "app", icon: Folder, gradient: "linear-gradient(160deg,#3aa0ff,#1f6dff)", desc: "Browse, upload, and manage host files." },
-  { id: "browser", title: "Browser", kind: "app", icon: Globe, gradient: "linear-gradient(160deg,#22b1ff,#1666e0)", desc: "Drive a real headless Chromium on the VPS." },
+  { id: "browser", title: "Browser", kind: "app", icon: Globe, gradient: "linear-gradient(160deg,#22b1ff,#1666e0)", desc: "Tabbed web viewer — pages render in a sandboxed embedded frame." },
   { id: "code-editor", title: "Code", kind: "app", icon: Code, gradient: "linear-gradient(160deg,#7a5cff,#4f2fd6)", desc: "Edit host files in a tabbed code editor." },
   { id: "os-terminal", title: "Terminal", kind: "app", icon: Terminal, gradient: "linear-gradient(160deg,#2b2f3a,#11141b)", desc: "Run shell commands on the host." },
   { id: "media-studio", title: "Image Editor", kind: "app", icon: Image, gradient: "linear-gradient(160deg,#ff8a3d,#ff5fa2)", desc: "Layered canvas image editing." },

@@ -1,7 +1,9 @@
 // URL classification + normalization. Decides whether omnibar input is a URL
 // to visit or a query to search, and derives display host / favicon source.
 
-const SEARCH = "https://www.google.com/search?q=";
+// Bing, not Google: results must render inside the embedded frame, and
+// Google/DuckDuckGo send X-Frame-Options / frame-ancestors — Bing doesn't.
+const SEARCH = "https://www.bing.com/search?q=";
 
 /** Heuristic: does the input look like a navigable URL (vs a search query)? */
 export function isUrlLike(raw: string): boolean {
@@ -19,7 +21,7 @@ export function normalizeUrl(raw: string): string {
   return `https://${s}`;
 }
 
-/** Resolve omnibar input to a final destination: navigate or Google search. */
+/** Resolve omnibar input to a final destination: navigate or web search. */
 export function toTarget(input: string): string {
   const s = input.trim();
   return isUrlLike(s) ? normalizeUrl(s) : SEARCH + encodeURIComponent(s);

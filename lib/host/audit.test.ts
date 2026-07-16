@@ -154,7 +154,7 @@ describe("readAuditTail", () => {
     // Sequential awaits → strict order in the log → strict order in the tail.
     audit({ action: "exec.run", detail: "a" });
     await waitForLines(1);
-    audit({ action: "browser.click", detail: "b" });
+    audit({ action: "fs.delete", detail: "b" });
     await waitForLines(2);
     audit({ action: "exec.run", detail: "c" });
     await waitForLines(3);

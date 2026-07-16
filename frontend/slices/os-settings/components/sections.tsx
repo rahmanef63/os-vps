@@ -13,7 +13,7 @@ import { ThemeSection } from "./theme-section";
 import { AiSection } from "./ai-section";
 import { QuicklinksSection } from "./quicklinks-section";
 import { ServerSection } from "./server-section";
-import { BrowserSection } from "./browser-section";
+import { CleanupSection } from "./cleanup-section";
 import { AboutSection } from "./about-section";
 
 // The section content — one functional panel per SectionId, shared verbatim by
@@ -48,8 +48,8 @@ function SectionBody({ id }: { id: SectionId }) {
       );
     case "server":
       return <ServerSection />;
-    case "browser":
-      return <BrowserSection />;
+    case "cleanup":
+      return <CleanupSection />;
     case "about":
       return <AboutSection />;
   }

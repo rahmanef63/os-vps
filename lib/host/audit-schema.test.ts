@@ -45,7 +45,7 @@ describe("audit JSONL schema contract", () => {
     audit({ action: "exec.run", actor: "device-A", target: "ls", ok: true });
     audit({ action: "fs.write", target: "/tmp/foo" });
     audit({ action: "auth.login", actor: "device-B", ip: "127.0.0.1", ok: true });
-    audit({ action: "browser.navigate", target: "https://example.com", detail: "200" });
+    audit({ action: "sys.cleanup", target: "apt-cache", detail: "freed 120MB" });
     await waitForLines(4);
     const entries = await readEntries();
     expect(entries).toHaveLength(4);

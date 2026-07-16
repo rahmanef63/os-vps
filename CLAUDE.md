@@ -26,9 +26,12 @@ agent — it runs AS a host process and controls its own machine.
 
 ## Architecture
 ```
-browser ──https──> os-vps (Next.js :4005) ──┬── lib/host → Node fs/child_process (host)
-              signed-cookie auth (lib/auth)  └── os-browser (Playwright, :4002, optional)
+browser ──https──> os-vps (Next.js :4005) ──── lib/host → Node fs/child_process (host)
+              signed-cookie auth (lib/auth)
 ```
+The former os-browser sidecar (Playwright Chromium, :4002) is RETIRED — the
+Browser app renders pages in a client-side sandboxed iframe now; `os-browser/`
+stays in-repo only as dev tooling (scripts/e2e use its Playwright install).
 - `/api/v1/*` = the os-rr Cloud API (fs/exec/sys/browser), every route `verifyAuth`
   (session cookie) first. Client picks mock (default) vs live in Settings → Server.
 - `/api/auth/*` = login/logout/me/devices. `/api/config` = BYOK AI key.
@@ -150,5 +153,3 @@ pnpm typecheck
 pnpm dev                     # OS desktop at :3000 (mock data by default)
 node scripts/approve-device.js <deviceId> "my device"   # approve a login device
 ```
-Optional Browser app: run the Playwright service in `os-browser/` and set
-`OS_BROWSER_URL` / `OS_BROWSER_SECRET`.

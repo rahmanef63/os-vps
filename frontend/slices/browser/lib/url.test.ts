@@ -89,29 +89,29 @@ describe("toTarget", () => {
     expect(toTarget("https://example.com/path")).toBe("https://example.com/path");
   });
 
-  it("returns Google search URL for a single word", () => {
+  it("returns web search URL for a single word", () => {
     expect(toTarget("hello")).toBe(
-      "https://www.google.com/search?q=" + encodeURIComponent("hello"),
+      "https://www.bing.com/search?q=" + encodeURIComponent("hello"),
     );
   });
 
-  it("returns Google search URL with encoded spaces for a phrase", () => {
+  it("returns web search URL with encoded spaces for a phrase", () => {
     const query = "how to fix this bug";
     expect(toTarget(query)).toBe(
-      "https://www.google.com/search?q=" + encodeURIComponent(query),
+      "https://www.bing.com/search?q=" + encodeURIComponent(query),
     );
   });
 
   it("encodes special characters in search queries", () => {
     const query = "what is 2+2?";
     expect(toTarget(query)).toBe(
-      "https://www.google.com/search?q=" + encodeURIComponent(query),
+      "https://www.bing.com/search?q=" + encodeURIComponent(query),
     );
   });
 
-  it("returns Google search for empty string", () => {
+  it("returns web search for empty string", () => {
     expect(toTarget("")).toBe(
-      "https://www.google.com/search?q=" + encodeURIComponent(""),
+      "https://www.bing.com/search?q=" + encodeURIComponent(""),
     );
   });
 });

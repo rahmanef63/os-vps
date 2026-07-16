@@ -1,23 +1,21 @@
 "use client";
 
-import { Plus, X, Sparkles } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hostOf } from "../lib/url";
-import type { Tab } from "../lib/use-remote-browser";
+
+export type Tab = { id: number; url: string; title: string };
 
 type TabBarProps = {
   tabs: Tab[];
   activeId: number;
-  aiOpen: boolean;
   onSwitch: (id: number) => void;
   onClose: (id: number) => void;
   onNew: () => void;
-  onToggleAi: () => void;
 };
 
-// Chrome-style tab strip. Each tab is its own remote page/stream; the AI toggle
-// opens the agent-activity panel.
-export function TabBar({ tabs, activeId, aiOpen, onSwitch, onClose, onNew, onToggleAi }: TabBarProps) {
+// Chrome-style tab strip. Each tab is its own embedded page.
+export function TabBar({ tabs, activeId, onSwitch, onClose, onNew }: TabBarProps) {
   return (
     <div className="flex items-center gap-1 bg-card/50 px-1.5 pt-1.5">
       {/* Tabs never wrap — they scroll horizontally when the pane is narrow. */}
@@ -62,18 +60,6 @@ export function TabBar({ tabs, activeId, aiOpen, onSwitch, onClose, onNew, onTog
           <Plus className="size-4" />
         </button>
       </div>
-      <button
-        type="button"
-        onClick={onToggleAi}
-        aria-label="AI panel"
-        className={cn(
-          "mb-1 flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs",
-          aiOpen ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent",
-        )}
-      >
-        <Sparkles className="size-3.5" />
-        AI
-      </button>
     </div>
   );
 }
