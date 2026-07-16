@@ -10,6 +10,7 @@ import {
   slugifyProvider,
   upsertCustomProvider,
   removeCustomProvider,
+  removeOAuthBundle,
 } from "@/lib/config/store";
 import { assertSafeUrl } from "@/lib/host/ssrf";
 
@@ -31,18 +32,19 @@ export async function GET() {
   const provider = cfg.provider || DEFAULT_PROVIDER;
   const keys = cfg.keys ?? {};
   const custom = cfg.customProviders ?? {};
+  const oauth = cfg.oauthTokens ?? {};
   // Masked shows only a locally-stored key; hasApiKey also honours an env fallback.
   const stored = keys[provider] ?? (provider === "anthropic" ? cfg.anthropicApiKey : undefined) ?? "";
   const key = stored || (await hostCredentialStore().getKey(undefined, provider)) || "";
 
-  // Connected = every provider with a stored key, plus any custom provider. Custom
-  // rows carry their baseUrl / protocol / models so the UI can show + edit them.
-  const ids = new Set([...Object.keys(keys), ...Object.keys(custom)]);
+  // Connected = every provider with a stored key, plus custom + OAuth providers.
+  // Custom rows carry baseUrl/protocol/models; OAuth rows just report "signed in".
+  const ids = new Set([...Object.keys(keys), ...Object.keys(custom), ...Object.keys(oauth)]);
   const providers = [...ids].sort().map((id) => ({
     id,
-    kind: isBuiltinProvider(id) ? "builtin" : "custom",
-    hasKey: !!keys[id],
-    masked: mask(keys[id] ?? ""),
+    kind: oauth[id] ? "oauth" : isBuiltinProvider(id) ? "builtin" : "custom",
+    hasKey: !!keys[id] || !!oauth[id],
+    masked: oauth[id] ? "signed in" : mask(keys[id] ?? ""),
     baseUrl: custom[id]?.baseUrl,
     protocol: custom[id]?.protocol,
     models: custom[id]?.models,
@@ -133,6 +135,7 @@ export async function DELETE(req: NextRequest) {
   if (!slug) return NextResponse.json({ error: "provider required" }, { status: 400 });
   await hostCredentialStore().deleteKey(undefined, slug);
   await removeCustomProvider(slug);
+  await removeOAuthBundle(slug);
   // If the deleted provider was selected, fall back to the default so the
   // assistant never points at a now-keyless provider.
   const cfg = await readConfig();

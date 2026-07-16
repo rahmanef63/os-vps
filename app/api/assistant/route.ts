@@ -1,8 +1,18 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSession } from "@/lib/auth/require-session";
-import { resolveModelRef, hostCredentialStore, selectedCustomConn } from "@/lib/config/store";
+import {
+  resolveModelRef,
+  hostCredentialStore,
+  selectedCustomConn,
+  readConfig,
+  readOAuthBundle,
+  writeOAuthBundle,
+  DEFAULT_PROVIDER,
+} from "@/lib/config/store";
 import { resolveModel } from "@/lib/models";
 import { streamOpenAI } from "@/lib/ai/openai-stream";
+import { ensureFreshCodex } from "@/lib/ai/oauth/codex";
+import { streamCodex } from "@/lib/ai/codex-stream";
 import { rateLimited } from "@/lib/host/rate-limit";
 
 // SSE streaming chat for the "Alfa" assistant. BYOK: the Anthropic key comes
@@ -95,24 +105,40 @@ export async function POST(req: Request) {
 
   // Resolve model + BYOK key + host-gated endpoint through @rahmanef/models. The
   // registry pins each provider's key to its own baseUrl (key can't be redirected).
-  let resolved;
-  try {
-    // Custom providers resolve against their own baseUrl+protocol; built-ins pass
-    // null and stay registry-pinned (a key can't be redirected to another host).
-    const custom = await selectedCustomConn();
-    resolved = await resolveModel(await resolveModelRef(), {
-      store: hostCredentialStore(),
-      baseUrl: custom?.baseUrl,
-      protocol: custom?.protocol,
-    });
-  } catch {
-    // resolveModel throws when no BYOK key is set for the selected provider.
-    return Response.json({ error: "no_api_key" }, { status: 501 });
+  // OpenAI "Codex" is an OAuth subscription provider: no BYOK key + a non-standard
+  // ChatGPT-backend endpoint, so it bypasses resolveModel and streams via streamCodex.
+  const cfg = await readConfig();
+  const isCodex = (cfg.provider || DEFAULT_PROVIDER) === "openai-codex";
+  const codexModel = cfg.model || "gpt-5-codex";
+  let resolved: Awaited<ReturnType<typeof resolveModel>> | null = null;
+  let codexBundle: Awaited<ReturnType<typeof readOAuthBundle>> = null;
+  if (isCodex) {
+    const b = await readOAuthBundle("openai-codex");
+    if (!b) return Response.json({ error: "no_api_key" }, { status: 501 });
+    try {
+      codexBundle = await ensureFreshCodex(b);
+      if (codexBundle !== b) await writeOAuthBundle("openai-codex", codexBundle);
+    } catch {
+      return Response.json({ error: "oauth_refresh_failed" }, { status: 502 });
+    }
+  } else {
+    try {
+      // Custom providers resolve against their own baseUrl+protocol; built-ins pass
+      // null and stay registry-pinned (a key can't be redirected to another host).
+      const custom = await selectedCustomConn();
+      resolved = await resolveModel(await resolveModelRef(), {
+        store: hostCredentialStore(),
+        baseUrl: custom?.baseUrl,
+        protocol: custom?.protocol,
+      });
+    } catch {
+      // resolveModel throws when no BYOK key is set for the selected provider.
+      return Response.json({ error: "no_api_key" }, { status: 501 });
+    }
   }
-  // Anthropic streams via its SDK; every openai-protocol provider (OpenAI + ~30
-  // compatible) streams via our adapter. Both emit the same neutral
-  // delta|tool_use|done|error SSE vocab, so the client is provider-agnostic.
-  const anthropic = new Anthropic({ apiKey: resolved.apiKey, baseURL: resolved.baseUrl });
+  // Anthropic streams via its SDK; openai-protocol providers via our adapter; Codex
+  // via the ChatGPT backend. All emit the same neutral delta|tool_use|done|error vocab.
+  const anthropic = new Anthropic({ apiKey: resolved?.apiKey ?? "", baseURL: resolved?.baseUrl });
   const encoder = new TextEncoder();
   const sse = (event: string, data: unknown) =>
     encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -131,7 +157,10 @@ export async function POST(req: Request) {
       };
       const emit = (event: string, data: unknown) => safeEnqueue(sse(event, data));
       try {
-        if (resolved.protocol === "anthropic") {
+        if (isCodex && codexBundle) {
+          // Chat-only OAuth path (no tools) through the ChatGPT Codex backend.
+          await streamCodex({ bundle: codexBundle, model: codexModel, messages: rawMessages, system: sys, signal: req.signal, emit });
+        } else if (resolved?.protocol === "anthropic") {
           ai = anthropic.messages.stream(
             {
               model: resolved.model,
@@ -156,7 +185,7 @@ export async function POST(req: Request) {
             for (const u of uses) emit("tool_use", { id: u.id, name: u.name, input: u.input });
             emit("done", { stopReason: final.stop_reason });
           }
-        } else {
+        } else if (resolved) {
           // openai-protocol: the adapter POSTs {baseUrl}/chat/completions
           // {stream:true} with the host-gated BYOK key and emits the same events.
           // req.signal cancels the upstream fetch (billing cutoff on abort).

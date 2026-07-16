@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Sparkles, Check, Plus } from "lucide-react";
+import { Sparkles, Check } from "lucide-react";
 import { toast } from "@/features/os-shell";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { SettingsSection, SettingsRow, SettingsBlock } from "@/features/shell-settings";
-import { CustomProviderForm } from "./custom-provider-form";
-import { ProviderList, type ConnectedProvider } from "./provider-list";
+import { type ConnectedProvider } from "./provider-list";
+import { ProviderManage } from "./provider-manage";
 
 type Cfg = { hasApiKey: boolean; apiKeyMasked: string; model: string; provider?: string; providers?: ConnectedProvider[] };
 type CatModel = { ref: string; provider: string; id: string };
@@ -47,7 +47,6 @@ export function AiSection() {
   const [catalog, setCatalog] = useState<CatModel[]>([]);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
   const [test, setTest] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const fetchCfg = useCallback(async (): Promise<Cfg | null> => {
@@ -89,11 +88,13 @@ export function AiSection() {
     };
   }, [provider]);
 
-  const customProviders = (cfg?.providers ?? []).filter((p) => p.kind === "custom");
-  const isCustom = customProviders.some((p) => p.id === provider);
+  const extraProviders = (cfg?.providers ?? []).filter((p) => p.kind === "custom" || p.kind === "oauth");
+  const selectedMeta = (cfg?.providers ?? []).find((p) => p.id === provider);
+  const isCustom = selectedMeta?.kind === "custom";
+  const isOAuth = selectedMeta?.kind === "oauth";
   const prov = BUILTINS.find((p) => p.slug === provider);
   const onSavedProvider = provider === cfg?.provider;
-  const customModels = customProviders.find((p) => p.id === provider)?.models ?? [];
+  const customModels = selectedMeta?.models ?? [];
 
   async function onSave() {
     setBusy(true);
@@ -164,26 +165,34 @@ export function AiSection() {
             {BUILTINS.map((p) => (
               <SelectItem key={p.slug} value={p.slug}>{p.label}</SelectItem>
             ))}
-            {customProviders.length > 0 && (
+            {extraProviders.length > 0 && (
               <SelectGroup>
-                <SelectLabel>Custom</SelectLabel>
-                {customProviders.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.id}</SelectItem>
+                <SelectLabel>Connected</SelectLabel>
+                {extraProviders.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.id}{p.kind === "oauth" ? " (OAuth)" : ""}
+                  </SelectItem>
                 ))}
               </SelectGroup>
             )}
           </SelectContent>
         </Select>
       </SettingsRow>
-      <SettingsRow label={`${isCustom ? provider : prov?.label ?? "Provider"} key`}>
-        <Input
-          type="password"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-          placeholder={onSavedProvider && cfg?.hasApiKey ? cfg.apiKeyMasked : (prov?.keyHint ?? "API key")}
-          className="sm:w-56"
-        />
-      </SettingsRow>
+      {isOAuth ? (
+        <SettingsRow label="Auth">
+          <span className="text-sm text-muted-foreground">Signed in via OAuth — no key needed</span>
+        </SettingsRow>
+      ) : (
+        <SettingsRow label={`${isCustom ? provider : prov?.label ?? "Provider"} key`}>
+          <Input
+            type="password"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder={onSavedProvider && cfg?.hasApiKey ? cfg.apiKeyMasked : (prov?.keyHint ?? "API key")}
+            className="sm:w-56"
+          />
+        </SettingsRow>
+      )}
       <SettingsRow label="Model">
         <Input
           list="ai-model-suggestions"
@@ -205,36 +214,18 @@ export function AiSection() {
             {test.msg}
           </span>
         )}
-        <Button size="sm" variant="outline" onClick={onTest} disabled={cfg === null || busy}>
-          Test
-        </Button>
+        {!isOAuth && (
+          <Button size="sm" variant="outline" onClick={onTest} disabled={cfg === null || busy}>
+            Test
+          </Button>
+        )}
         <Button size="sm" onClick={onSave} disabled={cfg === null || busy}>
           {saved ? <Check className="size-3.5" /> : null}
           {saved ? "Saved" : busy ? "Saving…" : "Save"}
         </Button>
       </SettingsBlock>
 
-      <SettingsBlock>
-        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setShowAdd((s) => !s)}>
-          <Plus className="size-3.5" /> Add custom provider
-        </Button>
-        {showAdd && (
-          <div className="mt-2">
-            <CustomProviderForm
-              onAdded={() => {
-                setShowAdd(false);
-                void load();
-              }}
-            />
-          </div>
-        )}
-      </SettingsBlock>
-
-      {(cfg?.providers?.length ?? 0) > 0 && (
-        <SettingsBlock>
-          <ProviderList providers={cfg!.providers!} selected={provider} onChanged={load} />
-        </SettingsBlock>
-      )}
+      <ProviderManage providers={cfg?.providers ?? []} selected={provider} reload={load} />
     </SettingsSection>
   );
 }

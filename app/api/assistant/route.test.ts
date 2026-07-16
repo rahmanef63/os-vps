@@ -17,8 +17,18 @@ vi.mock("@/lib/auth/require-session", () => ({
 // real upstream SDK ctor, which we then prevent from streaming by aborting
 // the request signal before the route reaches the stream loop.
 vi.mock("@/lib/config/store", () => ({
-  resolveApiKey: vi.fn(async () => "sk-test-key"),
-  resolveModel: vi.fn(async () => "claude-test"),
+  DEFAULT_PROVIDER: "anthropic",
+  readConfig: vi.fn(async () => ({})), // provider undefined → non-codex path
+  resolveModelRef: vi.fn(async () => "anthropic/claude-test"),
+  hostCredentialStore: vi.fn(() => ({
+    // No key → resolveModel throws → early 501; we only assert the rate-limit gate.
+    getKey: async () => "",
+    setKey: async () => {},
+    deleteKey: async () => {},
+  })),
+  selectedCustomConn: vi.fn(async () => null),
+  readOAuthBundle: vi.fn(async () => null),
+  writeOAuthBundle: vi.fn(async () => {}),
 }));
 
 // The Anthropic SDK is constructed inside POST. We don't actually want it to

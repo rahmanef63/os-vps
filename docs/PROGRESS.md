@@ -7,6 +7,32 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 (round 2) — BYOK OAuth: "Sign in with OpenAI" (Codex device-code) (DONE)
+
+Phase D1 of DRAWER-MENU-BYOK-PLAN — the explicit ask ("oauth ai openai"). tsc + lint +
+vitest (301) green; the Codex device-flow **start verified against the live OpenAI
+endpoint** (HTTP 200 + user_code). The poll→token→chat round-trip needs the owner's
+ChatGPT authorization to exercise.
+
+- **OAuth framework** — token bundles in the 0600 host config (`OsConfig.oauthTokens`),
+  transient handshake state in-memory (`lib/ai/oauth/flow-state.ts`), a per-provider
+  start/poll route (`app/api/oauth/[provider]/route.ts`). OAuth providers surface in the
+  connected-list (kind `oauth`), selectable + deletable.
+- **OpenAI Codex** (device-code) — `lib/ai/oauth/codex.ts` (start/poll/exchange/refresh +
+  `decodeAccountId` + models) + a **bespoke ChatGPT-backend Responses streamer**
+  (`lib/ai/codex-stream.ts`): the platform `/chat/completions` path does NOT work — Codex
+  hits `chatgpt.com/backend-api/codex/responses` with the OAuth bearer, the account id
+  decoded from the token JWT, and SSE `response.output_text.delta`. Public Codex-CLI client
+  id (no secret, no registration). The assistant route bypasses `resolveModel` for
+  `openai-codex`, refreshes the token (120 s margin) before each call, streams via `streamCodex`.
+- **UI** — Settings AI panel: "Sign in with OpenAI (ChatGPT)" → device-code (shows the user
+  code, opens the verification page, polls to completion). `oauth-connect.tsx`; the active
+  provider's key row + Test hide for OAuth providers.
+- **Caveats (documented):** Codex is a reverse-engineered CONSUMER endpoint — needs a ChatGPT
+  Plus/Pro subscription, can break if OpenAI changes it, and is **chat-only (no Alfa tools)**.
+  Tokens are stored plaintext in the 0600 host file (os-vps's existing posture; at-rest
+  encryption is a later pass). **Not redeployed** — build + restart to activate.
+
 ## 2026-07-16 — Shell action contract (drawer + OS menu) + BYOK add-provider (DONE)
 
 Closed the gap the Apple mock flagged: feature slices now feed the shell's

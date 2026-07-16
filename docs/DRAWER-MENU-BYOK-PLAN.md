@@ -85,9 +85,18 @@ Codex device-code, not the platform API) — say the word to pull it forward.
 - **C3** `ai-section.tsx` — add "Add provider" (custom form), a provider **list + delete**, and a health badge
   after save/test. Optionally expose the full ~36 registry providers. *(~60 lines)*
 
-### Phase D — OAuth `[deferred]`
-Port `convex/oauth.ts`+`oauthCopilot.ts`+`app/oauth/*` (device-code + PKCE + refresh + encrypted tokens).
-Not started; explicit go needed.
+### Phase D — OAuth `[OpenAI Codex shipped; others scaffolded]`
+Framework: `OsConfig.oauthTokens` (0600 host file) + in-memory handshake (`lib/ai/oauth/flow-state.ts`) +
+`app/api/oauth/[provider]/route.ts` (start/poll). OAuth providers appear in the connected-list (kind
+`oauth`), selectable + deletable; the assistant route bypasses `resolveModel` for them and refreshes before each call.
+- **D1 OpenAI Codex** (device-code) — **DONE.** `lib/ai/oauth/codex.ts` (start/poll/exchange/refresh +
+  `decodeAccountId` + models) + bespoke Responses streamer `lib/ai/codex-stream.ts` (ChatGPT backend
+  `…/codex/responses`, not `/chat/completions`; bearer + account-id header + `response.output_text.delta` SSE).
+  Public Codex-CLI client id, no secret. UI: `oauth-connect.tsx` "Sign in with OpenAI". Start verified live.
+  **Caveats:** consumer endpoint (needs ChatGPT Plus/Pro, may break), **chat-only (no Alfa tools)**, tokens plaintext in 0600 file.
+- **D2 Claude** (PKCE paste) — TODO. `/v1/messages` with Bearer (not x-api-key) + mandatory betas + a "You are Claude Code" system block.
+- **D3 Copilot** (device-code) — TODO. gh→copilot token exchange + 5 editor headers; ToS caveat.
+- **D4 OpenRouter** (PKCE redirect) — TODO, low value (yields a normal `sk-or-` key you can already paste); needs a public callback URL.
 
 ## 4. Verification
 - Playwright (mock shells): iOS in-app "•••" → drawer lists Files actions + runs one; desktop menu bar shows
@@ -105,5 +114,9 @@ Not started; explicit go needed.
   + `/api/models/test` + ai-section rewrite. Gates: tsc + lint clean, vitest 299. Behaviorally verified
   on an isolated `:4011` dev server (prod untouched): iOS+Android "•••" → Files actions (New folder /
   Refresh / Empty Trash); desktop Files menu lists the same. **Phase D (OAuth) deferred.**
+- 2026-07-16 (r2) — **Phase D1 (OpenAI Codex OAuth) shipped.** OAuth framework + device-code flow +
+  bespoke ChatGPT-backend Responses streamer + "Sign in with OpenAI" UI. tsc + lint + vitest (301) green;
+  device-flow **start verified against the live OpenAI endpoint** (HTTP 200 + user_code). Full round-trip
+  needs the owner's ChatGPT auth. Claude/Copilot/OpenRouter (D2–D4) scaffolded, not yet built.
 </content>
 </invoke>

@@ -6,7 +6,7 @@ import { Trash2 } from "lucide-react";
 
 export type ConnectedProvider = {
   id: string;
-  kind: "builtin" | "custom";
+  kind: "builtin" | "custom" | "oauth";
   hasKey: boolean;
   masked: string;
   baseUrl?: string;
@@ -44,6 +44,9 @@ export function ProviderList({
           <span className="font-medium">{p.id}</span>
           {p.kind === "custom" && (
             <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">custom</span>
+          )}
+          {p.kind === "oauth" && (
+            <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">OAuth</span>
           )}
           {p.id === selected && (
             <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[11px] text-primary">active</span>

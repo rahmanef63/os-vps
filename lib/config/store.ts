@@ -16,6 +16,22 @@ export interface CustomProviderConn {
   models?: string[];
 }
 
+/** An OAuth "sign in with…" token bundle (subscription providers). Stored in the
+ *  same 0600 host file as API keys — refresh tokens are account-scoped, so treat
+ *  this file like an SSH key (which is already os-vps's trust boundary). */
+export interface OAuthBundle {
+  kind: "oauth";
+  access: string;
+  refresh?: string;
+  /** ms epoch when `access` expires (for copilot: the short-lived token's expiry). */
+  expires: number;
+  /** OpenAI Codex: chatgpt_account_id decoded from the token JWT. */
+  accountId?: string;
+  /** GitHub Copilot: the durable gh token + the short-lived API token. */
+  ghToken?: string;
+  copilotToken?: string;
+}
+
 export interface OsConfig {
   /** Per-provider BYOK keys — the SSOT. */
   keys?: Record<string, string>;
@@ -24,6 +40,8 @@ export interface OsConfig {
   model?: string;
   /** User-added custom providers: slug → connection (key stays in keys[slug]). */
   customProviders?: Record<string, CustomProviderConn>;
+  /** OAuth subscription providers: slug → token bundle (openai-codex, …). */
+  oauthTokens?: Record<string, OAuthBundle>;
   /** @deprecated back-compat read alias for keys.anthropic. */
   anthropicApiKey?: string;
 }
@@ -119,4 +137,23 @@ export async function removeCustomProvider(slug: string): Promise<void> {
   const next = { ...c.customProviders };
   delete next[slug];
   await writeConfig({ customProviders: next });
+}
+
+// ── OAuth token bundles ──────────────────────────────────────────────────────
+export async function readOAuthBundle(slug: string): Promise<OAuthBundle | null> {
+  const c = await readConfig();
+  return c.oauthTokens?.[slug] ?? null;
+}
+
+export async function writeOAuthBundle(slug: string, bundle: OAuthBundle): Promise<void> {
+  const c = await readConfig();
+  await writeConfig({ oauthTokens: { ...(c.oauthTokens ?? {}), [slug]: bundle } });
+}
+
+export async function removeOAuthBundle(slug: string): Promise<void> {
+  const c = await readConfig();
+  if (!c.oauthTokens?.[slug]) return;
+  const next = { ...c.oauthTokens };
+  delete next[slug];
+  await writeConfig({ oauthTokens: next });
 }
