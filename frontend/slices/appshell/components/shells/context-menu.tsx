@@ -36,10 +36,12 @@ export function useShellContextMenu(shell: ShellId, surface: ShellSurface = "des
   const [state, setState] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
   const open = useCallback(
     (e: ClickLike, base: MenuItem[] = []) => {
-      e.preventDefault();
+      // Build items BEFORE preventDefault: if the merged menu is empty, leave the
+      // browser's native menu intact rather than suppressing it AND showing nothing.
       const dynamic = getContextMenuItems({ shell, surface, x: e.clientX, y: e.clientY });
       const items = joinGroups([base, dynamic]);
       if (!items.length) return;
+      e.preventDefault();
       setState({ x: e.clientX, y: e.clientY, items });
     },
     [shell, surface],
@@ -106,7 +108,12 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
   // Clamp on all four edges (Math.max lower-bounds so a click near the bottom/
   // right of a small viewport can't push the menu offscreen). Per-row height is
   // variant-aware so the bottom clamp reserves enough for the taller touch rows.
-  const rowH = isTouch ? 44 : isWin ? 34 : 30;
+  // Read the POINTER, not just the shell persona: the a11y rule
+  // (@media pointer:coarse → [role=menuitem]{min-height:44px} in globals.css)
+  // forces 44px rows on a coarse pointer even under a desktop shell, so a
+  // persona-only rowH under-reserves height and the menu overflows/clips.
+  const coarse = typeof matchMedia !== "undefined" && matchMedia("(pointer: coarse)").matches;
+  const rowH = isTouch || coarse ? 44 : isWin ? 34 : 30;
   const x = Math.max(8, Math.min(pos.x, window.innerWidth - 220));
   const y = Math.max(8, Math.min(pos.y, window.innerHeight - items.length * rowH - 12));
 
@@ -120,7 +127,9 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
         ref={menuRef}
         role="menu"
         className={cn(
-          "fixed z-[1201] min-w-[200px] border border-border bg-popover/95 p-1 text-sm shadow-2xl backdrop-blur-md animate-in",
+          // max-height + scroll: belt-and-suspenders so the menu can NEVER run off
+          // the viewport regardless of row-height drift (it scrolls instead of clipping).
+          "fixed z-[1201] max-h-[calc(100dvh-16px)] min-w-[200px] overflow-y-auto border border-border bg-popover/95 p-1 text-sm shadow-2xl backdrop-blur-md animate-in",
           panelRadius,
           openMotion,
         )}
