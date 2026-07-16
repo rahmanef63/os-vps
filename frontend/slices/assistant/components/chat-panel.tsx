@@ -72,7 +72,11 @@ export function ChatPanel({
   useEffect(() => { agentRef.current = agent; }, [agent]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    // Coalesce into one rAF (streaming appends `messages` per token) and use
+    // instant behavior — a smooth scroll restarted every token both janks and
+    // forces a layout each frame.
+    const id = requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" }));
+    return () => cancelAnimationFrame(id);
   }, [messages]);
 
   // Stable UI seam for the tool binding: push/patch tool cards + await approval.

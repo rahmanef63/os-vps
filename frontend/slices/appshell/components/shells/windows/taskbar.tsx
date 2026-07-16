@@ -9,7 +9,7 @@ import { Search, LayoutGrid, ArrowUpRight, Minimize2, X, Settings, Lock } from "
 import { useApps } from "../../../lib/registry";
 import { useWindowOrder, useWindow, useWindowsMap, useFocused } from "../../../hooks/use-shell";
 import type { AppDescriptor } from "../../../lib/types";
-import { focusWindow, minimizeWindow, restoreWindow, closeWindow, toggleNotificationCenter, openWindow } from "../../../lib/store";
+import { focusWindow, minimizeWindow, restoreWindow, closeWindow, toggleNotificationCenter, openWindow, toggleSpotlight } from "../../../lib/store";
 import { lock } from "../../../lib/lock";
 import { AppIcon } from "../../app-icon";
 import { WindowPreview } from "../../window-preview";
@@ -47,7 +47,7 @@ export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
         <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
           <StartButton open={startOpen} onClick={() => setStartOpen((o) => !o)} onTaskView={onTaskView} />
           <Button type="button" variant="ghost"
-            onClick={() => setStartOpen(true)}
+            onClick={toggleSpotlight}
             className="h-auto p-0 font-normal hover:bg-transparent flex h-9 items-center gap-2 rounded-md border border-border bg-background/60 px-3 text-xs text-muted-foreground hover:bg-muted"
           >
             <Search className="size-3.5" /> Search

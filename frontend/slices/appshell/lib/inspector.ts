@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 // Per-app "AI Inspector" bus. Each app PUBLISHES a descriptor of its current
 // state (props the user/AI can see) + actions (callable by a click or surfaced
@@ -31,6 +30,7 @@ export type InspectorInfo = {
 type Listener = () => void;
 
 const infos = new Map<string, InspectorInfo>();
+const appVersions = new Map<string, number>();
 const listeners = new Set<Listener>();
 let version = 0;
 
@@ -39,13 +39,21 @@ function emit() {
   listeners.forEach((l) => l());
 }
 
+function bump(appId: string) {
+  appVersions.set(appId, (appVersions.get(appId) ?? 0) + 1);
+}
+
 export function publishInspector(appId: string, info: InspectorInfo): void {
   infos.set(appId, info);
+  bump(appId);
   emit();
 }
 
 export function clearInspector(appId: string): void {
-  if (infos.delete(appId)) emit();
+  if (infos.delete(appId)) {
+    bump(appId);
+    emit();
+  }
 }
 
 export const inspectorStore = {
@@ -58,9 +66,13 @@ export const inspectorStore = {
     appId ? infos.get(appId) : undefined,
 };
 
-// Read the inspector descriptor for a given app id, reactively.
+// Read the inspector descriptor for a given app id, reactively. The snapshot is a
+// PER-APP version, so a consumer only re-renders when THAT app republishes — not
+// on every other app's publish. (A focused telemetry app used to re-render every
+// inspector consumer in the shell on its 1.5s cadence via the global counter.)
 export function useInspectorInfo(appId: string | null | undefined): InspectorInfo | undefined {
-  useSyncExternalStore(inspectorStore.subscribe, inspectorStore.version, inspectorStore.version);
+  const getSnapshot = useCallback(() => (appId ? appVersions.get(appId) ?? 0 : 0), [appId]);
+  useSyncExternalStore(inspectorStore.subscribe, getSnapshot, getSnapshot);
   return inspectorStore.get(appId);
 }
 
