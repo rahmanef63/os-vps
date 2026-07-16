@@ -52,6 +52,7 @@ export function ThreadList({
           <Button
             size="sm"
             variant="ghost"
+            className="[@media(pointer:coarse)]:min-h-[44px]"
             onClick={() => {
               onNew();
               onOpenChange(false);
@@ -69,7 +70,7 @@ export function ThreadList({
                 <button
                   type="button"
                   onClick={() => resume(t.id)}
-                  className="min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm hover:bg-[var(--hover-strong)]"
+                  className="min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm hover:bg-[var(--hover-strong)] [@media(pointer:coarse)]:min-h-[44px]"
                 >
                   {t.title}
                 </button>
@@ -78,7 +79,7 @@ export function ThreadList({
                   variant="ghost"
                   aria-label={`Delete ${t.title}`}
                   onClick={() => del(t.id)}
-                  className="mr-1 size-7 shrink-0 text-muted-foreground hover:text-destructive"
+                  className="mr-1 size-7 shrink-0 text-muted-foreground hover:text-destructive [@media(pointer:coarse)]:size-[44px]"
                 >
                   <Trash2 className="size-4" />
                 </Button>

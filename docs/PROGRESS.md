@@ -7,6 +7,18 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 (round 7) — iOS touch-target a11y sweep (P4 long-tail) (DONE)
+
+Owner requested the iOS-parity optional long-tail. A **10-agent adversarial re-audit** found **0
+mis-gates** (seam discipline held — the other four shells are provably unaffected) + **63 gaps** (49
+sub-44px touch targets, 8 dialog→sheet, 6 regressions from the round 1–6 AI work — the 14px app root
+makes `h-8`=28px / `h-9`=31.5px fall short). Fixed the high-ROI subset: one `@media(pointer:coarse)`
+`globals.css` rule for all inputs/selects/menuitems (~25 targets), 2 shared primitives
+(`responsive-toolbar`, file-tree `dir`), **46 per-slice button/row 44px appends** (6-agent disjoint
+fan-out), and widget-picker Dialog→`ResponsiveDialog` sheet. Editors long-tail + the model-catalog
+scroll-restructure logged as remaining. `tsc` + `eslint` clean, vitest **689** green, deployed `:4005`
+health 200. Full detail in `IOS-PARITY-REFACTOR-PLAN.md` §8 (round 7).
+
 ## 2026-07-16 (round 6) — "Alfa, forget this" tool (DONE)
 
 Twin of `memory.remember`: a `memory.forget` host-tool (read-tier) that matches saved

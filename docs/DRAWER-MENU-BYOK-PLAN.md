@@ -5,7 +5,8 @@
 > the **"add provider"** flow in `../models-rahmanef-com`.
 >
 > **Scope:** structural (shell↔app contract) + BYOK. Presentation-only iOS parity is tracked
-> separately in `IOS-PARITY-REFACTOR-PLAN.md` (written, largely un-shipped) — **not** this doc.
+> separately in `IOS-PARITY-REFACTOR-PLAN.md` (**P0–P4 shipped 2026-07-15**, `23e400e`…`2c0aea8`;
+> only the documented optional long-tail remains open) — **not** this doc.
 >
 > Built from a 3-probe audit (2026-07-16): mock UX spec · current shell chrome · BYOK-vs-models.
 

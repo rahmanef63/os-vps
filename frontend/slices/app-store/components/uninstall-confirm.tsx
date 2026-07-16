@@ -32,7 +32,7 @@ export function UninstallConfirm({
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="button" variant="destructive" onClick={onConfirm}>
+        <Button type="button" variant="destructive" onClick={onConfirm} className="[@media(pointer:coarse)]:min-h-[44px]">
           <Trash2 className="size-4" />
           Uninstall
         </Button>

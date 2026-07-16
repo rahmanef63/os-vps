@@ -39,7 +39,7 @@ export function Terminal({ initialCommand }: { initialCommand?: string } = {}) {
           </span>
           <button
             onClick={() => setPtyError(null)}
-            className="rounded bg-white/15 px-2 py-0.5 hover:bg-white/25"
+            className="rounded bg-white/15 px-2 py-0.5 hover:bg-white/25 [@media(pointer:coarse)]:min-h-[44px]"
           >
             Retry PTY
           </button>

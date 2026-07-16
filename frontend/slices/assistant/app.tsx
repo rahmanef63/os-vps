@@ -109,7 +109,7 @@ export default function Assistant() {
           agent={store.activeAgent}
           switcher={
             <>
-              <Button size="sm" variant="ghost" aria-label="Chat history" className="shrink-0" onClick={() => setHistoryOpen(true)}>
+              <Button size="sm" variant="ghost" aria-label="Chat history" className="shrink-0 [@media(pointer:coarse)]:min-h-[44px]" onClick={() => setHistoryOpen(true)}>
                 <History className="size-4" />
               </Button>
               <AgentSwitcher store={store} onNew={() => setForm({ kind: "agent" })} />

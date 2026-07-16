@@ -89,11 +89,11 @@ export function LoginScreen({ onAuthed }: { onAuthed: () => void }) {
               <code className="flex-1 truncate rounded-lg bg-secondary px-3 py-2 font-mono text-xs">
                 {deviceId}
               </code>
-              <Button type="button" variant="secondary" size="icon" onClick={copyId} aria-label="Copy device id">
+              <Button type="button" variant="secondary" size="icon" className="[@media(pointer:coarse)]:size-[44px]" onClick={copyId} aria-label="Copy device id">
                 {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
               </Button>
             </div>
-            <Button type="button" className="w-full" onClick={() => submit()} disabled={busy}>
+            <Button type="button" className="w-full [@media(pointer:coarse)]:min-h-[44px]" onClick={() => submit()} disabled={busy}>
               {busy && <Loader2 className="size-4 animate-spin" />}
               Check again
             </Button>
@@ -119,7 +119,7 @@ export function LoginScreen({ onAuthed }: { onAuthed: () => void }) {
               onChange={(e) => setPassword(e.target.value)}
             />
             {error && <p className="text-xs text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={busy}>
+            <Button type="submit" className="w-full [@media(pointer:coarse)]:min-h-[44px]" disabled={busy}>
               {busy && <Loader2 className="size-4 animate-spin" />}
               Unlock
             </Button>

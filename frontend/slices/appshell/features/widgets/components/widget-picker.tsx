@@ -2,7 +2,7 @@
 
 import { Component, type ReactNode } from "react";
 import { Check } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog as FormDrawer } from "../../../primitives/responsive-dialog";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { WIDGET_META, setPickerOpen, setWidgetsOn, toggleWidget, usePickerOpen, useWidgetState } from "../widget-registry";
@@ -37,23 +37,23 @@ export function WidgetPicker() {
   // shared picker relabels for that surface (its only per-shell divergence).
   const mobile = useActiveShell().surface === "mobile";
   return (
-    <Dialog open={open} onOpenChange={setPickerOpen}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{mobile ? "Add Widget" : "Desktop widgets"}</DialogTitle>
-          <DialogDescription>
-            {mobile
-              ? "Tap a widget to add or remove it."
-              : "Click a widget to add or remove it. Drag widgets on the desktop to arrange."}
-          </DialogDescription>
-        </DialogHeader>
+    <FormDrawer open={open} onOpenChange={setPickerOpen} size="md">
+      <FormDrawer.Header>
+        <FormDrawer.Title>{mobile ? "Add Widget" : "Desktop widgets"}</FormDrawer.Title>
+        <FormDrawer.Description>
+          {mobile
+            ? "Tap a widget to add or remove it."
+            : "Click a widget to add or remove it. Drag widgets on the desktop to arrange."}
+        </FormDrawer.Description>
+      </FormDrawer.Header>
 
+      <FormDrawer.Body>
         <label className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
           <span className="font-medium">{mobile ? "Show widgets" : "Show desktop widgets"}</span>
           <Switch checked={on} onCheckedChange={setWidgetsOn} />
         </label>
 
-        <div className="grid max-h-[55vh] grid-cols-2 gap-2 overflow-auto sm:grid-cols-3">
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {WIDGET_META.map((w) => {
             const Render = WIDGET_RENDER[w.id];
             const isOn = enabled.includes(w.id);
@@ -86,7 +86,7 @@ export function WidgetPicker() {
             );
           })}
         </div>
-      </DialogContent>
-    </Dialog>
+      </FormDrawer.Body>
+    </FormDrawer>
   );
 }

@@ -45,7 +45,7 @@ export function ResponsiveToolbar({
           variant="ghost"
           onClick={i.onClick}
           disabled={i.disabled}
-          className="gap-1.5"
+          className="gap-1.5 [@media(pointer:coarse)]:min-h-[44px]"
         >
           {i.icon && <i.icon className="size-4" />}
           <span className={cn(isMobile && "sr-only @sm:not-sr-only")}>{i.label}</span>
@@ -54,7 +54,7 @@ export function ResponsiveToolbar({
       {overflow.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="ghost" aria-label="More actions">
+            <Button size="sm" variant="ghost" aria-label="More actions" className="[@media(pointer:coarse)]:size-[44px]">
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>

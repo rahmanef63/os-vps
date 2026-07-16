@@ -74,7 +74,7 @@ export function OAuthConnect({ onConnected }: { onConnected: () => void }) {
   return (
     <div>
       {!flow ? (
-        <Button variant="outline" size="sm" disabled={busy} onClick={start}>
+        <Button variant="outline" size="sm" className="[@media(pointer:coarse)]:min-h-[44px]" disabled={busy} onClick={start}>
           {busy ? "Starting…" : "Sign in with OpenAI (ChatGPT)"}
         </Button>
       ) : (
@@ -88,7 +88,7 @@ export function OAuthConnect({ onConnected }: { onConnected: () => void }) {
           </p>
           <p className="font-mono text-lg tracking-widest">{flow.userCode}</p>
           <p className="text-xs text-muted-foreground">Waiting for authorization…</p>
-          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={stop}>
+          <Button variant="ghost" size="sm" className="text-muted-foreground [@media(pointer:coarse)]:min-h-[44px]" onClick={stop}>
             Cancel
           </Button>
         </div>

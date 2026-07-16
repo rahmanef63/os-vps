@@ -165,10 +165,10 @@ function StatusBar({
       }
     >
       <span className="min-w-0 flex-1 truncate">○ {statusLabel(status)}</span>
-      <button onClick={onRestart} className="rounded bg-white/15 px-2 py-0.5 hover:bg-white/25">
+      <button onClick={onRestart} className="rounded bg-white/15 px-2 py-0.5 hover:bg-white/25 [@media(pointer:coarse)]:min-h-[44px]">
         Restart
       </button>
-      <button onClick={onBasic} className="rounded bg-white/15 px-2 py-0.5 hover:bg-white/25">
+      <button onClick={onBasic} className="rounded bg-white/15 px-2 py-0.5 hover:bg-white/25 [@media(pointer:coarse)]:min-h-[44px]">
         Basic mode
       </button>
     </div>

@@ -48,7 +48,7 @@ const CHARS: KeyDef[] = [
 
 const BTN =
   "h-9 min-w-9 shrink-0 select-none rounded-md bg-white/10 px-2 font-mono text-xs " +
-  "leading-none text-[#dfe3ea] transition-colors hover:bg-white/20 active:bg-white/25";
+  "leading-none text-[#dfe3ea] transition-colors hover:bg-white/20 active:bg-white/25 [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px]";
 
 // Apply armed modifiers to one printable char. Ctrl only maps letters (the
 // classic & 0x1f trick); Alt is the ESC prefix (meta) and applies to any char.

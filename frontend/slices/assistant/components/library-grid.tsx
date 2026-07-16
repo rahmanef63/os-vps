@@ -48,7 +48,7 @@ export function LibraryGrid({
                 : "Bundles of tools + instructions you give to agents."}
             </div>
           </div>
-          <Button size="sm" className="ml-auto" onClick={onNew}>
+          <Button size="sm" className="ml-auto [@media(pointer:coarse)]:min-h-[44px]" onClick={onNew}>
             <Plus className="size-3.5" /> New {isAgent ? "agent" : "skill"}
           </Button>
         </div>

@@ -32,7 +32,7 @@ export function MobileWidgets() {
           variant="ghost"
           size="sm"
           onClick={() => setPickerOpen(true)}
-          className="h-8 gap-1.5 rounded-full bg-white/15 px-3 text-[13px] font-medium text-white backdrop-blur hover:bg-white/25 hover:text-white"
+          className="h-8 gap-1.5 rounded-full bg-white/15 px-3 text-[13px] font-medium text-white backdrop-blur hover:bg-white/25 hover:text-white [@media(pointer:coarse)]:min-h-[44px]"
         >
           <Plus className="size-4" /> Edit
         </Button>

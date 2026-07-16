@@ -55,7 +55,7 @@ export function StoreAppCard({
             variant={app.installed ? "secondary" : "default"}
             onClick={() => onToggle(app)}
             className={cn(
-              "shrink-0",
+              "shrink-0 [@media(pointer:coarse)]:min-h-[44px]",
               app.installed && "text-muted-foreground",
             )}
           >

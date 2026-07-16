@@ -50,10 +50,10 @@ export function FilesToolbar(props: {
       <div className="flex h-11 items-center gap-1.5 border-b border-border px-3">
         {/* Browse: opens the Favorites / roots drawer — the slim bar must keep
             this or those locations become unreachable on the phone. */}
-        <Button variant="ghost" size="icon" onClick={props.onOpenSidebar} aria-label="Browse" className="size-9 shrink-0 text-primary">
+        <Button variant="ghost" size="icon" onClick={props.onOpenSidebar} aria-label="Browse" className="size-9 shrink-0 text-primary [@media(pointer:coarse)]:size-[44px]">
           <PanelLeft className="size-5" />
         </Button>
-        <Button variant="ghost" size="icon" disabled={!props.canBack} onClick={props.onBack} aria-label="Back" className="size-9 shrink-0 text-primary disabled:text-muted-foreground">
+        <Button variant="ghost" size="icon" disabled={!props.canBack} onClick={props.onBack} aria-label="Back" className="size-9 shrink-0 text-primary disabled:text-muted-foreground [@media(pointer:coarse)]:size-[44px]">
           <ChevronRight className="size-5 rotate-180" />
         </Button>
         <FileCrumbs
@@ -72,12 +72,12 @@ export function FilesToolbar(props: {
             <List className="size-3.5" />
           </Button>
         </div>
-        <Button variant="ghost" size="icon" aria-label="Search" onClick={props.onToggleSearch} className={cn("size-9 shrink-0 text-primary", props.searchOpen && "bg-secondary")}>
+        <Button variant="ghost" size="icon" aria-label="Search" onClick={props.onToggleSearch} className={cn("size-9 shrink-0 text-primary [@media(pointer:coarse)]:size-[44px]", props.searchOpen && "bg-secondary")}>
           <Search className="size-5" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="More actions" className="size-9 shrink-0 text-primary">
+            <Button variant="ghost" size="icon" aria-label="More actions" className="size-9 shrink-0 text-primary [@media(pointer:coarse)]:size-[44px]">
               <Plus className="size-5" />
             </Button>
           </DropdownMenuTrigger>

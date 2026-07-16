@@ -49,7 +49,7 @@ export function ModelCatalog({ provider, value, onPick }: { provider: string; va
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm">Browse</Button>
+        <Button type="button" variant="outline" size="sm" className="[@media(pointer:coarse)]:min-h-[44px]">Browse</Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>

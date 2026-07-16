@@ -59,7 +59,7 @@ export function CustomProviderForm({ onAdded }: { onAdded: () => void }) {
         <Button
           type="button"
           variant="ghost"
-          className="h-auto p-0 text-xs text-primary hover:bg-transparent hover:underline"
+          className="h-auto p-0 text-xs text-primary hover:bg-transparent hover:underline [@media(pointer:coarse)]:min-h-[44px]"
           onClick={() => setMode(mode === "fields" ? "json" : "fields")}
         >
           {mode === "fields" ? "paste JSON" : "use fields"}
@@ -94,7 +94,7 @@ export function CustomProviderForm({ onAdded }: { onAdded: () => void }) {
       )}
 
       <div className="flex justify-end">
-        <Button size="sm" disabled={!canSubmit} onClick={submit}>{busy ? "Adding…" : "Add provider"}</Button>
+        <Button size="sm" className="[@media(pointer:coarse)]:min-h-[44px]" disabled={!canSubmit} onClick={submit}>{busy ? "Adding…" : "Add provider"}</Button>
       </div>
     </div>
   );

@@ -115,7 +115,7 @@ function ResultRow({
         onMouseMove={() => onHover(index)}
         onClick={() => onPick(index)}
         className={cn(
-          "h-auto flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm",
+          "h-auto flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm [@media(pointer:coarse)]:min-h-[44px]",
           selected ? "bg-primary/15 text-foreground" : "text-foreground/80",
         )}
       >

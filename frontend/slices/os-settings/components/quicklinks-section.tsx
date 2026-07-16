@@ -65,10 +65,10 @@ export function QuicklinksSection() {
                 aria-label="URL"
                 className="h-8 min-w-0 flex-[2] font-mono text-[11px]"
               />
-              <Button type="button" variant="ghost" size="icon" aria-label="Move up" onClick={() => move(ql.id, -1)} disabled={i === 0}>
+              <Button type="button" variant="ghost" size="icon" aria-label="Move up" onClick={() => move(ql.id, -1)} disabled={i === 0} className="[@media(pointer:coarse)]:size-[44px]">
                 <ArrowUp className="size-4" />
               </Button>
-              <Button type="button" variant="ghost" size="icon" aria-label="Move down" onClick={() => move(ql.id, 1)} disabled={i === items.length - 1}>
+              <Button type="button" variant="ghost" size="icon" aria-label="Move down" onClick={() => move(ql.id, 1)} disabled={i === items.length - 1} className="[@media(pointer:coarse)]:size-[44px]">
                 <ArrowDown className="size-4" />
               </Button>
               <Button
@@ -76,6 +76,7 @@ export function QuicklinksSection() {
                 variant="ghost"
                 size="icon"
                 aria-label="Remove"
+                className="[@media(pointer:coarse)]:size-[44px]"
                 onClick={() => setPending({ id: ql.id, label: ql.title || ql.url })}
               >
                 <Trash2 className="size-4 text-destructive" />

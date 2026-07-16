@@ -219,11 +219,11 @@ export function AiSection() {
           </span>
         )}
         {!isOAuth && (
-          <Button size="sm" variant="outline" onClick={onTest} disabled={cfg === null || busy}>
+          <Button size="sm" variant="outline" className="[@media(pointer:coarse)]:min-h-[44px]" onClick={onTest} disabled={cfg === null || busy}>
             Test
           </Button>
         )}
-        <Button size="sm" onClick={onSave} disabled={cfg === null || busy}>
+        <Button size="sm" className="[@media(pointer:coarse)]:min-h-[44px]" onClick={onSave} disabled={cfg === null || busy}>
           {saved ? <Check className="size-3.5" /> : null}
           {saved ? "Saved" : busy ? "Saving…" : "Save"}
         </Button>

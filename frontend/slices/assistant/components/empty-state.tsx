@@ -30,7 +30,7 @@ export function EmptyState({
             variant="secondary"
             onClick={() => onPick(p)}
             className={cn(
-              "cursor-pointer px-3 py-1 text-xs font-normal",
+              "cursor-pointer items-center px-3 py-1 text-xs font-normal [@media(pointer:coarse)]:min-h-[44px]",
               "hover:bg-secondary/70",
             )}
           >

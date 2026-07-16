@@ -102,7 +102,7 @@ export function MemorySection() {
                   variant="ghost"
                   aria-label="Delete memory"
                   onClick={() => remove(m.id)}
-                  className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+                  className="size-7 shrink-0 text-muted-foreground hover:text-destructive [@media(pointer:coarse)]:size-[44px]"
                 >
                   <Trash2 className="size-4" />
                 </Button>

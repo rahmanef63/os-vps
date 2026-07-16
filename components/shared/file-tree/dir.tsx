@@ -106,11 +106,11 @@ export function DirChildren({
           />
         </div>
       ) : (
-        <div style={{ paddingLeft: pad + 14 }} className="flex items-center gap-1 py-0.5 opacity-0 hover:opacity-100 focus-within:opacity-100">
-          <Button type="button" variant="ghost" size="icon" title="New file" onClick={() => setAdding("file")} className="grid size-5 place-items-center rounded p-0 text-muted-foreground hover:bg-secondary">
+        <div style={{ paddingLeft: pad + 14 }} className="flex items-center gap-1 py-0.5 opacity-0 hover:opacity-100 focus-within:opacity-100 [@media(pointer:coarse)]:opacity-100">
+          <Button type="button" variant="ghost" size="icon" title="New file" onClick={() => setAdding("file")} className="grid size-5 [@media(pointer:coarse)]:size-[44px] place-items-center rounded p-0 text-muted-foreground hover:bg-secondary">
             <FilePlus className="size-3" />
           </Button>
-          <Button type="button" variant="ghost" size="icon" title="New folder" onClick={() => setAdding("dir")} className="grid size-5 place-items-center rounded p-0 text-muted-foreground hover:bg-secondary">
+          <Button type="button" variant="ghost" size="icon" title="New folder" onClick={() => setAdding("dir")} className="grid size-5 [@media(pointer:coarse)]:size-[44px] place-items-center rounded p-0 text-muted-foreground hover:bg-secondary">
             <FolderPlus className="size-3" />
           </Button>
         </div>
@@ -133,7 +133,7 @@ function Node({ entry, parent, depth, ctx }: { entry: FsEntry; parent: string; d
         onClick={() => ctx.onOpenFile?.(path)}
         style={pad}
         className={cn(
-          "flex h-auto w-full items-center justify-start gap-1.5 rounded-none py-1 pr-2 text-left text-xs font-normal",
+          "flex h-auto w-full items-center justify-start gap-1.5 rounded-none py-1 pr-2 text-left text-xs font-normal [@media(pointer:coarse)]:min-h-[44px]",
           on ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60",
         )}
       >
@@ -153,7 +153,7 @@ function Node({ entry, parent, depth, ctx }: { entry: FsEntry; parent: string; d
           ctx.onSelectDir?.(path);
         }}
         style={pad}
-        className="flex h-auto w-full items-center justify-start gap-1 rounded-none py-1 pr-2 text-left text-xs font-medium text-foreground hover:bg-secondary/60"
+        className="flex h-auto w-full items-center justify-start gap-1 rounded-none py-1 pr-2 text-left text-xs font-medium text-foreground hover:bg-secondary/60 [@media(pointer:coarse)]:min-h-[44px]"
       >
         {open ? <ChevronDown className="size-3.5 shrink-0" /> : <ChevronRight className="size-3.5 shrink-0" />}
         <span className="truncate">{entry.name}</span>

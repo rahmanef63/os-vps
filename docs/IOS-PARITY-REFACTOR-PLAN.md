@@ -672,6 +672,46 @@ Live tracking of execution against §5. `✅ shipped` = deployed to `:4005` + ve
 
 ---
 
+### 2026-07-16 (round 7) — touch-target a11y sweep (the P4 long-tail, owner-requested) · ✅ shipped
+
+Owner requested the documented optional long-tail (§9). A **10-agent adversarial re-audit** of every
+slice-group (verify the 07-15 claims still hold in code + find genuine gaps introduced since) found
+**0 mis-gates** (the `id==='ios'` / `[data-shell="ios"]` seam discipline held — the other four shells
+are provably unaffected) and **63 real gaps: 49 sub-44px touch targets · 8 dialog→sheet · 6 round-1–6
+regressions**. Root cause of the 44px misses: the app root is 14px, so rem control heights fall short
+(`h-8`=28px, `h-9`=31.5px, `size-7`=24.5px) — worst in the 07-16 AI settings (BYOK / OAuth / memory /
+model-catalog) added *after* the 07-15 parity freeze.
+
+**Fixed (systemic first, then per-slice fan-out):**
+- **`globals.css`** — one `@media (pointer:coarse)` rule lifts every `input` / `textarea` /
+  `[data-slot="select-trigger"]` / `[role="menuitem"]` to `min-height:44px`. Covers ~25 targets across
+  all slices in one place; portal-safe (media query, not DOM-scoped); it is a11y *sizing* for BOTH
+  touch shells (iOS + Android), **not** iOS visual identity, so it does not leak the iOS look — the
+  visual tokens (glass/color/type) stay `[data-shell="ios"]`-scoped above.
+- **shared primitives** — `appshell/primitives/responsive-toolbar.tsx` (monitor/app toolbar buttons) +
+  `components/shared/file-tree/dir.tsx` (Explorer rows + the New-file/New-folder buttons, which were
+  `opacity-0` — invisible/unusable on touch → now shown + 44px on coarse).
+- **46 per-slice button/row edits** (6-agent fan-out, strictly disjoint dirs, no shared-file edits) —
+  coarse-pointer `size-[44px]` / `min-h-[44px]` appended to icon/text buttons across os-settings,
+  assistant, appshell, files-manager, app-store, auth, os-terminal. The 30px composer send-FAB,
+  `[data-slot="segmented-option"]`, and `[role="switch"]` Switch were deliberately left (compact-by-design).
+- **widget-picker** Dialog → house `ResponsiveDialog` (bottom sheet on touch, dialog on desktop).
+
+**Gates:** `tsc` + `eslint` clean; vitest **689 passed** (0 unexpected). Built + `systemctl restart`, `:4005` health 200.
+
+**Logged as remaining (lower ROI, not built this round):**
+- **model-catalog** Dialog→sheet — needs a scroll-model restructure (its fixed `h-[50vh]` ScrollArea
+  fights the drawer's flex layout; >20 changed lines). Its Browse trigger got the 44px bump.
+- **Editors long-tail** (§9) — reel-editor / image-editor / media-viewer / media-studio /
+  code-editor preview-pane / image-picker: residual sub-44px targets + 6 remaining Dialog→sheet
+  candidates (image-picker, save-image, zip, reel settings + file-browser; code-editor close-guard is
+  a *correct* centered iOS alert). Low-frequency on a VPS cockpit.
+- **Adjacent targets** the agents surfaced but kept out of scope (files trash-row, library-grid
+  per-card actions, mobile "Quick open" tiles) — same coarse-pointer pattern when wanted.
+- **Android-specific** a11y beyond the shared coarse rule = a separate task (this pass was iOS-scoped).
+
+---
+
 ## 9. Completion summary (2026-07-15)
 
 The iOS parity refactor is **substantially complete**: every high-value iOS (iPhone) surface across the feature slices now matches the Apple mock, shipped in **11 verified commits** (`23e400e`…`2c0aea8`, atop the plan doc `f1d7e90`), each built → screenshot/numeric-verified on `:4005` → tracked in §8 → pushed. **The android / windows / dashboard / macOS shells are provably byte-unchanged** — every delta rode the `[data-shell="ios"]` CSS scope or an `id === 'ios'` React branch (never `surface === 'mobile'`), re-measured on the other shells after each shared-primitive edit.

@@ -19,7 +19,7 @@ export function AgentSwitcher({ store, onNew }: { store: AIStore; onNew: () => v
   const tools = toolsForAgent(a, store.skills).length;
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg p-1 pr-2 outline-none hover:bg-accent">
+      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg p-1 pr-2 outline-none hover:bg-accent [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px]">
         <GlyphTile glyph={a.glyph} color={a.color} size={30} />
         <div className="text-left leading-tight">
           <div className="text-[13px] font-semibold">{a.name}</div>

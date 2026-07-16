@@ -28,7 +28,7 @@ export function ProviderManage({
       </SettingsBlock>
 
       <SettingsBlock>
-        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setShowAdd((s) => !s)}>
+        <Button variant="ghost" size="sm" className="text-muted-foreground [@media(pointer:coarse)]:min-h-[44px]" onClick={() => setShowAdd((s) => !s)}>
           <Plus className="size-3.5" /> Add custom provider
         </Button>
         {showAdd && (

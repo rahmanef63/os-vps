@@ -95,7 +95,7 @@ export function StoreFilterChips({
           size="sm"
           variant={value === f ? "default" : "secondary"}
           onClick={() => onChange(f)}
-          className="h-8 shrink-0 rounded-full px-3 text-xs"
+          className="h-8 shrink-0 rounded-full px-3 text-xs [@media(pointer:coarse)]:min-h-[44px]"
         >
           {f}
         </Button>

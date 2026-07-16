@@ -356,6 +356,27 @@ body {
   transform: scaleY(0.5);
   transform-origin: bottom;
 }
+
+/* ── Touch-target a11y (HIG 44px / Material 48dp) ──────────────────────────
+   The app root is 14px, so rem-based control heights fall short of 44px
+   (h-8 = 28px, h-9 = 31.5px). Lift form controls + menu rows on ANY coarse
+   pointer — iOS AND Android both need it. This is universal a11y sizing, NOT
+   iOS visual identity, so it correctly applies to both touch shells and does
+   not leak the iOS *look* onto Android (colors/glass/type stay iOS-scoped
+   above). Matches the existing [@media(pointer:coarse)] convention
+   (code-editor, tabs). Buttons stay per-call-site: the 30px composer send FAB
+   (chat-composer.tsx, size-[30px]) and segmented options are deliberately
+   compact iOS controls and must not grow. ponytail: one rule covers ~25
+   input/select/menuitem targets across every slice; buttons remain explicit. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  textarea,
+  [data-slot="select-trigger"],
+  [role="menuitem"] {
+    min-height: 44px;
+  }
+}
+
 [data-shell="windows"] {
   --shell-font: "Segoe UI Variable Text", "Segoe UI", system-ui, var(--font-ui);
   --shell-radius-win: 8px;

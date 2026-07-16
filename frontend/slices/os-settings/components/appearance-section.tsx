@@ -87,7 +87,7 @@ export function AppearanceSection() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="mt-1 h-7 px-2 text-xs text-info hover:text-info"
+                  className="mt-1 h-7 px-2 text-xs text-info hover:text-info [@media(pointer:coarse)]:min-h-[44px]"
                   onClick={() => {
                     setWallpaperImage(null);
                     setTweaks({ wallpaper: "auto" });

@@ -57,7 +57,7 @@ export function MobileSwitcher({
                 closeAll();
                 onHome();
               }}
-              className="h-auto rounded-full bg-white/15 px-4 py-1.5 text-[13px] font-semibold text-white hover:bg-white/25"
+              className="h-auto rounded-full bg-white/15 px-4 py-1.5 text-[13px] font-semibold text-white hover:bg-white/25 [@media(pointer:coarse)]:min-h-[44px]"
             >
               Close All
             </Button>

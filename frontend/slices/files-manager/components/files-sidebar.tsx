@@ -71,7 +71,7 @@ export function FilesSidebar({
               onDragLeave={() => onDragLeave(fav.path)}
               onDrop={(e) => onDrop(e, fav.path)}
               className={cn(
-                "h-8 justify-start gap-2 px-2 text-xs font-medium",
+                "h-8 justify-start gap-2 px-2 text-xs font-medium [@media(pointer:coarse)]:min-h-[44px]",
                 isActive &&
                   "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
                 isDrop && "ring-2 ring-primary ring-inset",

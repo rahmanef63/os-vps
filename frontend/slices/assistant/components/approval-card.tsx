@@ -65,10 +65,10 @@ export function ApprovalCard({
 
       {pending && (
         <div className="mt-2 flex items-center gap-2">
-          <Button type="button" size="sm" className="h-7 px-2.5 text-xs" onClick={() => onResolve(message.id, true, remember)}>
+          <Button type="button" size="sm" className="h-7 px-2.5 text-xs [@media(pointer:coarse)]:min-h-[44px]" onClick={() => onResolve(message.id, true, remember)}>
             Approve
           </Button>
-          <Button type="button" size="sm" variant="outline" className="h-7 px-2.5 text-xs" onClick={() => onResolve(message.id, false, false)}>
+          <Button type="button" size="sm" variant="outline" className="h-7 px-2.5 text-xs [@media(pointer:coarse)]:min-h-[44px]" onClick={() => onResolve(message.id, false, false)}>
             Deny
           </Button>
           {REMEMBERABLE.has(t.name) && (

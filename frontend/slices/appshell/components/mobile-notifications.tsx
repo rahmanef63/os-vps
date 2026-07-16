@@ -44,7 +44,7 @@ export function MobileNotifications({ open, onClose }: { open: boolean; onClose:
       <header className="flex items-center px-5 pb-2 pt-10 text-white">
         <h2 className="text-[22px] font-bold">Notifications</h2>
         {items.length > 0 && (
-          <Button type="button" variant="ghost" onClick={clearNotifications} className="h-auto p-0 font-normal hover:bg-transparent ml-auto rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
+          <Button type="button" variant="ghost" onClick={clearNotifications} className="h-auto p-0 font-normal hover:bg-transparent ml-auto rounded-full bg-white/15 px-3 py-1 text-xs font-medium [@media(pointer:coarse)]:min-h-[44px]">
             Clear All
           </Button>
         )}
@@ -73,7 +73,7 @@ export function MobileNotifications({ open, onClose }: { open: boolean; onClose:
                         n.action?.onClick();
                         dismissNotification(n.id);
                       }}
-                      className="mt-1.5 h-auto rounded-lg bg-white/20 px-2.5 py-1 text-xs font-medium hover:bg-white/30"
+                      className="mt-1.5 h-auto rounded-lg bg-white/20 px-2.5 py-1 text-xs font-medium hover:bg-white/30 [@media(pointer:coarse)]:min-h-[44px]"
                     >
                       {n.action.label}
                     </Button>
@@ -82,7 +82,7 @@ export function MobileNotifications({ open, onClose }: { open: boolean; onClose:
                 <Button type="button" variant="ghost"
                   aria-label="Dismiss"
                   onClick={() => dismissNotification(n.id)}
-                  className="grid size-11 shrink-0 place-items-center rounded-full p-0 font-normal text-white/80 hover:bg-transparent"
+                  className="grid size-11 shrink-0 place-items-center rounded-full p-0 font-normal text-white/80 hover:bg-transparent [@media(pointer:coarse)]:size-[44px]"
                 >
                   {/* 44pt tap target (HIG §13); the visible dot stays small */}
                   <span className="grid size-7 place-items-center rounded-full bg-white/15">

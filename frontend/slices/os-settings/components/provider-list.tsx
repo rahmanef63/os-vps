@@ -57,7 +57,7 @@ export function ProviderList({
             variant="ghost"
             aria-label={`Remove ${p.id}`}
             onClick={() => remove(p.id)}
-            className="size-7 text-muted-foreground hover:text-destructive"
+            className="size-7 text-muted-foreground hover:text-destructive [@media(pointer:coarse)]:size-[44px]"
           >
             <Trash2 className="size-4" />
           </Button>
