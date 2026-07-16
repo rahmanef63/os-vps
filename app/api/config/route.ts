@@ -56,6 +56,7 @@ export async function GET() {
     hasApiKey: key.length > 0,
     apiKeyMasked: stored ? mask(stored) : "",
     providers,
+    tokenSaver: cfg.tokenSaver ?? "off",
   });
 }
 
@@ -71,11 +72,19 @@ export async function POST(req: NextRequest) {
     model?: string;
     provider?: string;
     customProvider?: CustomBody;
+    tokenSaver?: string;
   };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  // Token-saver-only update (independent of provider — don't touch the selection).
+  if (typeof body.tokenSaver === "string" && !body.provider && !body.customProvider && body.apiKey === undefined) {
+    const v = body.tokenSaver;
+    await writeConfig({ tokenSaver: v === "caveman" || v === "ponytail" ? v : "off" });
+    return NextResponse.json({ ok: true });
   }
 
   // ── Add a custom provider ───────────────────────────────────────────────────

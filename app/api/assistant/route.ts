@@ -13,6 +13,7 @@ import { resolveModel } from "@/lib/models";
 import { streamOpenAI } from "@/lib/ai/openai-stream";
 import { ensureFreshCodex } from "@/lib/ai/oauth/codex";
 import { streamCodex } from "@/lib/ai/codex-stream";
+import { recall } from "@/lib/ai/memory";
 import { rateLimited } from "@/lib/host/rate-limit";
 
 // SSE streaming chat for the "Alfa" assistant. BYOK: the Anthropic key comes
@@ -44,6 +45,12 @@ const SYSTEM = [
   "Prefer one tool call at a time when later calls depend on earlier results.",
   "After the work is done, reply with a one-line confirmation. No meta-commentary.",
 ].join(" ");
+
+// Owner-selectable output token-savers (Settings → AI), appended to the system prompt.
+const CAVEMAN =
+  "Output style — terse like a smart caveman: drop articles/filler/pleasantries, fragments OK, short synonyms. Keep ALL technical substance and exact code/errors verbatim.";
+const PONYTAIL =
+  "Output style — lazy senior dev: the shortest solution that works, no unrequested abstractions or boilerplate. Code first, then at most three short lines of explanation.";
 
 type ToolUse = { id: string; name: string; input: Record<string, unknown> };
 type InMsg =
@@ -101,7 +108,7 @@ export async function POST(req: Request) {
   }
   const rawMessages = (body.messages ?? []).slice(-40);
   if (rawMessages.length === 0) return Response.json({ error: "empty" }, { status: 400 });
-  const sys = typeof body.system === "string" && body.system.trim() ? body.system.slice(0, 4000) : SYSTEM;
+  let sys = typeof body.system === "string" && body.system.trim() ? body.system.slice(0, 4000) : SYSTEM;
 
   // Resolve model + BYOK key + host-gated endpoint through @rahmanef/models. The
   // registry pins each provider's key to its own baseUrl (key can't be redirected).
@@ -139,6 +146,15 @@ export async function POST(req: Request) {
   // Anthropic streams via its SDK; openai-protocol providers via our adapter; Codex
   // via the ChatGPT backend. All emit the same neutral delta|tool_use|done|error vocab.
   const anthropic = new Anthropic({ apiKey: resolved?.apiKey ?? "", baseURL: resolved?.baseUrl });
+
+  // Host-side system augmentation: recall cross-session memory relevant to the
+  // latest user turn + apply the owner's token-saver style. Applies to every
+  // provider path (codex / anthropic / openai).
+  const lastUser = [...rawMessages].reverse().find((m) => m.role === "user");
+  const recalled = await recall(lastUser && lastUser.role === "user" ? lastUser.text : "");
+  if (recalled.length) sys += "\n\nKnown facts about the user (recall):\n" + recalled.map((m) => `- ${m.text}`).join("\n");
+  if (cfg.tokenSaver === "caveman") sys += "\n\n" + CAVEMAN;
+  else if (cfg.tokenSaver === "ponytail") sys += "\n\n" + PONYTAIL;
   const encoder = new TextEncoder();
   const sse = (event: string, data: unknown) =>
     encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);

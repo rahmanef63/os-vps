@@ -11,6 +11,7 @@ import { AutoLockRow } from "./auto-lock-row";
 import { AppearanceSection } from "./appearance-section";
 import { ThemeSection } from "./theme-section";
 import { AiSection } from "./ai-section";
+import { MemorySection } from "./memory-section";
 import { QuicklinksSection } from "./quicklinks-section";
 import { ServerSection } from "./server-section";
 import { CleanupSection } from "./cleanup-section";
@@ -26,7 +27,12 @@ function SectionBody({ id }: { id: SectionId }) {
     case "theme":
       return <ThemeSection />;
     case "ai":
-      return <AiSection />;
+      return (
+        <div className="space-y-4 sm:space-y-5">
+          <AiSection />
+          <MemorySection />
+        </div>
+      );
     case "quicklinks":
       return <QuicklinksSection />;
     case "devices":

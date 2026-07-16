@@ -42,6 +42,8 @@ export interface OsConfig {
   customProviders?: Record<string, CustomProviderConn>;
   /** OAuth subscription providers: slug → token bundle (openai-codex, …). */
   oauthTokens?: Record<string, OAuthBundle>;
+  /** Output token-saver mode appended to Alfa's system prompt. */
+  tokenSaver?: "off" | "caveman" | "ponytail";
   /** @deprecated back-compat read alias for keys.anthropic. */
   anthropicApiKey?: string;
 }

@@ -7,6 +7,26 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 (round 4) — Alfa chat history (YAML threads) + cross-session memory (DONE)
+
+Ports 2 & 3 of the models-rahmanef-com picks. tsc + lint + vitest (full suite + 4 new store
+tests) green. Store logic is unit-tested; the full UI click-through (send → persist → resume;
+add fact → Alfa recalls it) is best exercised on the deploy (it needs a real provider key to stream).
+
+- **Chat history** — Alfa was stateless; now every completed turn persists to a YAML thread under
+  `~/.os-vps/threads/` (`lib/ai/threads.ts` — path-jailed filenames, atomic write). `/api/threads`
+  (list/get/save/delete). A History drawer (`thread-list.tsx`) in the Alfa header lists saved chats;
+  resume restores BOTH the display bubbles and the wire history so the chat continues; New starts
+  fresh. Persistence factored into a `use-thread-persistence` hook. YAML (not JSON) per the owner's
+  request — readable session files (`yaml` dep added).
+- **Cross-session memory** — durable facts recalled into Alfa's system prompt, matched to the latest
+  user turn by word overlap (`lib/ai/memory.ts`; `~/.os-vps/memory.json`). `/api/memory`
+  (list/add/delete). The assistant route recalls + injects for EVERY provider path (codex/anthropic/openai).
+- **Token savers** — Settings → AI → Output style: Normal / Caveman (terse) / Ponytail (lazy senior
+  dev) → appended to the system prompt (`OsConfig.tokenSaver`).
+- New Settings **"Alfa memory"** panel (`memory-section.tsx`) under the AI section: output-style
+  picker + add/delete facts. **Not redeployed** — build + restart to activate.
+
 ## 2026-07-16 (round 3) — Model catalog browser (DONE)
 
 First of three models-rahmanef-com feature ports the owner picked (catalog browser ·

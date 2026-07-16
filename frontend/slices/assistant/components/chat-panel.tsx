@@ -21,6 +21,7 @@ import { MessageBubble, type ChatMessage, type ToolCard } from "./message-bubble
 import { ApprovalCard } from "./approval-card";
 import { ChatComposer } from "./chat-composer";
 import { EmptyState } from "./empty-state";
+import { useThreadPersistence } from "./use-thread-persistence";
 
 const SUGGESTED = ["Show system stats", "List ~/projects", "Create notes.txt in ~/projects with a TODO"];
 
@@ -38,6 +39,8 @@ const nextId = () => `m${Date.now()}-${seq++}`;
 export type ChatHandle = {
   runSteps: (auto: Automation, agent?: Agent) => void;
   stop: () => void;
+  loadThread: (t: { id: string; createdAt: number; messages: unknown[]; history: unknown[] }) => void;
+  newThread: () => void;
 };
 
 // Alfa's chat — now a REAL host-tool agent. The model streams a turn, then any
@@ -102,6 +105,9 @@ export function ChatPanel({
   // Abort the in-flight run if the panel unmounts (window close / app swap).
   useEffect(() => () => abortRef.current?.abort(), []);
 
+  // Thread persistence: save the conversation to a YAML thread + resume one.
+  const { persist, loadThread, newThread } = useThreadPersistence(historyRef, setMessages, stop);
+
   const send = useCallback(
     async (text: string) => {
       if (streaming) return;
@@ -156,11 +162,16 @@ export function ChatPanel({
       } finally {
         if (abortRef.current === ctrl) abortRef.current = null;
         setStreaming(false);
-        // Drop the empty streaming placeholders (model ended on a tool / no text).
-        setMessages((prev) => prev.filter((m) => !(m.role === "assistant" && !m.text)));
+        // Drop the empty streaming placeholders (model ended on a tool / no text),
+        // then persist the finished turn to its thread.
+        setMessages((prev) => {
+          const cleaned = prev.filter((m) => !(m.role === "assistant" && !m.text));
+          persist(cleaned);
+          return cleaned;
+        });
       }
     },
-    [streaming, tools, invoke, api.mode],
+    [streaming, tools, invoke, api.mode, persist],
   );
 
   // Automations narrate (no real execution) into the same thread. (v1 — later
@@ -178,6 +189,8 @@ export function ChatPanel({
       setMessages((prev) => [...prev, { id: nextId(), role: "assistant", text: body }]);
     },
     stop,
+    loadThread,
+    newThread,
   }));
 
   return (

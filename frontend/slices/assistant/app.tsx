@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { History } from "lucide-react";
 import { AppFrame } from "@/features/os-shell";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./components/tabs";
 import { usePublishInspector } from "./lib/host";
 import { useAIStore } from "./lib/store";
@@ -11,6 +13,7 @@ import { AgentSwitcher } from "./components/agent-switcher";
 import { AutomationForm } from "./components/automation-form";
 import { AutomationView } from "./components/automation-view";
 import { ChatPanel, type ChatHandle } from "./components/chat-panel";
+import { ThreadList } from "./components/thread-list";
 import { LibraryGrid } from "./components/library-grid";
 import { SkillForm } from "./components/skill-form";
 
@@ -34,6 +37,7 @@ export default function Assistant() {
   const store = useAIStore();
   const [tab, setTab] = useState<Tab>("chat");
   const [form, setForm] = useState<FormState>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const chatRef = useRef<ChatHandle>(null);
 
   const runAutomation = useCallback(
@@ -105,6 +109,9 @@ export default function Assistant() {
           agent={store.activeAgent}
           switcher={
             <>
+              <Button size="sm" variant="ghost" aria-label="Chat history" className="shrink-0" onClick={() => setHistoryOpen(true)}>
+                <History className="size-4" />
+              </Button>
               <AgentSwitcher store={store} onNew={() => setForm({ kind: "agent" })} />
               {/* Spacer instead of ml-auto: collapses when the row overflows so the
                   tab group left-aligns and all tabs stay reachable by scrolling. */}
@@ -116,6 +123,13 @@ export default function Assistant() {
           }
         />
       </div>
+
+      <ThreadList
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        onResume={(t) => chatRef.current?.loadThread(t)}
+        onNew={() => chatRef.current?.newThread()}
+      />
 
       {tab === "agents" ? (
         <LibraryGrid
