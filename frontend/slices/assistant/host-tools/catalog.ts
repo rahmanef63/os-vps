@@ -78,6 +78,24 @@ export const HOST_TOOLS: HostTool[] = [
       return r.ok ? `remembered: ${text}` : "couldn't save the memory";
     },
   },
+  {
+    name: "memory.forget",
+    effect: "read",
+    description:
+      "Remove saved fact(s) from long-term memory. Give a short phrase describing what to forget; every remembered fact containing it is deleted. Use only when the user asks to forget or correct something.",
+    parameters: obj({ "query!": str("A phrase identifying the fact(s) to forget") }),
+    run: async (_api, a) => {
+      const query = String(a.query ?? "").trim().toLowerCase();
+      if (!query) return "nothing to forget (empty query)";
+      const data = (await fetch("/api/memory", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : { memories: [] }))
+        .catch(() => ({ memories: [] }))) as { memories?: { id: string; text: string }[] };
+      const hits = (data.memories ?? []).filter((m) => m.text.toLowerCase().includes(query));
+      if (!hits.length) return `no saved memory matches "${a.query}"`;
+      for (const m of hits) await fetch(`/api/memory?id=${encodeURIComponent(m.id)}`, { method: "DELETE" }).catch(() => {});
+      return `forgot ${hits.length}: ${hits.map((m) => m.text).join("; ")}`;
+    },
+  },
   // ── MUTATE (approve-per-call) ────────────────────────────────────────────
   {
     name: "fs.write",

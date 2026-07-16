@@ -7,7 +7,7 @@ import { findHostTool, HOST_AI_TOOLS } from "./registry";
 describe("host-tools registry", () => {
   it("classifies reads as read; fs mutations + exec as mutate", () => {
     const eff = (n: string) => findHostTool(n)?.effect;
-    for (const n of ["fs.list", "fs.read", "fs.search", "sys.stats", "apps.list", "memory.remember"]) expect(eff(n)).toBe("read");
+    for (const n of ["fs.list", "fs.read", "fs.search", "sys.stats", "apps.list", "memory.remember", "memory.forget"]) expect(eff(n)).toBe("read");
     for (const n of ["fs.write", "fs.mkdir", "fs.move", "exec.run"]) expect(eff(n)).toBe("mutate");
   });
 

@@ -17,3 +17,5 @@ os-browser/*
 !os-browser/README.md
 convex-backend/
 .os-vps/
+# local session progress log (not tracked)
+progress.md

@@ -7,6 +7,13 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 (round 6) — "Alfa, forget this" tool (DONE)
+
+Twin of `memory.remember`: a `memory.forget` host-tool (read-tier) that matches saved
+facts by phrase (substring), deletes each match via `/api/memory`, and reports what it
+removed. Catalog entry + HOST_SYSTEM guidance + registry test. tsc + lint + vitest green.
+Also added the gitignored root `progress.md` (local session log).
+
 ## 2026-07-16 (round 5) — "Alfa, remember this" tool (DONE)
 
 Alfa can now save facts to memory itself, not just via Settings: a `memory.remember`
