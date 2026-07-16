@@ -18,7 +18,7 @@
 
 Control a headless VPS from any browser — especially a phone. A real terminal (full PTY — `vim`, `top`, `ssh` all work), file manager, system monitor, media preview and an optional remote browser, in a desktop-style shell. The point is **utility**: fast admin of a headless box without the weight of XRDP/VNC. It's a **single-owner** control plane for **one VPS you own** — not a real OS, not multi-tenant, not a SaaS. The desktop UI is a metaphor.
 
-![Topside desktop — Files, Terminal and System Monitor over the dock](./docs/media/hero-desktop.png)
+![Topside desktop — Files and System Monitor windows with live CPU/memory/storage widgets, over the dock](./docs/media/hero-desktop.png)
 
 <p align="center">
   <img src="./docs/media/demo.gif" alt="Spotlight (⌘K) opening the System Monitor" width="720" />
