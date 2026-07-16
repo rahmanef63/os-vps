@@ -7,6 +7,17 @@ Running log of what shipped each phase. Newest at top.
 > os-vps is now a self-contained Next.js app (`lib/host` + signed-cookie auth).
 > Read those phases as history; `ARCHITECTURE.md` is the current truth.
 
+## 2026-07-16 (round 8) — iOS editors long-tail: a11y + Dialog→sheet (DONE)
+
+Closed the round-7 logged editor tail (owner-requested). Presentation-only (canvases untouched per
+§6). **a11y:** coarse-pointer 44px across editor chrome in 10 files (code-editor, image-editor,
+reel-editor, media-viewer, image-picker). **Dialog→sheet:** 6 raw `<Dialog>`s → house
+`ResponsiveDialog`/FormDrawer (bottom sheet on touch) — reel settings + file-browser, media-studio
+save-image, files zip, os-settings model-catalog (trigger-hoist + ScrollArea→Body), image-picker
+(h-[440px]→flex-1); code-editor close-guard keeps its correct centered iOS alert. Added `select` to
+the globals coarse rule. tsc + eslint clean, vitest 689, deployed `:4005` health 200. Detail in
+`IOS-PARITY-REFACTOR-PLAN.md` §8 (round 8).
+
 ## 2026-07-16 (round 7) — iOS touch-target a11y sweep (P4 long-tail) (DONE)
 
 Owner requested the iOS-parity optional long-tail. A **10-agent adversarial re-audit** found **0

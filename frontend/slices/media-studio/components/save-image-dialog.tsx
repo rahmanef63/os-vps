@@ -2,15 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import { HardDriveDownload, Loader2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { FormDrawer } from "@/features/os-shell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -71,16 +64,15 @@ export function SaveImageDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <HardDriveDownload className="size-4" /> Save image to VPS
-          </DialogTitle>
-          <DialogDescription>Write the rendered canvas to a folder on the server.</DialogDescription>
-        </DialogHeader>
+    <FormDrawer open={open} onOpenChange={(o) => !o && onClose()} size="md">
+      <FormDrawer.Header>
+        <FormDrawer.Title className="flex items-center gap-2">
+          <HardDriveDownload className="size-4" /> Save image to VPS
+        </FormDrawer.Title>
+        <FormDrawer.Description>Write the rendered canvas to a folder on the server.</FormDrawer.Description>
+      </FormDrawer.Header>
 
-        <div className="flex flex-col gap-3 py-1 text-sm">
+      <FormDrawer.Body className="flex flex-col gap-3 text-sm">
           <Field label="Folder">
             <Input value={dir} onChange={(e) => setDir(e.target.value)} placeholder="~/Pictures/Studio" />
           </Field>
@@ -104,7 +96,7 @@ export function SaveImageDialog({
               <Slider min={10} max={100} value={[quality]} onValueChange={([v]) => setQuality(v)} />
             </Field>
           )}
-          <label className="mt-1 flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <label className="mt-1 flex cursor-pointer items-center gap-2 text-xs text-muted-foreground [@media(pointer:coarse)]:min-h-[44px]">
             <input
               type="checkbox"
               checked={remember}
@@ -113,16 +105,15 @@ export function SaveImageDialog({
             />
             Remember my choice — save here next time without asking
           </label>
-        </div>
+      </FormDrawer.Body>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose} disabled={busy}>Cancel</Button>
-          <Button onClick={handleSave} disabled={busy || !dataUrl} className="gap-1.5">
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <HardDriveDownload className="size-4" />}
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <FormDrawer.Footer>
+        <Button variant="ghost" onClick={onClose} disabled={busy} className="[@media(pointer:coarse)]:min-h-[44px]">Cancel</Button>
+        <Button onClick={handleSave} disabled={busy || !dataUrl} className="gap-1.5 [@media(pointer:coarse)]:min-h-[44px]">
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <HardDriveDownload className="size-4" />}
+          Save
+        </Button>
+      </FormDrawer.Footer>
+    </FormDrawer>
   );
 }

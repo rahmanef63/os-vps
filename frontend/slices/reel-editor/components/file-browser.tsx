@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Folder, FileVideo, FileAudio, FileImage, CornerLeftUp, Loader2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormDrawer } from "@/features/os-shell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useOsApi, type FsEntry, type FsList } from "../lib/host";
@@ -86,12 +86,12 @@ export function FileBrowser({
     .sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === "dir" ? -1 : 1));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg gap-3">
-        <DialogHeader>
-          <DialogTitle>Import from VPS</DialogTitle>
-        </DialogHeader>
+    <FormDrawer open={open} onOpenChange={onOpenChange} size="md">
+      <FormDrawer.Header>
+        <FormDrawer.Title>Import from VPS</FormDrawer.Title>
+      </FormDrawer.Header>
 
+      <FormDrawer.Body className="flex flex-col gap-3">
         {!!data?.roots?.length && (
           <div className="flex flex-wrap gap-1">
             {data.roots.map((r) => (
@@ -100,7 +100,7 @@ export function FileBrowser({
                 type="button"
                 variant="ghost"
                 onClick={() => void load(r.path)}
-                className="h-6 rounded-md bg-secondary px-2 text-[11px] font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+                className="h-6 rounded-md bg-secondary px-2 text-[11px] font-medium text-muted-foreground hover:bg-secondary hover:text-foreground [@media(pointer:coarse)]:min-h-[44px]"
               >
                 {r.label}
               </Button>
@@ -114,7 +114,7 @@ export function FileBrowser({
             variant="ghost"
             disabled={!data?.parent}
             onClick={() => data?.parent && void load(data.parent)}
-            className="grid size-7 place-items-center rounded-md bg-secondary p-0 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40"
+            className="grid size-7 place-items-center rounded-md bg-secondary p-0 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40 [@media(pointer:coarse)]:size-[44px]"
             aria-label="Up"
           >
             <CornerLeftUp className="size-4" />
@@ -150,7 +150,7 @@ export function FileBrowser({
                       onOpenChange(false);
                     }
                   }}
-                  className="flex h-auto w-full items-center justify-start gap-2 rounded-none px-3 py-1.5 text-left text-sm font-normal hover:bg-accent"
+                  className="flex h-auto w-full items-center justify-start gap-2 rounded-none px-3 py-1.5 text-left text-sm font-normal hover:bg-accent [@media(pointer:coarse)]:min-h-[44px]"
                 >
                   <Icon className={cn("size-4 shrink-0", e.kind === "dir" ? "text-primary" : "text-muted-foreground")} />
                   <span className="min-w-0 flex-1 truncate">{e.name}</span>
@@ -160,7 +160,7 @@ export function FileBrowser({
             })
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </FormDrawer.Body>
+    </FormDrawer>
   );
 }

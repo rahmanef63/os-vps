@@ -64,10 +64,10 @@ export function NewFileModal({
         </div>
       </FormDrawer.Body>
       <FormDrawer.Footer>
-        <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+        <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="[@media(pointer:coarse)]:min-h-[44px]">
           Cancel
         </Button>
-        <Button size="sm" onClick={submit}>
+        <Button size="sm" onClick={submit} className="[@media(pointer:coarse)]:min-h-[44px]">
           Create
         </Button>
       </FormDrawer.Footer>

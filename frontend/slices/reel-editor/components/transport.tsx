@@ -111,7 +111,7 @@ function Tbtn({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "size-8 rounded-lg bg-white/10 text-white hover:bg-white/20 hover:text-white",
+        "size-8 [@media(pointer:coarse)]:size-[44px] rounded-lg bg-white/10 text-white hover:bg-white/20 hover:text-white",
         primary && "size-9",
       )}
     >

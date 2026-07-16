@@ -44,7 +44,7 @@ export function Toolbar({
               title={r.dims}
               onClick={() => onRatio(r.w, r.h)}
               className={cn(
-                "h-6 gap-0 rounded-md px-2 text-[11px] font-bold transition-colors hover:bg-secondary [@media(pointer:coarse)]:min-h-9 [@media(pointer:coarse)]:min-w-9",
+                "h-6 gap-0 rounded-md px-2 text-[11px] font-bold transition-colors hover:bg-secondary [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px]",
                 on ? "bg-primary text-primary-foreground hover:bg-primary" : "bg-secondary text-muted-foreground hover:text-foreground",
               )}
             >
@@ -55,16 +55,16 @@ export function Toolbar({
       </div>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <Button variant="ghost" size="icon" className="size-8" title="Undo (⌘Z)" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
+        <Button variant="ghost" size="icon" className="size-8 [@media(pointer:coarse)]:size-[44px]" title="Undo (⌘Z)" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
           <Undo2 className="size-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="size-8" title="Redo (⌘⇧Z)" aria-label="Redo" disabled={!canRedo} onClick={onRedo}>
+        <Button variant="ghost" size="icon" className="size-8 [@media(pointer:coarse)]:size-[44px]" title="Redo (⌘⇧Z)" aria-label="Redo" disabled={!canRedo} onClick={onRedo}>
           <Redo2 className="size-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="size-8" title="Toggle panel" aria-label="Toggle panel" onClick={onTogglePanel}>
+        <Button variant="ghost" size="icon" className="size-8 [@media(pointer:coarse)]:size-[44px]" title="Toggle panel" aria-label="Toggle panel" onClick={onTogglePanel}>
           {mode === "ai" ? <Sparkles className="size-4" /> : <PanelRight className="size-4" />}
         </Button>
-        <Button size="sm" onClick={onRender}>
+        <Button size="sm" onClick={onRender} className="[@media(pointer:coarse)]:min-h-[44px]">
           <Play className="size-4" />
           Render
         </Button>

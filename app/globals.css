@@ -371,6 +371,7 @@ body {
 @media (pointer: coarse) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
   textarea,
+  select,
   [data-slot="select-trigger"],
   [role="menuitem"] {
     min-height: 44px;

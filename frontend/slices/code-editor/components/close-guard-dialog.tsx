@@ -40,15 +40,15 @@ export function CloseGuardDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onCancel} className="[@media(pointer:coarse)]:min-h-[44px]">Cancel</AlertDialogCancel>
           <Button
             variant="ghost"
-            className="text-destructive"
+            className="text-destructive [@media(pointer:coarse)]:min-h-[44px]"
             onClick={onDiscard}
           >
             Don&apos;t Save
           </Button>
-          <AlertDialogAction onClick={onSave}>Save</AlertDialogAction>
+          <AlertDialogAction onClick={onSave} className="[@media(pointer:coarse)]:min-h-[44px]">Save</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

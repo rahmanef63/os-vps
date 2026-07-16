@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { FormDrawer } from "@/features/os-shell";
 
 type CatModel = {
   ref: string;
@@ -47,16 +46,14 @@ export function ModelCatalog({ provider, value, onPick }: { provider: string; va
   }, [models, q]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm" className="[@media(pointer:coarse)]:min-h-[44px]">Browse</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Models — {provider}</DialogTitle>
-        </DialogHeader>
-        <Input autoFocus placeholder="Search models…" value={q} onChange={(e) => setQ(e.target.value)} />
-        <ScrollArea className="h-[50vh]">
+    <>
+      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)} className="[@media(pointer:coarse)]:min-h-[44px]">Browse</Button>
+      <FormDrawer open={open} onOpenChange={setOpen} size="md">
+        <FormDrawer.Header>
+          <FormDrawer.Title>Models — {provider}</FormDrawer.Title>
+        </FormDrawer.Header>
+        <FormDrawer.Body className="space-y-3">
+          <Input autoFocus placeholder="Search models…" value={q} onChange={(e) => setQ(e.target.value)} />
           {filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No catalog for this provider.</p>
           ) : (
@@ -87,9 +84,9 @@ export function ModelCatalog({ provider, value, onPick }: { provider: string; va
               ))}
             </div>
           )}
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+        </FormDrawer.Body>
+      </FormDrawer>
+    </>
   );
 }
 

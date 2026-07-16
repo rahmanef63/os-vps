@@ -63,7 +63,7 @@ export function ToolRail({ orientation = "vertical" }: { orientation?: "vertical
           aria-pressed={active}
           onClick={onClick}
           className={cn(
-            "grid size-9 place-items-center rounded-lg p-0 font-normal transition-colors hover:bg-transparent",
+            "grid size-9 [@media(pointer:coarse)]:size-[44px] place-items-center rounded-lg p-0 font-normal transition-colors hover:bg-transparent",
             active ? "bg-primary/20 text-primary" : "text-foreground/70 hover:bg-accent hover:text-foreground",
           )}
         >

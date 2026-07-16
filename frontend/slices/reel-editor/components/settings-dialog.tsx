@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormDrawer } from "@/features/os-shell";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
@@ -15,11 +15,12 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const set = (patch: Partial<EditorSettings>) => setS(saveSettings(patch));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm gap-4">
-        <DialogHeader>
-          <DialogTitle>Editor settings</DialogTitle>
-        </DialogHeader>
+    <FormDrawer open={open} onOpenChange={onOpenChange} size="sm">
+      <FormDrawer.Header>
+        <FormDrawer.Title>Editor settings</FormDrawer.Title>
+      </FormDrawer.Header>
+
+      <FormDrawer.Body className="flex flex-col gap-4">
 
         <Field label={`Default image duration — ${s.imageDur.toFixed(1)}s`}>
           <Slider min={1} max={10} step={0.5} value={s.imageDur} onChange={(e) => set({ imageDur: Number(e.target.value) })} />
@@ -41,7 +42,7 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             variant="ghost"
             onClick={() => set({ autosave: !s.autosave })}
             className={cn(
-              "h-7 rounded-md px-0 text-xs font-medium",
+              "h-7 rounded-md px-0 text-xs font-medium [@media(pointer:coarse)]:min-h-[44px]",
               s.autosave ? "bg-primary text-primary-foreground hover:bg-primary" : "bg-secondary text-foreground hover:bg-secondary",
             )}
           >
@@ -53,7 +54,7 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           Drafts live in this browser. Uploaded files reference temporary URLs and won’t survive a reload — media from
           the file panel or samples restores fully.
         </p>
-      </DialogContent>
-    </Dialog>
+      </FormDrawer.Body>
+    </FormDrawer>
   );
 }

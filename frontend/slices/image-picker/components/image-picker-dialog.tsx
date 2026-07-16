@@ -8,7 +8,7 @@
  *  open state. */
 
 import * as React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormDrawer } from "@/features/os-shell";
 import { cn } from "@/lib/utils";
 import type { ImageValue, ImageSourceProps } from "../types";
 import { GalleryTab } from "./image-picker/gallery-tab";
@@ -38,16 +38,15 @@ export function ImagePickerDialog({ open, onOpenChange, onSelect, onUpload, titl
   const handle = (c: ImageValue) => { onSelect(c); onOpenChange(false); };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl gap-0 p-0">
-        <DialogHeader className="border-b border-border px-4 py-3">
-          <DialogTitle className="text-sm">{title}</DialogTitle>
-        </DialogHeader>
-        <div
-          role="tablist"
-          aria-label="Image source"
-          className="flex items-center gap-1 border-b border-border px-2 py-1.5"
-        >
+    <FormDrawer open={open} onOpenChange={onOpenChange} size="lg">
+      <FormDrawer.Header>
+        <FormDrawer.Title className="text-sm">{title}</FormDrawer.Title>
+      </FormDrawer.Header>
+      <div
+        role="tablist"
+        aria-label="Image source"
+        className="flex shrink-0 items-center gap-1 border-b border-border px-2 py-1.5"
+      >
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -59,7 +58,7 @@ export function ImagePickerDialog({ open, onOpenChange, onSelect, onUpload, titl
               tabIndex={tab === t.id ? 0 : -1}
               onClick={() => setTab(t.id)}
               className={cn(
-                "rounded-md px-3 py-1 text-xs font-medium transition",
+                "rounded-md px-3 py-1 text-xs font-medium transition [@media(pointer:coarse)]:min-h-[44px]",
                 tab === t.id ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50",
               )}
             >
@@ -71,14 +70,13 @@ export function ImagePickerDialog({ open, onOpenChange, onSelect, onUpload, titl
           role="tabpanel"
           id={`image-picker-panel-${tab}`}
           aria-labelledby={`image-picker-tab-${tab}`}
-          className="h-[440px] overflow-y-auto"
+          className="flex-1 overflow-y-auto"
         >
           {tab === "gallery" && <GalleryTab onSelect={handle} />}
           {tab === "upload" && onUpload && <UploadTab onSelect={handle} onUpload={onUpload} />}
           {tab === "link" && <LinkTab onSelect={handle} />}
           {tab === "unsplash" && <UnsplashTab onSelect={handle} defaultQuery={defaultQuery} />}
         </div>
-      </DialogContent>
-    </Dialog>
+    </FormDrawer>
   );
 }

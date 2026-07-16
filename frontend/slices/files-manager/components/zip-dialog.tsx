@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { FormDrawer } from "@/features/os-shell";
 
 // Dep / build / VCS dirs that bloat an archive but are regenerable — offered as
 // excludes and checked (skipped) by default. Excluding one the folder doesn't
@@ -35,15 +33,16 @@ export function ZipDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Download as Zip</DialogTitle>
-          <DialogDescription>
+    <FormDrawer open={open} onOpenChange={(o) => !o && onClose()} size="sm">
+      <FormDrawer.Header>
+        <FormDrawer.Title>Download as Zip</FormDrawer.Title>
+        <FormDrawer.Description>
             {count} item{count > 1 ? "s" : ""} → {filename}. Skip heavy folders to shrink the archive.
-          </DialogDescription>
-        </DialogHeader>
-        <ul className="max-h-64 space-y-0.5 overflow-y-auto">
+        </FormDrawer.Description>
+      </FormDrawer.Header>
+
+      <FormDrawer.Body>
+        <ul className="space-y-0.5">
           {HEAVY.map((name) => {
             const skip = excluded.has(name);
             return (
@@ -64,11 +63,11 @@ export function ZipDialog({
             );
           })}
         </ul>
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onConfirm([...excluded])}>Download</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </FormDrawer.Body>
+      <FormDrawer.Footer>
+        <Button variant="ghost" onClick={onClose} className="[@media(pointer:coarse)]:min-h-[44px]">Cancel</Button>
+        <Button onClick={() => onConfirm([...excluded])} className="[@media(pointer:coarse)]:min-h-[44px]">Download</Button>
+      </FormDrawer.Footer>
+    </FormDrawer>
   );
 }

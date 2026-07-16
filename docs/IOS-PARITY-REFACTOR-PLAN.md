@@ -710,6 +710,27 @@ model-catalog) added *after* the 07-15 parity freeze.
   per-card actions, mobile "Quick open" tiles) — same coarse-pointer pattern when wanted.
 - **Android-specific** a11y beyond the shared coarse rule = a separate task (this pass was iOS-scoped).
 
+### 2026-07-16 (round 8) — editors long-tail (a11y + Dialog→sheet) · ✅ shipped
+
+Closed the round-7 "logged as remaining" editor tail (owner-requested). Presentation-only — the
+editor canvases (Konva stage, reel timeline, xterm) stay untouched per §6; only their chrome moves.
+
+- **a11y (10 files):** coarse-pointer 44px across editor chrome — code-editor (preview Re-run,
+  new-file-modal controls, close-guard confirm buttons), image-editor (tool rail + mobile command
+  bar), reel-editor (menu-bar triggers, toolbar, transport), media-viewer (IconBtn toolbar + inline
+  PlayButton), image-picker tabs. Added `select` to the globals coarse rule (native `<select>`
+  wasn't covered by the round-7 `input`/`textarea`/`select-trigger`/`menuitem` set).
+- **Dialog→sheet (6):** converted raw `<Dialog>`s to the house `ResponsiveDialog` / FormDrawer
+  (bottom sheet on touch, centered dialog on desktop): reel-editor **settings** + **VPS file-browser**,
+  media-studio **save-image**, files-manager **zip**, os-settings **model-catalog** (hoisted the
+  Browse trigger out of the removed `DialogTrigger` + `ScrollArea`→`Body` — the scroll restructure
+  round 7 deferred) and image-picker (fixed `h-[440px]` panel → `flex-1` so the tab panel fills the
+  sheet). The code-editor **close-guard KEEPS** its centered `AlertDialog` (a destructive confirm is
+  a correct centered iOS alert) — only its 3 footer buttons were bumped.
+- **Gates:** tsc + eslint clean; vitest **689**. Built + `systemctl restart`, `:4005` health 200.
+- **Now truly remaining (tiny):** the round-7 adjacents (files trash-row, library-grid per-card
+  actions, mobile "Quick open" tiles) + Android-specific a11y beyond the shared coarse rule.
+
 ---
 
 ## 9. Completion summary (2026-07-15)

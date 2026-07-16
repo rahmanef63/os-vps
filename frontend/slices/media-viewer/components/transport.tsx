@@ -26,7 +26,7 @@ export function PlayButton({
         "shrink-0 rounded-full p-0 text-foreground backdrop-blur",
         big
           ? "size-16 bg-background/40 hover:bg-background/60"
-          : "size-8 bg-foreground/10 hover:bg-foreground/20",
+          : "size-8 [@media(pointer:coarse)]:size-[44px] bg-foreground/10 hover:bg-foreground/20",
       )}
     >
       {playing ? (
