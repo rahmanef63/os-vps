@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Check, LayoutGrid, Trash2 } from "lucide-react";
 import { ContextMenu, registerCommands, registerContextMenu, toast, useContextMenu, type MenuItem } from "@/features/appshell";
 import { cn } from "@/lib/utils";
@@ -132,7 +132,14 @@ export function DesktopWidgets() {
   return (
     <>
       <WidgetPicker />
-      <div ref={ref} className="pointer-events-none absolute inset-0 z-[5]">
+      <div
+        ref={ref}
+        className="pointer-events-none absolute inset-0 z-[5]"
+        // Desktop-only: point the shared widget Card's radius at the WINDOW token
+        // so widgets read as the same floating surface family as windows. Mobile
+        // Today never sets this var → its Cards keep the 1rem fallback → intact.
+        style={{ "--widget-radius": "var(--shell-radius-win)" } as CSSProperties}
+      >
         {enabled.map((id) => {
           const pos = positions[id];
           return pos ? <DesktopWidget key={id} id={id} size={sizes[id] ?? "m"} pos={pos} /> : null;

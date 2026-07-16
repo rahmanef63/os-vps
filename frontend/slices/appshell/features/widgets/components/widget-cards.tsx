@@ -15,7 +15,16 @@ export function gb(bytes: number): string {
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={cn("rounded-2xl border border-white/15 p-3.5 text-foreground backdrop-blur-xl", className)}
+      // Radius comes from --widget-radius with the mobile default (1rem) as the
+      // fallback. Only the desktop widget layer sets that var (→ the window
+      // radius token), so desktop widgets read as the same surface family as
+      // windows, while mobile Today — which never sets it — is byte-identical.
+      // (Border needs no var: the global `* { border-color: --border }` in
+      // globals.css already unifies every border to the window edge color.)
+      className={cn(
+        "rounded-[var(--widget-radius,1rem)] border border-white/15 p-3.5 text-foreground backdrop-blur-xl",
+        className,
+      )}
       style={{ background: "var(--glass-menu)" }}
     >
       {children}
