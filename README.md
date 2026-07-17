@@ -19,7 +19,7 @@
 
 Administer a headless server from any browser — especially a phone. A real terminal (full PTY — `vim`, `top`, `ssh` all work), file manager, system monitor, media preview and an embedded web browser, in a desktop-style shell. The point is **utility**: fast admin of a headless box without the weight of XRDP/VNC — and because it's just a web app, it's as usable from a phone as from a laptop.
 
-![Manef Shell OS desktop — Files and System Monitor windows with live CPU/memory/storage widgets, over the dock](./docs/media/hero-desktop.png)
+![Manef Shell OS — a browser-based graphical shell for your Linux server, shown as macOS, Windows and mobile shells](./docs/media/mso-hero.webp)
 
 <p align="center">
   <img src="./docs/media/demo.gif" alt="Spotlight (⌘K) opening the System Monitor" width="720" />

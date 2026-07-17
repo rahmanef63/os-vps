@@ -222,10 +222,13 @@ body {
   backdrop-filter: blur(var(--blur)) saturate(180%);
 }
 
-/* Wallpapers — ONLY per-shell native backdrops remain (the user-facing preset
-   grid is gone: theme presets own color identity; "auto" resolves to the
-   active shell's pick via ShellDescriptor.wallpaper, custom images override). */
+/* Wallpapers — per-shell native backdrops. Each key paints its delivered MSO
+   webp (public/wallpapers/<key>.webp) over a gradient fallback (shown while the
+   image loads or if it 404s). "auto" resolves to the active shell's pick via
+   ShellDescriptor.wallpaper; a per-shell override or custom image wins. graphite
+   (Dashboard) stays a pure gradient — a photo backdrop fights data widgets. */
 .wp-aurora { background:
+  url("/wallpapers/aurora.webp") center/cover no-repeat,
   radial-gradient(120% 120% at 18% 12%, #6a8dff 0%, rgba(106,141,255,0) 46%),
   radial-gradient(120% 110% at 86% 22%, #ff7ac4 0%, rgba(255,122,196,0) 42%),
   radial-gradient(120% 120% at 70% 88%, #5be0c8 0%, rgba(91,224,200,0) 48%),
@@ -233,10 +236,9 @@ body {
 .wp-graphite { background:
   radial-gradient(120% 120% at 30% 20%, #3a3f4b 0%, rgba(58,63,75,0) 55%),
   linear-gradient(160deg, #23262e 0%, #16181d 70%, #0e0f13 100%); }
-.wp-win11    { background: radial-gradient(90% 75% at 50% 35%, #3b82f6 0%, #1e40af 42%, #0b1f4a 100%); }
-.wp-material { background: linear-gradient(150deg, #cfe0ff 0%, #e8def8 55%, #ffd8e4 100%); }
-[data-theme="dark"] .wp-material { background: linear-gradient(150deg, #1f2c47 0%, #322c4b 55%, #46263a 100%); }
-.wp-ios      { background: linear-gradient(165deg, #0f2a6b 0%, #5b3bb4 48%, #c84fa0 100%); }
+.wp-win11    { background: url("/wallpapers/win11.webp") center/cover no-repeat, radial-gradient(90% 75% at 50% 35%, #3b82f6 0%, #1e40af 42%, #0b1f4a 100%); }
+.wp-material { background: url("/wallpapers/material.webp") center/cover no-repeat, linear-gradient(150deg, #cfe0ff 0%, #e8def8 55%, #ffd8e4 100%); }
+.wp-ios      { background: url("/wallpapers/ios.webp") center/cover no-repeat, linear-gradient(165deg, #0f2a6b 0%, #5b3bb4 48%, #c84fa0 100%); }
 /* "auto" swatch in pickers — a hue ring that reads as "follows the OS". */
 .wp-auto     { background: conic-gradient(from 220deg at 50% 50%, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #10b981, #3b82f6); }
 
