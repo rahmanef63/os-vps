@@ -185,6 +185,9 @@ function AndroidShell() {
         {activeApp && (
           <AppActionsSheet app={activeApp} actions={appActions} open={actionsOpen} onOpenChange={setActionsOpen} />
         )}
+        {/* live-activity chip (parity with iOS Dynamic Island) — renders only
+            while an app reports an activity (render/copy…); reads the same store. */}
+        <Slot region="topPill" />
         <Slot region="controlCenter" />
         <ShellContextMenu state={menu.state} onClose={menu.close} />
       </div>
