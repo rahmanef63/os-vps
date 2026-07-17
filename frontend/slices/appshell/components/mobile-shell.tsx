@@ -158,14 +158,10 @@ export function MobileShell() {
 
   return (
     <ShellUIProvider value={shellUI}>
-      <div
-        className="absolute inset-0 z-[10] flex flex-col"
-        // Reserve the notch / Dynamic-Island zone on EVERY iOS surface (home +
-        // apps inherit this var): env(safe-area-inset-top) is 0 in a normal
-        // browser tab, so floor it — otherwise a real phone's notch covers the
-        // top of the home, nav bars and app content.
-        style={{ "--sai-top": "max(env(safe-area-inset-top, 0px), 2.75rem)" } as React.CSSProperties}
-      >
+      {/* --sai-top (notch/Dynamic-Island floor) now comes from the shared
+          [data-shell="ios"] rule in globals.css — one source of truth for both
+          touch shells, inherited by every iOS surface (home, nav, spotlight). */}
+      <div className="absolute inset-0 z-[10] flex flex-col">
       {/* Home is inert while an app covers it (a11y: its grid, pager pages and
           home-indicator otherwise stay in tab/AT order under the opaque app
           layer). It stays visually mounted for the appOpen zoom. */}

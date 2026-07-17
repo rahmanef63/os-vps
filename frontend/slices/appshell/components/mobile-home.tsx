@@ -96,7 +96,10 @@ export function MobileHome({
         className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <Page active={page === 0}>
-          <Slot region="today" />
+          {/* Own scroller so tall Today widgets scroll (pages 1/2 already do) */}
+          <div className="h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Slot region="today" />
+          </div>
         </Page>
         <Page active={page === 1}>
           <AppsGrid apps={apps} onLaunch={onLaunch} onSearch={onSearch} onContext={setCtxApp} />

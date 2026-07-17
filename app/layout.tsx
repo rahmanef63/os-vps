@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
+import { headers } from "next/headers";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { RegisterSW } from "./register-sw";
@@ -40,11 +40,14 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0a",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Per-request nonce (set by proxy.ts) so the pre-hydration theme script passes
+  // the strict CSP script-src.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   // Geist variable classes MUST live on <html>: --font-ui/--font-mono-ui are
   // defined on :root and reference var(--font-geist-*) — defined only on
   // <body>, the :root custom property is invalid at computed-value time and
@@ -52,19 +55,17 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="antialiased overflow-hidden select-none">
-        {/* Pre-hydration theme: AppearanceProvider applies tweaks in a
-            post-hydration effect, which gave dark-theme users a light flash on
-            every cold load. next/script with beforeInteractive runs before
-            first paint (html has suppressHydrationWarning for the attr swap).
-            Note: the CSP (next.config.mjs) intentionally sets no script-src, so
-            this inline script is not nonce-gated — add a nonced script-src here
-            if that policy is ever tightened. */}
-        <Script
-          id="theme-noflash"
-          strategy="beforeInteractive"
-        >
-          {'try{var t=JSON.parse(localStorage.getItem("os-vps:tweaks"));if(t&&t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}'}
-        </Script>
+        {/* Pre-hydration theme: set data-theme from localStorage before the body
+            paints (dark users otherwise get a light flash). A raw nonced <script>
+            at body-top runs synchronously during parse; the nonce (proxy.ts →
+            x-nonce header) satisfies the strict CSP script-src. */}
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{var t=JSON.parse(localStorage.getItem("os-vps:tweaks"));if(t&&t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}',
+          }}
+        />
         {children}
         <RegisterSW />
         <InstallPrompt />

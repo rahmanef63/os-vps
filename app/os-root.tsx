@@ -15,7 +15,7 @@ import { AppearanceProvider } from "@/lib/appearance";
 import { QuicklinksProvider } from "@/lib/quicklinks";
 import "@/features/os-shell/integrations"; // side-effect: lock guard + Quick Look + DnD wiring
 import { OsApiProvider } from "@/lib/os-api";
-import { AuthGate, SessionProvider } from "@/features/auth";
+import { AuthGate, SessionProvider, type SessionStatus } from "@/features/auth";
 import { useInstalledApps, useDisabledIds } from "@/features/app-store";
 
 // Inside the auth boundary so it can read the owner's installed runtime apps and
@@ -39,7 +39,7 @@ function Shell() {
   return <AppShell manifest={manifest} />;
 }
 
-export function OsRoot() {
+export function OsRoot({ initialStatus }: { initialStatus?: SessionStatus }) {
   return (
     <AppearanceProvider>
       <QuicklinksProvider>
@@ -54,7 +54,7 @@ export function OsRoot() {
         >
           Skip to main content
         </a>
-        <SessionProvider>
+        <SessionProvider initialStatus={initialStatus}>
           <AuthGate>
             <OsApiProvider>
               <Shell />

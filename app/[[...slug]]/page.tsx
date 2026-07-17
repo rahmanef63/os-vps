@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { OsRoot } from "../os-root";
+import { getSession } from "@/lib/auth/require-session";
 
 // Optional catch-all: the OS is one client shell, but every app is deep-linkable
 // (`/files/home/user`, `/code`, `/terminal`). The shell reads the path on the
@@ -32,5 +33,10 @@ export async function generateMetadata({
 export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params;
   if (isReserved(slug)) notFound();
-  return <OsRoot />;
+  // Resolve the session on the server (reads the signed cookie) and inject it as
+  // SessionProvider's initial state → the shell paints on the first render with
+  // no client /api/auth/me probe and no Splash. cookies() makes this dynamic —
+  // intended (the app is never SSG; next.config cacheComponents:false).
+  const initialStatus = (await getSession()) ? "in" : "out";
+  return <OsRoot initialStatus={initialStatus} />;
 }

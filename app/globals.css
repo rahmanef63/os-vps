@@ -214,6 +214,10 @@ body {
   text-rendering: optimizeLegibility;
   user-select: none;
   overscroll-behavior: none;
+  /* Kill double-tap-to-zoom + the 300ms tap delay so the standalone PWA feels
+     native, while KEEPING pinch-zoom (WCAG 1.4.4). Gesture children set their
+     own stricter touch-action (none / pan-y) per-element and still win locally. */
+  touch-action: manipulation;
 }
 
 /* glass helper — applied alongside theme tokens, never raw hex in components */
@@ -378,6 +382,15 @@ body {
   [role="menuitem"] {
     min-height: 44px;
   }
+  /* iOS focus-zoom guard: Safari zooms the viewport when a focused text field
+     computes <16px (our text-sm inputs = 14px). Floor entry fields at 16px on
+     touch only; max(…,1rem) still grows with the a11y font-scale. Desktop (fine
+     pointer) keeps the denser text-sm. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
+  }
 }
 
 [data-shell="windows"] {
@@ -402,6 +415,17 @@ body {
   --shell-dur: 300ms;
   --shell-dur-slow: 400ms;
   --shell-icon-radius: 50%;
+}
+/* Top safe-area floor per touch shell — the back/nav buttons + top bars must
+   clear the status bar / notch. --sai-top is read by both mobile shells (home,
+   headers, spotlight, switcher, dynamic-island) and defaults to env()=0 (the
+   :root rule above) for desktop shells. iOS floors everywhere (same 2.75rem it
+   used inline before, so iOS is visually unchanged); Android floors ONLY in the
+   installed PWA (display-mode: standalone), so the browser tab / desktop
+   PhoneFrame preview stays visually unchanged while the real app clears the bar. */
+[data-shell="ios"] { --sai-top: max(env(safe-area-inset-top, 0px), 2.75rem); }
+@media (display-mode: standalone) {
+  [data-shell="android"] { --sai-top: max(env(safe-area-inset-top, 0px), 1.5rem); }
 }
 /* OS reduced-motion: collapse durations to ~instant. 1ms (not 0) so animationend
    still fires — the window close/minimize finalize on that event. Scoped narrowly

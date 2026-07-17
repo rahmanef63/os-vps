@@ -22,8 +22,13 @@ const SessionContext = createContext<SessionValue>({
   signOut: async () => {},
 });
 
-export function SessionProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<SessionStatus>(IS_DEMO ? "out" : "loading");
+export function SessionProvider({ initialStatus, children }: { initialStatus?: SessionStatus; children: ReactNode }) {
+  // Server-injected status (app/[[...slug]]/page.tsx → OsRoot) is the first render
+  // on BOTH sides, so hydration matches and the shell paints with no Splash and no
+  // /api/auth/me round-trip. IS_DEMO is a build-inlined NEXT_PUBLIC var (identical
+  // server/client) → still forces "out". "loading" only applies to a prop-less
+  // mount (e.g. tests), which keeps the old probe path.
+  const [status, setStatus] = useState<SessionStatus>(IS_DEMO ? "out" : (initialStatus ?? "loading"));
 
   const probe = useCallback(async (): Promise<SessionStatus> => {
     if (IS_DEMO) return "out"; // demo makes no /api calls
@@ -56,12 +61,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (IS_DEMO) return;
+    if (initialStatus !== undefined) return; // server already resolved it — no cold-load probe
     let alive = true;
     probe().then((s) => alive && setStatus(s));
     return () => {
       alive = false;
     };
-  }, [probe]);
+  }, [probe, initialStatus]);
 
   const value = useMemo(() => ({ status, refresh, signOut }), [status, refresh, signOut]);
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

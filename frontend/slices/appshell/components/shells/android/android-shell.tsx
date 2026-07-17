@@ -124,7 +124,7 @@ function AndroidShell() {
         {/* HOME (always mounted; app overlays it — inert while covered so its
             grid + NavBar drop out of tab/AT order under the z-20 app layer).
             Pull down → Control Center; clock+date live on the wallpaper. */}
-        <div className="flex min-h-0 flex-1 flex-col px-5 pb-1" inert={showApp} aria-hidden={showApp} onPointerDown={pullDown} onContextMenu={onHomeContext} style={{ paddingTop: "var(--sai-top, 0px)" }}>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-1" inert={showApp} aria-hidden={showApp} onPointerDown={pullDown} onContextMenu={onHomeContext} style={{ paddingTop: "var(--sai-top, 0px)" }}>
           <div className="mt-6 shrink-0">
             <Clock mode="big" />
             <Clock mode="date" />

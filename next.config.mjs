@@ -69,15 +69,12 @@ const nextConfig = {
           // every rahmanef.com subdomain is HTTPS-only.
           { key: "Strict-Transport-Security", value: "max-age=31536000" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          // The app is an authenticated remote shell — never allow it to be
-          // framed (clickjacking on exec/fs buttons). CSP stays narrow on
-          // purpose: script/style/connect are NOT restricted because the shell
-          // needs blob: workers (@imgly), data: images and the BYOK CDN fetch.
+          // Public remote shell — never allow it to be framed (clickjacking on
+          // exec/fs buttons). The full Content-Security-Policy (incl. a nonce'd
+          // script-src) is set PER-REQUEST in proxy.ts so a fresh nonce can gate
+          // inline scripts; a static CSP here can't nonce, so it's intentionally
+          // omitted (proxy owns it).
           { key: "X-Frame-Options", value: "DENY" },
-          {
-            key: "Content-Security-Policy",
-            value: "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
-          },
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",

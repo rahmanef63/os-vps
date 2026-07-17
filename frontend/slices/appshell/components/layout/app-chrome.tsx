@@ -13,15 +13,17 @@
  */
 
 import { type ReactNode } from "react";
-import { Drawer as Vaul } from "vaul";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import dynamic from "next/dynamic";
 import { useIsMobile } from "../../responsive/use-is-mobile";
 import { cn } from "@/lib/utils";
+
+// Mobile Sheet/Drawer chrome (radix Sheet + vaul Drawer) loads only on phones,
+// in its own async chunk. Desktop renders the plain <aside> rail below and ships
+// neither package at first paint.
+const MobileSideRegion = dynamic(
+  () => import("./app-chrome-mobile").then((m) => m.MobileSideRegion),
+  { ssr: false, loading: () => null },
+);
 
 // Reusable app-window chrome so every app reads the same. All regions are
 // OPTIONAL — an app composes only what it needs.
@@ -83,37 +85,21 @@ function SideRegion({
   children: ReactNode;
 }) {
   const isMobile = useIsMobile();
-  if (isMobile && mobileVariant === "drawer") {
-    // Non-modal, overlay-less bottom drawer → top of the screen (the live
-    // edit preview) stays visible and usable while the panel is open.
-    return (
-      <Vaul.Root open={open} onOpenChange={onOpenChange} direction="bottom" modal={false}>
-        <Vaul.Portal>
-          <Vaul.Content
-            className={cn(
-              "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-border bg-card shadow-2xl outline-none",
-              mobileHeight,
-              sheetClassName,
-            )}
-          >
-            <Vaul.Title className="sr-only">{title}</Vaul.Title>
-            <Vaul.Description className="sr-only">{description ?? title}</Vaul.Description>
-            <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-muted" />
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
-          </Vaul.Content>
-        </Vaul.Portal>
-      </Vaul.Root>
-    );
-  }
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side={side} className={cn(sheetWidth, "p-0", sheetClassName)}>
-          <SheetTitle className="sr-only">{title}</SheetTitle>
-          <SheetDescription className="sr-only">{description ?? title}</SheetDescription>
-          <div className="flex h-full w-full min-h-0 flex-col overflow-y-auto">{children}</div>
-        </SheetContent>
-      </Sheet>
+      <MobileSideRegion
+        open={open}
+        onOpenChange={onOpenChange}
+        side={side}
+        title={title}
+        description={description}
+        sheetWidth={sheetWidth}
+        sheetClassName={sheetClassName}
+        mobileVariant={mobileVariant}
+        mobileHeight={mobileHeight}
+      >
+        {children}
+      </MobileSideRegion>
     );
   }
   if (!railOpen) return null;
