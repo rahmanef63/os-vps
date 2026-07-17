@@ -1,13 +1,15 @@
 "use client";
 
 import { createElement, useState } from "react";
-import { Check, Download, Trash2 } from "lucide-react";
+import { Check, Download, ExternalLink, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { glyphIcon } from "../lib/glyph";
 import type { CatalogApp } from "../lib/store-catalog";
+import { useContextZone, openWindow } from "@/features/os-shell";
+import type { MenuItem } from "@/features/os-shell";
 
 // One app row in the store grid. Icon comes from the shared glyph map so it
 // matches the dock/launchpad icon once installed. The Get button flips the
@@ -21,9 +23,22 @@ export function StoreAppCard({
   onToggle: (app: CatalogApp) => void;
 }) {
   const [hover, setHover] = useState(false);
+  // Right-click this card → these items, which NEST under the store's list zone
+  // + (once migrated) the window + shell. This is the whole "any feature adds
+  // right-click in a few lines" contract: one hook, one ref, no portal/state.
+  const zone = useContextZone((): MenuItem[] =>
+    app.installed
+      ? [
+          { label: "Open", icon: ExternalLink, onClick: () => openWindow(app.appId, app.title) },
+          { type: "sep" },
+          { label: "Uninstall", icon: Trash2, danger: true, onClick: () => onToggle(app) },
+        ]
+      : [{ label: `Install ${app.title}`, icon: Download, onClick: () => onToggle(app) }],
+  );
 
   return (
     <Card
+      ref={zone}
       className="flex gap-3 p-3.5"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}

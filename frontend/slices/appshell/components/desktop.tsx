@@ -23,6 +23,7 @@ import { DesktopIcons, useDesktopMarquee } from "../features/desktop-icons";
 import { NotificationCenter } from "./notification-center";
 import { AppSwitcher } from "./app-switcher";
 import { ShellContextMenu, useShellContextMenu, type MenuItem } from "./shells/context-menu";
+import { ContextMenuHost } from "./shells/context-menu-host";
 import { registerShell, resolveShell, useShellPrefs, ActiveShellProvider } from "../registry/shells";
 import { useShellAppearance } from "../registry/capabilities";
 import { cn } from "@/lib/utils";
@@ -67,11 +68,13 @@ function Surface() {
     <ActiveShellProvider id={desc.id} surface={surface}>
       <div id="main-content" data-shell={desc.id} className="relative h-dvh w-screen overflow-hidden">
         <Wallpaper shellDefault={desc.wallpaper} />
-        <Suspense fallback={null}>
-          {framed ? <PhoneFrame Comp={Comp} /> : <Comp />}
-        </Suspense>
-        <Slot region="overlay" />
-        <Slot region="notifications" />
+        <ContextMenuHost>
+          <Suspense fallback={null}>
+            {framed ? <PhoneFrame Comp={Comp} /> : <Comp />}
+          </Suspense>
+          <Slot region="overlay" />
+          <Slot region="notifications" />
+        </ContextMenuHost>
       </div>
     </ActiveShellProvider>
   );

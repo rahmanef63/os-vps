@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Store } from "lucide-react";
+import { Search, Sparkles, Store } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { AppFrame, useContainer, useActiveShell } from "@/features/os-shell";
+import { AppFrame, useContainer, useActiveShell, useContextZone, openWindow } from "@/features/os-shell";
+import type { MenuItem } from "@/features/os-shell";
 import { UninstallConfirm } from "./components/uninstall-confirm";
 import { usePublishInspector } from "./lib/host";
 import {
@@ -28,6 +29,11 @@ import { useStoreInstall } from "./lib/use-store-install";
 export default function AppStore() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<StoreFilter>("Featured");
+  // Store-level zone: a right-click anywhere in the grid gets this, and a
+  // right-click ON a card merges the card's items ABOVE it (nested).
+  const storeZone = useContextZone((): MenuItem[] => [
+    { label: "Suggest an app…", icon: Sparkles, onClick: () => openWindow("assistant", "Alfa") },
+  ]);
   // Pane-width bucket (JS, not CSS): the sidebar/chip swap must share ONE
   // measurement, and the chips live inside the AppFrame's own @container.
   const [paneRef, pane] = useContainer<HTMLDivElement>();
@@ -119,7 +125,7 @@ export default function AppStore() {
         }
       >
         <ScrollArea className="h-full">
-          <div className="p-4 [padding-bottom:calc(1rem+var(--sai-bottom))]">
+          <div ref={storeZone} className="p-4 [padding-bottom:calc(1rem+var(--sai-bottom))]">
             {isSystem ? (
               <>
                 <p className="mb-3 text-xs text-muted-foreground">
