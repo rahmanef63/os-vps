@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Wallpaper as WallpaperIcon } from "lucide-react";
+import { Monitor, MonitorSmartphone, Wallpaper as WallpaperIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Segmented } from "@/components/ui/segmented";
@@ -17,6 +17,7 @@ import { ImagePickerButton, imageStyle, type ImageValue } from "@/features/image
 import { setShell, shellsForSurface, useShellPrefs, useActiveShell, useDockPrefs, setDockPrefs, type ShellId, type DockSize } from "@/features/os-shell";
 import { SettingsRow as Row, SettingsSection as Section, SettingsBlock } from "@/features/shell-settings";
 import { LiveWallpaperRows } from "./live-wallpaper-rows";
+import { PerShellWallpaper } from "./per-shell-wallpaper";
 
 const DOCK_SIZE_OPTIONS: { value: DockSize; label: string }[] = [
   { value: "small", label: "Small" },
@@ -108,6 +109,14 @@ export function AppearanceSection() {
           </div>
         </SettingsBlock>
         <LiveWallpaperRows />
+      </Section>
+
+      <Section
+        icon={<MonitorSmartphone />}
+        title="Per-shell wallpaper"
+        footnote="Give each shell its own backdrop. “Default” uses the shell's native wallpaper; a choice here overrides the global wallpaper for that shell only."
+      >
+        <PerShellWallpaper />
       </Section>
 
       <Section icon={<Monitor />} title="Shell & display">

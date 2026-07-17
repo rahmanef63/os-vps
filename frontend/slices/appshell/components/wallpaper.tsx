@@ -3,10 +3,21 @@
 import { cn } from "@/lib/utils";
 import { useShellAppearance } from "../registry/capabilities";
 import { getWallpaper } from "../lib/wallpaper-registry";
+import { useShellWallpaper } from "../lib/wallpaper-prefs";
+import { useActiveShell } from "../registry/shells";
 import type { LiveWallpaperValue } from "../registry/capabilities";
 
 export function Wallpaper({ shellDefault }: { shellDefault?: string }) {
+  const shell = useActiveShell().id;
+  const override = useShellWallpaper(shell);
   const { wallpaper, wallpaperStyle, liveWallpaper } = useShellAppearance();
+  // A per-shell override (Settings → Per-shell wallpaper) wins over the global
+  // appearance for THIS shell: a "live:<id>" value → that live wallpaper; any
+  // other value → the named `.wp-*` preset.
+  if (override) {
+    if (override.startsWith("live:")) return <LiveWallpaper value={{ kind: "component", id: override.slice(5) }} />;
+    return <div className={cn(`wp-${override} absolute inset-0 z-0 transition-[background] duration-700`)} />;
+  }
   // Priority: a live wallpaper (code component or sandboxed HTML) > custom image
   // > the named preset (or the shell's native "auto" backdrop).
   if (liveWallpaper) return <LiveWallpaper value={liveWallpaper} />;
