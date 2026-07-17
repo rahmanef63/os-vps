@@ -72,7 +72,15 @@ function DashboardShell() {
   };
 
   return (
-    <div className="absolute inset-0 z-[10] flex bg-background/85 backdrop-blur-xl">
+    <div
+      className="absolute inset-0 z-[10] flex bg-background/85 backdrop-blur-xl"
+      // Right-click opens the dashboard menu everywhere on the chrome (sidebar,
+      // header, empty Home) — only an OPEN app's pane content keeps its own
+      // right-click. (Was <main>-only + `!pane`, so the sidebar never worked.)
+      onContextMenu={(e) => {
+        if (!(pane && (e.target as HTMLElement).closest("[data-dashboard-main]"))) menu.open(e);
+      }}
+    >
       <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card/50">
         <div className="flex h-14 shrink-0 items-center gap-2 px-4 text-sm font-semibold">
           <LayoutDashboard className="size-4 text-primary" /> {brand.name}
@@ -143,8 +151,8 @@ function DashboardShell() {
             Right-click the Home view opens the (registry-driven) dashboard menu;
             inside an open app the native right-click is left alone. */}
         <main
+          data-dashboard-main
           className="min-h-0 flex-1 overflow-hidden [container-type:inline-size]"
-          onContextMenu={(e) => { if (!pane) menu.open(e); }}
         >
           {pane ? (
             <WindowContent key={pane.id} app={pane.app} payload={pane.payload} winId={pane.id} />
