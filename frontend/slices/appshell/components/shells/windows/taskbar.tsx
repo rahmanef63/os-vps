@@ -14,6 +14,7 @@ import { lock } from "../../../lib/lock";
 import { AppIcon } from "../../app-icon";
 import { WindowPreview } from "../../window-preview";
 import { ContextMenu, useContextMenu, type MenuItem } from "../context-menu";
+import { ControlCenterDesktop } from "../../../features/control-center/components/control-center-desktop";
 import { StartMenu } from "./start-menu";
 
 export const TASKBAR_H = 48;
@@ -70,7 +71,8 @@ export function Taskbar({ onTaskView }: { onTaskView?: () => void }) {
             <TaskButton key={id} id={id} />
           ))}
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-0.5">
+          <ControlCenterDesktop />
           <Clock />
         </div>
       </div>

@@ -21,6 +21,7 @@ import { WindowContent } from "../../window-content";
 import { ShellContextMenu, useShellContextMenu } from "../context-menu";
 import { useInspectorInfo } from "../../../lib/inspector";
 import { ResponsiveToolbar } from "../../../primitives/responsive-toolbar";
+import { ControlCenterDesktop } from "../../../features/control-center/components/control-center-desktop";
 import type { AppDescriptor } from "../../../lib/types";
 import { DashboardHome, NavItem, RunningRow, SidebarLabel } from "./dashboard-parts";
 
@@ -76,6 +77,7 @@ function DashboardShell() {
       <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card/50">
         <div className="flex h-14 shrink-0 items-center gap-2 px-4 text-sm font-semibold">
           <LayoutDashboard className="size-4 text-primary" /> {brand.name}
+          <div className="ml-auto"><ControlCenterDesktop /></div>
         </div>
 
         <div className="flex flex-col gap-0.5 px-2">

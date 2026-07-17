@@ -136,7 +136,12 @@ function AndroidShell() {
             <Search className="size-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Search</span>
           </button>
-          <div ref={gridRef} className="mt-6 grid min-h-0 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-y-auto">
+          {/* Home widgets — the shared Today surface (parity with iOS home page 0),
+              height-capped so it never crowds the app grid below. */}
+          <div className="mt-4 max-h-[36vh] shrink-0 overflow-y-auto [scrollbar-width:none]">
+            <Slot region="today" />
+          </div>
+          <div ref={gridRef} className="mt-5 grid min-h-0 grid-cols-4 content-start gap-x-3 gap-y-5 overflow-y-auto">
             {dockable.slice(0, 12).map((a) => (
               <AppCell key={a.id} app={a} onClick={() => launch(a)} />
             ))}
