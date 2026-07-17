@@ -8,7 +8,9 @@ import type { RefObject, PointerEvent as ReactPointerEvent } from "react";
    optional scrollRef keeps a scrollable child working: the pull only arms
    when that element is at its top. */
 export function usePullDown(
-  onPull: () => void,
+  // startX (viewport px) lets a caller split the gesture by half — e.g. Android
+  // pulls LEFT→notifications, RIGHT→Control Center. Existing callers ignore it.
+  onPull: (startX: number) => void,
   scrollRef?: RefObject<HTMLElement | null>,
 ): (e: ReactPointerEvent) => void {
   return (e: ReactPointerEvent) => {
@@ -26,7 +28,7 @@ export function usePullDown(
       const dy = ev.clientY - sy;
       if (dy > 60 && dy > Math.abs(dx)) {
         cleanup();
-        onPull();
+        onPull(sx);
       }
     };
     const end = () => cleanup();

@@ -28,6 +28,7 @@ import { ShellContextMenu, useShellContextMenu } from "../context-menu";
 import type { AppDescriptor } from "../../../lib/types";
 import { useInspectorInfo } from "../../../lib/inspector";
 import { AppActionsSheet } from "../../app-actions-sheet";
+import { AndroidNotifications } from "./android-notifications";
 
 function AndroidShell() {
   const apps = useApps();
@@ -35,6 +36,7 @@ function AndroidShell() {
   const focused = useFocused();
   const [drawer, setDrawer] = useState(false);
   const [cc, setCc] = useState(false); // control center (pull down on home)
+  const [notif, setNotif] = useState(false); // notification shade (pull down, left half)
   const [recents, setRecents] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false); // in-app "•••" action drawer
   const gridRef = useRef<HTMLDivElement>(null);
@@ -88,9 +90,9 @@ function AndroidShell() {
     setRecents(false);
     setHome(false);
   };
-  // Pull-DOWN anywhere on home opens the Control Center (no status-bar row).
-  // The app grid keeps scrolling: the pull only arms while the grid is at top.
-  const pullDown = usePullDown(() => setCc(true), gridRef);
+  // Pull-DOWN on home: LEFT half → notifications, RIGHT half → Control Center
+  // (mirrors the iOS split). The grid keeps scrolling — the pull only arms at top.
+  const pullDown = usePullDown((sx) => (sx < window.innerWidth / 2 ? setNotif(true) : setCc(true)), gridRef);
   // Home-background long-press / right-click → this shell's registry menu
   // (native long-press fires contextmenu; controls are skipped).
   const menu = useShellContextMenu("android", "mobile");
@@ -189,6 +191,7 @@ function AndroidShell() {
             while an app reports an activity (render/copy…); reads the same store. */}
         <Slot region="topPill" />
         <Slot region="controlCenter" />
+        <AndroidNotifications open={notif} onClose={() => setNotif(false)} />
         <ShellContextMenu state={menu.state} onClose={menu.close} />
       </div>
     </ShellUIProvider>
