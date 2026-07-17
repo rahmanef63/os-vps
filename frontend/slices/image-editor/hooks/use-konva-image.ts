@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadImage } from "../lib/konva-helpers";
+import { loadImage } from "../lib/image-io";
 
 // Load an image src → HTMLImageElement for <KonvaImage image=…>. Returns null
 // until loaded. crossOrigin is set (in loadImage) so filters/export don't taint.

@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { FilePicker, type FilePickerHandle } from "../lib/host";
 import { useEditor } from "../lib/store";
 import { ASPECT_PRESETS, createLayer } from "../lib/model";
-import { fileToDataURL, loadImage } from "../lib/konva-helpers";
+import { fileToDataURL, loadImage } from "../lib/image-io";
 import { removeImageBackground } from "../lib/bg-removal";
 import { exportStage, stageToDataURL } from "../lib/export";
 import { downloadProject, parseProject } from "../lib/project";

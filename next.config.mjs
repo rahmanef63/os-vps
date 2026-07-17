@@ -34,10 +34,14 @@ const nextConfig = {
     // Tree-shake heavy icon/radix barrels — keeps the OS shell bundle lean.
     optimizePackageImports: [
       "lucide-react",
+      "radix-ui",
       "@radix-ui/react-dialog",
       "@radix-ui/react-dropdown-menu",
       "@radix-ui/react-tooltip",
       "@radix-ui/react-scroll-area",
+      "@radix-ui/react-select",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-alert-dialog",
     ],
   },
   // Serve the service worker at /sw.js (stable scope) from the /api/sw route

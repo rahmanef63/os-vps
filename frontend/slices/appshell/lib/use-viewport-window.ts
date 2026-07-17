@@ -95,8 +95,16 @@ export function useViewportWindow<T>(
       setWin(computeViewportWindow({ scrollTop, viewportHeight, rowHeight, total, overscan }));
     };
     recompute();
+    // Coalesce scroll into ONE recompute per frame — the handler does two
+    // getBoundingClientRect reads, so firing it on every raw scroll event forces
+    // a layout read per wheel tick. resize / ResizeObserver stay direct (rare).
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; recompute(); });
+    };
     const target: EventTarget = scroller ?? window;
-    target.addEventListener("scroll", recompute, { passive: true });
+    target.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", recompute);
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== "undefined" && scroller) {
@@ -104,9 +112,10 @@ export function useViewportWindow<T>(
       ro.observe(scroller);
     }
     return () => {
-      target.removeEventListener("scroll", recompute);
+      target.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", recompute);
       ro?.disconnect();
+      if (raf) cancelAnimationFrame(raf);
     };
   }, [containerRef, rowHeight, total, overscan]);
 

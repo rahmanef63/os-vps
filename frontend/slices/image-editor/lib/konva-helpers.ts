@@ -98,28 +98,3 @@ export function hasFilters(adj: Adjustments): boolean {
     adj.sepia
   );
 }
-
-// Load an image URL → HTMLImageElement (crossOrigin set so toDataURL/export and
-// filter caching don't taint the canvas).
-export function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
-// Read a picked File into a self-contained data URL. Opened images MUST be stored
-// as data URLs, not `URL.createObjectURL` blob: URLs — a blob: URL is revoked when
-// the document unloads, so it gets serialized into autosave/Save and renders null
-// after a reload. Data URLs round-trip through persistence intact.
-export function fileToDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result as string);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
-}

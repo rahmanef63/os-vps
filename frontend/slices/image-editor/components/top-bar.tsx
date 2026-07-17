@@ -27,7 +27,7 @@ import {
 import { FilePicker, type FilePickerHandle } from "../lib/host";
 import { useEditor } from "../lib/store";
 import { createLayer } from "../lib/model";
-import { fileToDataURL, loadImage } from "../lib/konva-helpers";
+import { fileToDataURL, loadImage } from "../lib/image-io";
 import { removeImageBackground } from "../lib/bg-removal";
 import { stageToDataURL } from "../lib/export";
 import { downloadProject, parseProject } from "../lib/project";

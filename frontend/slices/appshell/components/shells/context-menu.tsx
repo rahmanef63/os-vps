@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getContextMenuItems, joinGroups, type MenuItem } from "../../lib/context-menu";
 import type { ShellId, ShellSurface } from "../../registry/shells";
+import { useActiveShell } from "../../registry/shells";
 
 export type { MenuItem };
 
@@ -63,6 +64,7 @@ export function ShellContextMenu({
 
 export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem[]; onClose: () => void }) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const active = useActiveShell(); // reactive shell id — beats DOM-sniffing [data-shell]
   useEffect(() => {
     if (!pos) return;
     const trigger = document.activeElement as HTMLElement | null; // restore focus here on close
@@ -94,7 +96,7 @@ export function ContextMenu({ pos, items, onClose }: { pos: Pos; items: MenuItem
   // Windows = Fluent (34px rows, fixed icon gutter, slide-down); iOS/Android =
   // 44pt touch targets + larger text (HIG). The accent is os-vps's own --primary
   // token — not a hardcoded hex — per the design.md "semantic tokens" guidance.
-  const shell = document.querySelector("[data-shell]")?.getAttribute("data-shell");
+  const shell = active.id;
   const isWin = shell === "windows";
   const isTouch = shell === "ios" || shell === "android";
   const itemMetrics = isWin
