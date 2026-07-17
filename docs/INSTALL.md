@@ -102,7 +102,7 @@ Open it, note the device id on the login screen, approve it (step 2), log in.
 
 ```ini
 [Unit]
-Description=os-vps web OS (Next.js)
+Description=Manef Shell OS (os-vps) — browser-based server shell
 After=network.target
 
 [Service]

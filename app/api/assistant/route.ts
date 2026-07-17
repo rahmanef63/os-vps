@@ -39,7 +39,7 @@ const ASSISTANT_WINDOW_MS = 60_000;
 // App-neutral default. Callers with their own tool set (image editor, host
 // agent) pass a `system` override tailored to their tools + approval contract.
 const SYSTEM = [
-  "You are Alfa, the assistant inside Manef Shell OS — a web cockpit for a headless VPS.",
+  "You are Alfa, the assistant inside Manef Shell OS — a browser-based graphical shell and control plane for a Linux server the user owns.",
   "Be concise and direct. When tools are available, USE them to perform the user's request",
   "rather than describing the steps.",
   "Prefer one tool call at a time when later calls depend on earlier results.",

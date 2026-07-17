@@ -9,18 +9,26 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://os.rahmanef.com"),
   applicationName: "Manef Shell OS",
-  title: "Manef Shell OS — VPS cockpit",
-  description: "Mobile-first web cockpit for a headless Linux VPS.",
+  title: "Manef Shell OS — browser-based server control plane",
+  description: "A browser-based graphical shell for a Linux server you own — terminal, files, metrics, and AI in one mobile-first pane.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "MSO", statusBarStyle: "black-translucent" },
   // Favicon + apple-touch + OG come from the file conventions (app/icon.svg,
   // app/apple-icon.tsx, app/opengraph-image.tsx) — no manual `icons` field.
   openGraph: {
-    title: "Manef Shell OS — VPS cockpit",
-    description: "Mobile-first web cockpit for a headless Linux VPS.",
+    title: "Manef Shell OS — browser-based server control plane",
+    description: "A browser-based graphical shell for a Linux server you own — terminal, files, metrics, and AI in one mobile-first pane.",
     siteName: "Manef Shell OS",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Manef Shell OS — browser-based server control plane",
+    description: "A browser-based graphical shell for a Linux server you own — terminal, files, metrics, and AI in one mobile-first pane.",
+  },
+  // Owner-only tool behind client auth — keep it out of search indexes (every
+  // catch-all slug returns 200 HTML). The GitHub repo is the discoverable surface.
+  robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {

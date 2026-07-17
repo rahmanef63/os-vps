@@ -7,7 +7,7 @@ import { run, seedFs, NEOFETCH, type Line } from "../lib/commands";
 
 // React-DOM shell emulator (re-authored toward mock-os parity). Maintains a cwd
 // + in-memory FS; `ls`/`cat` read live OsApi data and fall back to the model.
-// Glass aesthetic: monospace, colored `root@topside:/path$` prompt, red errors,
+// Glass aesthetic: monospace, colored `root@mso:/path$` prompt, red errors,
 // arrow-key history. Command logic lives in ./lib/commands to keep this < 200 LOC.
 export default function ExecTerminal() {
   const api = useOsApi();
@@ -15,7 +15,7 @@ export default function ExecTerminal() {
   const fs = useMemo(() => seedFs(), []);
 
   const [lines, setLines] = useState<Line[]>([
-    { t: "sys", v: 'topside shell · type "help" for commands' },
+    { t: "sys", v: 'mso shell · type "help" for commands' },
   ]);
   // Live starts at home (~); mock keeps its "/" sandbox root. A live shell at
   // "/" lists outside the host read roots and every `ls` fails — that read as
@@ -168,7 +168,7 @@ export default function ExecTerminal() {
 function Prompt({ cwd }: { cwd: string }) {
   return (
     <span style={{ color: "#5be0c8" }}>
-      root@topside<span style={{ color: "#7a8aff" }}>:{cwd}</span>${" "}
+      root@mso<span style={{ color: "#7a8aff" }}>:{cwd}</span>${" "}
     </span>
   );
 }
@@ -182,7 +182,7 @@ function Neofetch({ rows }: { rows?: [string, string][] }) {
         {NEOFETCH.logo}
       </div>
       <div className="leading-relaxed">
-        <div style={{ color: "#7a8aff" }}>root@topside</div>
+        <div style={{ color: "#7a8aff" }}>root@mso</div>
         {(rows ?? NEOFETCH.rows).map(([k, v]) => (
           <div key={k}>
             <span style={{ color: "#5be0c8" }}>{k.padEnd(8, "-")}</span> {v}

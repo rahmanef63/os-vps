@@ -6,9 +6,9 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Manef Shell OS — VPS cockpit",
+    name: "Manef Shell OS",
     short_name: "MSO",
-    description: "Mobile-first web cockpit for a headless Linux VPS.",
+    description: "A browser-based graphical shell for a Linux server you own — terminal, files, metrics, and AI in one mobile-first pane.",
     lang: "en",
     dir: "ltr",
     categories: ["productivity", "utilities", "developer"],

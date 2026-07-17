@@ -68,9 +68,9 @@ export function rekey(fs: FsModel, oldP: string, newP: string) {
 }
 
 export const NEOFETCH = {
-  logo: "  ___  ___ \n / _ \\/ __|\n| (_) \\__ \\\n \\___/|___/\n topside",
+  logo: "  ___  ___ \n / _ \\/ __|\n| (_) \\__ \\\n \\___/|___/\n mso",
   rows: [
-    ["os", "topside 1.0.0 web-cockpit"],
+    ["os", "mso 1.0.0 web-shell"],
     ["shell", "vps-sh 1.0"],
     ["cpu", "8 vCPU @ 3.1GHz"],
     ["memory", "6.4G / 16G"],

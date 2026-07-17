@@ -22,7 +22,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
         <div style={{ maxWidth: 360, padding: 24, textAlign: "center" }}>
           <h1 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 8px" }}>Something broke</h1>
           <p style={{ fontSize: 14, opacity: 0.7, margin: "0 0 20px", lineHeight: 1.5 }}>
-            The cockpit hit an unexpected error. Reloading usually clears it; your
+            Manef Shell OS hit an unexpected error. Reloading usually clears it; your
             files and session are untouched.
           </p>
           <button

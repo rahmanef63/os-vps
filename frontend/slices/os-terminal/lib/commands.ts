@@ -116,7 +116,7 @@ export async function run(cmd: string, ctx: RunCtx): Promise<Line[]> {
       push(new Date().toString());
       break;
     case "uname":
-      push("mso 1.0.0 (web-cockpit) x86_64 GNU/Linux");
+      push("mso 1.0.0 (web-shell) x86_64 GNU/Linux");
       break;
     case "clear":
       ctx.clear();
@@ -138,7 +138,7 @@ export async function run(cmd: string, ctx: RunCtx): Promise<Line[]> {
             t: "fetch",
             v: "",
             rows: [
-              ["os", "mso 1.0.0 web-cockpit"],
+              ["os", "mso 1.0.0 web-shell"],
               ["shell", "vps-sh 1.0"],
               ["cpu", `${s.cpu.cores} vCPU · ${s.cpu.pct}%`],
               ["memory", fmtGiBPair(s.mem.used, s.mem.total)],
