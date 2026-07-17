@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Laptop, Plus, Server } from "lucide-react";
+import { Check, Laptop, LogIn, LogOut, Plus, Server } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -13,7 +13,8 @@ import {
   type ServerTarget,
   type SshServerTarget,
 } from "@/lib/appearance";
-import { useOsApi } from "@/features/os-shell";
+import { useOsApi, ResponsiveDialog } from "@/features/os-shell";
+import { useSession, LoginCard } from "@/features/auth";
 import { IS_DEMO } from "@/lib/demo";
 import {
   SettingsSection,
@@ -46,10 +47,22 @@ function isSsh(target: ServerTarget): target is SshServerTarget {
 
 export function ServerSection() {
   const { tweaks, setServer } = useAppearance();
+  const { status, refresh, signOut } = useSession();
   const api = useOsApi();
   const [test, setTest] = useState<TestState>(null);
-  const active = effectiveServerTarget(tweaks.server, IS_DEMO);
+  // The target the user is trying to reach; opening the sign-in modal. Applied
+  // once authenticated.
+  const [loginFor, setLoginFor] = useState<string | null>(null);
+
+  const authed = status === "in";
   const targets = tweaks.server.targets ?? [];
+  const mockTarget = targets.find((t) => t.kind === "mock");
+  const liveTargetId = targets.find((t) => t.kind !== "mock")?.id ?? "vps";
+  // Signed out → the shell is on mock regardless of the stored target (lib/os-api
+  // force-gates live behind a session), so show mock as active until sign-in.
+  const active = authed
+    ? effectiveServerTarget(tweaks.server, IS_DEMO)
+    : mockTarget ?? effectiveServerTarget(tweaks.server, IS_DEMO);
   const activeId = active?.id ?? "mock";
 
   async function onTest() {
@@ -64,7 +77,29 @@ export function ServerSection() {
 
   function selectTarget(id: string) {
     if (IS_DEMO) return;
+    const t = targets.find((x) => x.id === id);
+    // Live/SSH targets touch the real host → require an admin sign-in first.
+    if (t && t.kind !== "mock" && !authed) {
+      setLoginFor(id);
+      return;
+    }
     setServer(selectServerTarget(tweaks.server, id));
+    setTest(null);
+  }
+
+  // Sign-in succeeded → re-probe the shared session, then connect to the target
+  // the user was reaching for (or the default live target from the Sign-in row).
+  async function onLoginSuccess() {
+    await refresh();
+    if (loginFor) {
+      setServer(selectServerTarget(tweaks.server, loginFor));
+      setTest(null);
+    }
+    setLoginFor(null);
+  }
+
+  async function onSignOut() {
+    await signOut();
     setTest(null);
   }
 
@@ -82,6 +117,20 @@ export function ServerSection() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
+      {/* Admin sign-in. The shell is public + runs on mock data; signing in with
+          the admin password unlocks live host access (files/terminal/monitor).
+          Every /api host route enforces the session server-side. */}
+      {!IS_DEMO && (
+        <SettingsSection icon={authed ? <LogOut /> : <LogIn />} title="Server access" footnote="The shell is public and browses safe mock data. Sign in with the admin password to connect to this VPS's real files, terminal, and monitor.">
+          <SettingsValueRow label="Status" value={authed ? "Signed in — live host access" : "Public — mock data only"} />
+          {authed ? (
+            <SettingsActionRow label="Sign out" onClick={onSignOut} />
+          ) : (
+            <SettingsActionRow label="Sign in (admin)" icon={<LogIn />} onClick={() => setLoginFor(liveTargetId)} />
+          )}
+        </SettingsSection>
+      )}
+
       {/* Selectable target list — an iOS grouped list (row + checkmark), not a
           segmented tab strip; ends with an "Add SSH target" action row. */}
       <SettingsSection icon={<Server />} title="Server target">
@@ -100,7 +149,9 @@ export function ServerSection() {
             <span className="shrink-0 text-muted-foreground">{targetIcon(target)}</span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm text-foreground">{target.label}</span>
-              <span className="block truncate text-[11px] text-muted-foreground">{targetSubtitle(target)}</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                {target.kind !== "mock" && !authed ? "Sign in to connect" : targetSubtitle(target)}
+              </span>
             </span>
             {activeId === target.id && <Check className="size-4 shrink-0 text-info" />}
           </button>
@@ -108,9 +159,9 @@ export function ServerSection() {
         <SettingsActionRow label="Add SSH target" icon={<Plus />} onClick={onAddSsh} disabled={IS_DEMO} />
       </SettingsSection>
 
-      {/* Active target config — value + editable rows directly in the card (no
-          nested filled card), a friendly kind, then Test as an action row. */}
-      {active && (
+      {/* Active target config — shown for a connected live/SSH target (mock has no
+          config). Value + editable rows directly in the card, then Test. */}
+      {active && active.kind !== "mock" && (
         <SettingsSection
           icon={targetIcon(active)}
           title={active.label}
@@ -160,6 +211,15 @@ export function ServerSection() {
           />
         </SettingsSection>
       )}
+
+      <ResponsiveDialog open={loginFor !== null} onOpenChange={(o) => { if (!o) setLoginFor(null); }} size="sm">
+        <ResponsiveDialog.Header>
+          <ResponsiveDialog.Title>Sign in</ResponsiveDialog.Title>
+        </ResponsiveDialog.Header>
+        <ResponsiveDialog.Body>
+          <LoginCard onAuthed={onLoginSuccess} />
+        </ResponsiveDialog.Body>
+      </ResponsiveDialog>
     </div>
   );
 }

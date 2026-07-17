@@ -3,6 +3,7 @@
 import { useMemo, type ReactNode } from "react";
 import { HostApiProvider } from "@/features/appshell";
 import { useAppearance } from "@/lib/appearance";
+import { useSession } from "@/features/auth";
 import { IS_DEMO } from "@/lib/demo";
 import { MockAdapter } from "./mock-adapter";
 import { HttpAdapter } from "./http-adapter";
@@ -39,7 +40,12 @@ export function zipUrl(
 // with the gateway secret (server-side only). Demo never touches the host.
 export function OsApiProvider({ children }: { children: ReactNode }) {
   const { tweaks } = useAppearance();
-  const mode = IS_DEMO ? "mock" : tweaks.server.mode;
+  const { status } = useSession();
+  // Live only when signed in. A public/signed-out visitor stays on mock (the
+  // /api host routes would 401 them anyway — this just avoids the error spray
+  // and gives a clean mock experience); live activates the moment the owner
+  // signs in (Settings → Server), since the shared session flips `status`.
+  const mode = IS_DEMO || status !== "in" ? "mock" : tweaks.server.mode;
   const api = useMemo(
     () => (mode === "live" ? HttpAdapter({ url: "" }) : MockAdapter()),
     [mode],

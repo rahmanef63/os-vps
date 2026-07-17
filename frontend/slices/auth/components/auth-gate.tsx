@@ -5,11 +5,14 @@ import type { ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { useAppearance } from "@/lib/appearance";
 import { IS_DEMO } from "@/lib/demo";
-import { LoginScreen } from "./login-screen";
 import { useSession } from "../lib/use-session";
 
-// Gates the OS. Demo build → open straight to the (mock) OS with a small badge.
-// Otherwise: login when signed out, spinner while resolving, OS when in.
+// The shell is PUBLIC: anyone can open it and browse on mock data — no sign-in
+// wall. Sign-in is admin-only and unlocks live host access (files/terminal/
+// monitor); every /api host route enforces the session server-side, so a
+// signed-out visitor is confined to mock (see lib/os-api). Sign-in lives inside
+// the shell (Settings → Server). This gate now only shows a brief splash while
+// the session resolves (avoids a mock→live flash for the owner) + the DEMO badge.
 export function AuthGate({ children }: { children: ReactNode }) {
   if (IS_DEMO) {
     return (
@@ -24,12 +27,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return <GatedOS>{children}</GatedOS>;
 }
 
-// Real auth path — session cookie verified by /api/auth/me (no Convex).
 function GatedOS({ children }: { children: ReactNode }) {
-  const { status, refresh } = useSession();
+  const { status } = useSession();
   if (status === "loading") return <Splash />;
-  if (status === "out") return <LoginScreen onAuthed={refresh} />;
-  return <>{children}</>;
+  return <>{children}</>; // signed-in AND signed-out → the shell (mock when out)
 }
 
 function Splash() {

@@ -86,12 +86,14 @@ export const TWEAK_DEFAULTS: Tweaks = {
   fontScale: 1,
   highContrast: false,
   server: {
-    // Owner cockpit defaults to driving its own host (terminal/files/monitor are
-    // live out of the box). Demo is separately forced to mock via IS_DEMO in
-    // lib/os-api, so this only affects authenticated, approved-device sessions.
-    mode: "live",
+    // A fresh visitor lands on MOCK: the shell is public (no sign-in wall) and
+    // browses safe in-browser data. The owner signs in (Settings → Server) to
+    // unlock live host access; that selects the "vps" target + flips mode. Live
+    // is also force-gated on an authenticated session in lib/os-api, so a stored
+    // "live" from a since-signed-out owner still resolves to mock (no 401 spray).
+    mode: "mock",
     url: "",
-    activeTargetId: "vps",
+    activeTargetId: "mock",
     targets: [
       { id: "mock", kind: "mock", label: "Mock" },
       { id: "vps", kind: "local", label: "This VPS", url: "" },
