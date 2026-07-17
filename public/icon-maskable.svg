@@ -1,16 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MSO">
   <defs>
-    <linearGradient id="m-bg" x1="256" y1="0" x2="256" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#2c2c31"/>
-      <stop offset="1" stop-color="#141416"/>
-    </linearGradient>
-    <linearGradient id="m-glyph" x1="150" y1="168" x2="362" y2="360" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6ee7b7"/>
-      <stop offset="1" stop-color="#10b981"/>
+    <linearGradient id="m-bg" x1="48" y1="40" x2="466" y2="474" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4a7cf8"/>
+      <stop offset="1" stop-color="#6a54f8"/>
     </linearGradient>
   </defs>
   <!-- full-bleed (no rounded corners): the OS applies its own maskable shape;
-       the M sits inside the 40% safe zone -->
+       the glyph sits inside the 80% safe zone -->
   <rect width="512" height="512" fill="url(#m-bg)"/>
-  <path d="M150 360 L150 168 L256 296 L362 168 L362 360" fill="none" stroke="url(#m-glyph)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(256 256) scale(0.8) translate(-256 -256)">
+    <g fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M138 150 L238 150 L292 179 L374 179 Q402 179 402 207 L402 370 Q402 398 374 398 L138 398 Q110 398 110 370 L110 178 Q110 150 138 150 Z"/>
+      <path d="M166 272 L204 302 L166 332"/>
+      <path d="M226 348 L286 348"/>
+      <path d="M320 272 L358 302 L320 332"/>
+    </g>
+    <g fill="#ffffff">
+      <circle cx="150" cy="188" r="11"/>
+      <circle cx="186" cy="188" r="11"/>
+      <circle cx="222" cy="188" r="11"/>
+    </g>
+  </g>
 </svg>
