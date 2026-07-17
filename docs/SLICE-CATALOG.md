@@ -46,7 +46,7 @@ os-vps consumer that wires them via a manifest.
 | `shell-control-center` | full | iOS pull-down toggles → `controlCenter` slot (mobile). |
 | `shell-widgets` | full | Today widgets + quick-open → `today` slot (mobile). |
 | `shell-settings` | full | Settings building blocks (`SettingsSection`/`SettingsRow`/`AppearancePanel`) consumed by the `os-settings` app — a component library slice, intentionally NOT listed in `TOPSIDE_FEATURES` (it owns no slot). |
-| `os-shell` | full | os-vps consumer: `shell.manifest.ts` (Topside brand + app list + features) + a re-export barrel (`@/features/os-shell`) so app slices need no edits. |
+| `os-shell` | full | os-vps consumer: `shell.manifest.ts` (Manef Shell OS brand + app list + features) + a re-export barrel (`@/features/os-shell`) so app slices need no edits. |
 
 A feature plugs in by exporting `defineFeature({ id, slots, provider? })` and being
 listed in `TOPSIDE_FEATURES`. Settings stays the `os-settings` app.

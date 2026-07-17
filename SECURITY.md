@@ -1,6 +1,6 @@
 # Security Policy
 
-os-vps (Topside) is a **personal, single-owner tool, alpha quality**. It has had
+os-vps (Manef Shell OS) is a **personal, single-owner tool, alpha quality**. It has had
 internal adversarial review but **no third-party security audit**. Read the
 [Threat model](./README.md#threat-model) and
 [Security model](./README.md#security-model-mechanics) in the README before

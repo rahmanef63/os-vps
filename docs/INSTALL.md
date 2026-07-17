@@ -1,4 +1,4 @@
-# Installing os-vps (Topside) on your VPS
+# Installing os-vps (Manef Shell OS) on your VPS
 
 Step-by-step production setup. For a 2-minute local try-out, see
 [Quickstart](../README.md#quickstart) — this guide is the real thing:

@@ -1,7 +1,8 @@
-<h1 align="center">Topside</h1>
+<h1 align="center">Manef Shell OS</h1>
 
 <p align="center">
-  A mobile-first web cockpit for a headless Linux VPS — terminal, files, metrics, and AI, from your phone.
+  A browser-based graphical shell and single-owner control plane for a Linux server you own —<br/>
+  terminal, files, metrics, and AI in one desktop-style pane, from any browser (especially your phone).
 </p>
 
 <p align="center">
@@ -14,15 +15,21 @@
   <img alt="pnpm" src="https://img.shields.io/badge/pnpm-10.32-f69220?logo=pnpm&logoColor=white" />
 </p>
 
-> Service slug stays `os-vps` (deploy paths, systemd unit, domain); **Topside** is the product name shown in the UI.
+> Naming: the product is **Manef Shell OS** (shown as **MSO** in the UI chrome); the repo/service slug stays `os-vps` (deploy paths, systemd unit, domain).
 
-Control a headless VPS from any browser — especially a phone. A real terminal (full PTY — `vim`, `top`, `ssh` all work), file manager, system monitor, media preview and an embedded web browser, in a desktop-style shell. The point is **utility**: fast admin of a headless box without the weight of XRDP/VNC. It's a **single-owner** control plane for **one VPS you own** — not a real OS, not multi-tenant, not a SaaS. The desktop UI is a metaphor.
+Administer a headless server from any browser — especially a phone. A real terminal (full PTY — `vim`, `top`, `ssh` all work), file manager, system monitor, media preview and an embedded web browser, in a desktop-style shell. The point is **utility**: fast admin of a headless box without the weight of XRDP/VNC — and because it's just a web app, it's as usable from a phone as from a laptop.
 
-![Topside desktop — Files and System Monitor windows with live CPU/memory/storage widgets, over the dock](./docs/media/hero-desktop.png)
+![Manef Shell OS desktop — Files and System Monitor windows with live CPU/memory/storage widgets, over the dock](./docs/media/hero-desktop.png)
 
 <p align="center">
   <img src="./docs/media/demo.gif" alt="Spotlight (⌘K) opening the System Monitor" width="720" />
 </p>
+
+## What this is — and is NOT
+
+**Manef Shell OS is** a browser-based graphical shell and single-owner control plane that runs *on top of* a Linux server you already own. One authenticated pane gives you a terminal, files, live system metrics, an AI assistant and apps — reachable from any browser.
+
+**It is NOT** an operating system, Linux distribution, kernel or desktop environment · not a hypervisor, container runtime or VPS provider · not multi-tenant and not a SaaS · not a "web shell" backdoor. The macOS, Windows, Android and Dashboard modes are **interface layouts**, not operating systems — the software underneath is a single non-root Node process. The "OS" in the name is a nod to the desktop metaphor, nothing more.
 
 ## Install
 
@@ -65,9 +72,9 @@ Deep dive: **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**.
 
 ## How it compares
 
-Each of these solves one slice of headless-VPS admin; Topside stitches the common ones into a single mobile-first pane.
+Each of these solves one slice of headless-server admin; Manef Shell OS stitches the common ones into a single mobile-first pane.
 
-| | **Topside** | Cockpit | ttyd | FileBrowser | Netdata | Tailscale SSH |
+| | **MSO** | Cockpit | ttyd | FileBrowser | Netdata | Tailscale SSH |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | Real PTY terminal | ✅ | ✅ | ✅ | — | — | ✅ |
 | File manager | ✅ | ~ | — | ✅ | — | — |

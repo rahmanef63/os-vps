@@ -73,10 +73,12 @@ catalog (`npx rr add <slug>`). Each slice's only host coupling is a small
 `lib/host.ts` seam with injectable adapters, so the same code runs inside
 os-vps or standalone in any Next.js app.
 
-### Why is the project called os-vps but the UI says "Topside"?
+### Why is the repo called `os-vps` but the product is "Manef Shell OS"?
 
-`os-vps` is the repo/service/deploy slug (stable for paths and units);
-"Topside" is the product name shown in the UI.
+Three names, three jobs: **`os-vps`** is the repo/service/deploy slug (stable
+for paths, systemd units and the domain); **Manef Shell OS** is the product
+name; **MSO** is the short mark shown in the UI chrome. Renaming the slug would
+break every deploy path, so it stays.
 
 ### What does it cost to run?
 

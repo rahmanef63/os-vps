@@ -1,4 +1,4 @@
-# os-vps (Topside) — Architecture
+# os-vps (Manef Shell OS) — Architecture
 
 > **Current.** Reflects the self-contained app as shipped. The earlier Convex +
 > Control-Room-agent design (see `DESIGN-RECONCILE.md`, early `PROGRESS.md` phases)
