@@ -7,6 +7,7 @@ import { useAppearance } from "@/lib/appearance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getOrCreateDeviceId, deviceLabel } from "../lib/device";
+import { MsoMark } from "@/components/shared/mso-mark";
 
 // Password-only gate + device approval. Correct password on a new device →
 // "pending": show the device id to paste to an approver. No cookie until an
@@ -67,10 +68,8 @@ export function LoginScreen({ onAuthed }: { onAuthed: () => void }) {
       />
       <div className="glass w-[min(380px,92vw)] space-y-4 rounded-2xl border border-border bg-card/80 p-6 shadow-[var(--shadow-win)]">
         <div className="space-y-1 text-center">
-          <span className="mx-auto grid size-10 place-items-center rounded-xl bg-primary text-sm font-extrabold text-primary-foreground">
-            rr
-          </span>
-          <h1 className="text-lg font-bold tracking-tight">Topside</h1>
+          <MsoMark className="mx-auto size-11" />
+          <h1 className="text-lg font-bold tracking-tight">Manef Shell OS</h1>
           <p className="text-xs text-muted-foreground">
             {pending ? "Device awaiting approval" : "Enter password to access your VPS cockpit"}
           </p>

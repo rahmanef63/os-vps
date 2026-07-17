@@ -102,7 +102,7 @@ export async function run(cmd: string, ctx: RunCtx): Promise<Line[]> {
         }
         const it = here().find((x) => x.name === nm);
         if (!it || it.kind === "dir") push(`cat: ${nm}: No such file`, "err");
-        else push(`# ${nm}\n\nManaged by Topside. Open in an editor for the full view.`);
+        else push(`# ${nm}\n\nManaged by MSO. Open in an editor for the full view.`);
       }
       break;
     }
@@ -116,7 +116,7 @@ export async function run(cmd: string, ctx: RunCtx): Promise<Line[]> {
       push(new Date().toString());
       break;
     case "uname":
-      push("topside 1.0.0 (web-cockpit) x86_64 GNU/Linux");
+      push("mso 1.0.0 (web-cockpit) x86_64 GNU/Linux");
       break;
     case "clear":
       ctx.clear();
@@ -126,7 +126,7 @@ export async function run(cmd: string, ctx: RunCtx): Promise<Line[]> {
       break;
     case "ps":
       push(
-        "  PID  CPU  MEM  COMMAND\n    1  0.4  12M  topside-init\n  142  6.1  88M  next-server\n  377  0.3  22M  monitor",
+        "  PID  CPU  MEM  COMMAND\n    1  0.4  12M  mso-init\n  142  6.1  88M  next-server\n  377  0.3  22M  monitor",
       );
       break;
     case "neofetch": {
@@ -138,7 +138,7 @@ export async function run(cmd: string, ctx: RunCtx): Promise<Line[]> {
             t: "fetch",
             v: "",
             rows: [
-              ["os", "topside 1.0.0 web-cockpit"],
+              ["os", "mso 1.0.0 web-cockpit"],
               ["shell", "vps-sh 1.0"],
               ["cpu", `${s.cpu.cores} vCPU · ${s.cpu.pct}%`],
               ["memory", fmtGiBPair(s.mem.used, s.mem.total)],

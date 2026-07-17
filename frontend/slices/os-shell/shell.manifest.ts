@@ -20,8 +20,8 @@ import { quicklinksApp } from "@/features/quicklinks";
 import { themeQuickPickerFeature } from "./theme-quick-picker";
 
 export const TOPSIDE_BRAND: Brand = {
-  name: "Topside",
-  logo: "rr",
+  name: "MSO",
+  logo: "M",
   idleAppName: "Finder",
 };
 

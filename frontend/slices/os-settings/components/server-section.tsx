@@ -29,7 +29,7 @@ function targetIcon(target: ServerTarget) {
 
 function targetSubtitle(target: ServerTarget): string {
   if (target.kind === "mock") return "Safe demo data; no host access.";
-  if (target.kind === "local") return "Same-origin Topside host API on this VPS.";
+  if (target.kind === "local") return "Same-origin MSO host API on this VPS.";
   return target.host ? `SSH over Tailscale: ${target.user ? `${target.user}@` : ""}${target.host}` : "Configure a Tailscale SSH host.";
 }
 

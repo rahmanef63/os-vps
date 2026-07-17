@@ -7,12 +7,20 @@ import { InstallPrompt } from "./install-prompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  applicationName: "Topside",
-  title: "Topside — VPS cockpit",
+  metadataBase: new URL("https://os.rahmanef.com"),
+  applicationName: "Manef Shell OS",
+  title: "Manef Shell OS — VPS cockpit",
   description: "Mobile-first web cockpit for a headless Linux VPS.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Topside", statusBarStyle: "black-translucent" },
-  icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "MSO", statusBarStyle: "black-translucent" },
+  // Favicon + apple-touch + OG come from the file conventions (app/icon.svg,
+  // app/apple-icon.tsx, app/opengraph-image.tsx) — no manual `icons` field.
+  openGraph: {
+    title: "Manef Shell OS — VPS cockpit",
+    description: "Mobile-first web cockpit for a headless Linux VPS.",
+    siteName: "Manef Shell OS",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {

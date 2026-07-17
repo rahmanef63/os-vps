@@ -8,8 +8,9 @@ import { useOsApi, fmtGiB, fmtUptime, type SysStats, type FsUsage } from "@/feat
 import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
 import { IS_DEMO } from "@/lib/demo";
 import { SettingsSection, SettingsValueRow, SettingsActionRow } from "@/features/shell-settings";
+import { MsoMark } from "@/components/shared/mso-mark";
 
-const APP_NAME = "Topside";
+const APP_NAME = "Manef Shell OS";
 const APP_TAGLINE = "VPS cockpit";
 
 // Wipes appearance + device identity, then reloads fresh. Storage keys keep the
@@ -64,12 +65,7 @@ export function AboutSection() {
     <div className="space-y-4 sm:space-y-5">
       {/* About-This-Mac style identity header — above the grouped cards */}
       <div className="flex flex-col items-center gap-2 pt-1 text-center">
-        <div
-          className="shell-icon-tile grid size-16 place-items-center bg-primary text-2xl font-black tracking-tight text-primary-foreground"
-          style={{ boxShadow: "var(--shell-icon-shadow)" }}
-        >
-          ts
-        </div>
+        <MsoMark className="size-16 shell-icon-tile" />
         <div>
           <div className="text-lg font-bold tracking-tight text-foreground">{APP_NAME}</div>
           <div className="text-xs text-muted-foreground">{APP_TAGLINE}</div>
@@ -88,7 +84,7 @@ export function AboutSection() {
 
       <SettingsSection icon={<RotateCcw />} title="Reset">
         <SettingsActionRow
-          label="Reset Topside"
+          label="Reset MSO"
           tone="destructive"
           icon={<RotateCcw />}
           onClick={() => setConfirmReset(true)}
@@ -97,7 +93,7 @@ export function AboutSection() {
 
       <FormDrawer open={confirmReset} onOpenChange={setConfirmReset} size="sm">
         <FormDrawer.Header>
-          <FormDrawer.Title>Reset Topside?</FormDrawer.Title>
+          <FormDrawer.Title>Reset MSO?</FormDrawer.Title>
           <FormDrawer.Description>
             Clears appearance + device identity, then reloads. Your files on disk are untouched.
           </FormDrawer.Description>

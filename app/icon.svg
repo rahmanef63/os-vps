@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MSO — Manef Shell OS">
+  <defs>
+    <linearGradient id="mso-bg" x1="256" y1="16" x2="256" y2="496" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2c2c31"/>
+      <stop offset="1" stop-color="#141416"/>
+    </linearGradient>
+    <linearGradient id="mso-glyph" x1="150" y1="168" x2="362" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6ee7b7"/>
+      <stop offset="1" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <!-- graphite squircle: a dark "terminal window" app tile -->
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="url(#mso-bg)"/>
+  <!-- HIG glass hairline -->
+  <rect x="17" y="17" width="478" height="478" rx="115" fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="2"/>
+  <!-- bold M monogram in phosphor mint (the "shell" cue is the terminal palette) -->
+  <path d="M150 360 L150 168 L256 296 L362 168 L362 360" fill="none" stroke="url(#mso-glyph)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

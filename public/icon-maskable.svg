@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MSO">
+  <defs>
+    <linearGradient id="m-bg" x1="256" y1="0" x2="256" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2c2c31"/>
+      <stop offset="1" stop-color="#141416"/>
+    </linearGradient>
+    <linearGradient id="m-glyph" x1="150" y1="168" x2="362" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6ee7b7"/>
+      <stop offset="1" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <!-- full-bleed (no rounded corners): the OS applies its own maskable shape;
+       the M sits inside the 40% safe zone -->
+  <rect width="512" height="512" fill="url(#m-bg)"/>
+  <path d="M150 360 L150 168 L256 296 L362 168 L362 360" fill="none" stroke="url(#m-glyph)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

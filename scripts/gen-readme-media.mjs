@@ -47,7 +47,7 @@ const SHOWCASE = path.join(os.homedir(), "readme-showcase");
 function setupShowcase() {
   fs.rmSync(SHOWCASE, { recursive: true, force: true });
   for (const d of ["Documents", "Downloads", "Projects", "Photos", "Music", "Notes"]) fs.mkdirSync(path.join(SHOWCASE, d), { recursive: true });
-  fs.writeFileSync(path.join(SHOWCASE, "welcome.txt"), "Topside demo\n");
+  fs.writeFileSync(path.join(SHOWCASE, "welcome.txt"), "MSO demo\n");
   fs.writeFileSync(path.join(SHOWCASE, "budget.csv"), "item,cost\n");
 }
 const cleanup = () => fs.rmSync(SHOWCASE, { recursive: true, force: true });

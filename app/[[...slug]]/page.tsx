@@ -24,9 +24,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const first = slug?.[0];
-  if (!first || isReserved(slug)) return { title: "Topside — VPS cockpit" };
+  if (!first || isReserved(slug)) return { title: "Manef Shell OS — VPS cockpit" };
   const name = first.charAt(0).toUpperCase() + first.slice(1);
-  return { title: `${name} — Topside` };
+  return { title: `${name} — MSO` };
 }
 
 export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {

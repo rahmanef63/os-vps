@@ -43,7 +43,7 @@ export function InstallPrompt() {
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[var(--z-spotlight)] flex justify-center px-4 [padding-bottom:var(--sai-bottom)]">
       <div className="glass pointer-events-auto flex items-center gap-2 rounded-2xl border border-border bg-card/90 px-3 py-2 shadow-[var(--shadow-win)]">
         <Download className="size-4 shrink-0 text-primary" />
-        <span className="text-sm">Install Topside as an app</span>
+        <span className="text-sm">Install Manef Shell OS as an app</span>
         <Button type="button" size="sm" onClick={install} className="ml-1">
           Install
         </Button>

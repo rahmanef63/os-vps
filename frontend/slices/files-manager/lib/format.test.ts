@@ -119,8 +119,8 @@ describe("crumbsFor", () => {
   });
 
   it("custom root label overrides default", () => {
-    const crumbs = crumbsFor("/", "Topside");
-    expect(crumbs[0].name).toBe("Topside");
+    const crumbs = crumbsFor("/", "MSO");
+    expect(crumbs[0].name).toBe("MSO");
   });
 
   it("custom root label applies to multi-level too", () => {
