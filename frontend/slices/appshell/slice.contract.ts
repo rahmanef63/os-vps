@@ -54,7 +54,6 @@ export const contract = defineSliceContract({
       "ResponsiveToolbar",
       "TouchList",
       "QuicklinkIcon",
-      "DashboardShell",
     ] as string[],
     tables: [] as string[],
   },

@@ -12,13 +12,12 @@
 import { Button } from "@/components/ui/button";
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useUrlHome } from "../../../hooks/use-url-home";
-import { Search, ArrowLeft, Bot, MoreHorizontal } from "lucide-react";
+import { Search, ArrowLeft, MoreHorizontal } from "lucide-react";
 import { useApps } from "../../../lib/registry";
 import { usePullDown } from "../../../hooks/use-pull-down";
 import { useWindowOrder, useFocused, useWindow } from "../../../hooks/use-shell";
 import { shellStore, openWindow, focusApp, minimizeWindow, restoreWindow, toggleSpotlight } from "../../../lib/store";
 import { WindowContent } from "../../window-content";
-import { registerShell } from "../../../registry/shells";
 import { Slot } from "../../../registry/feature-registry";
 import { useShellConfig } from "../../../registry/shell-config";
 import { ShellUIProvider, type ShellUI } from "../../../registry/shell-ui";
@@ -197,15 +196,5 @@ function AndroidShell() {
     </ShellUIProvider>
   );
 }
-
-registerShell({
-  id: "android",
-  label: "Android",
-  icon: Bot,
-  surface: "mobile",
-  group: "Mobile",
-  wallpaper: "material",
-  render: AndroidShell,
-});
 
 export { AndroidShell };

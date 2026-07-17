@@ -9,8 +9,7 @@
    intact when switching to the macOS/Windows/mobile shells. */
 import { useMemo, useState } from "react";
 import { useUrlHome } from "../../../hooks/use-url-home";
-import { LayoutDashboard, Home, Activity, Search } from "lucide-react";
-import { registerShell } from "../../../registry/shells";
+import { LayoutDashboard, Home, Search } from "lucide-react";
 import { useShellConfig } from "../../../registry/shell-config";
 import { useBrand } from "../../../registry/brand";
 import { useApps } from "../../../lib/registry";
@@ -158,15 +157,5 @@ function DashboardShell() {
     </div>
   );
 }
-
-registerShell({
-  id: "dashboard",
-  label: "Dashboard",
-  icon: Activity,
-  surface: "desktop",
-  group: "Desktop",
-  wallpaper: "graphite",
-  render: DashboardShell,
-});
 
 export { DashboardShell };

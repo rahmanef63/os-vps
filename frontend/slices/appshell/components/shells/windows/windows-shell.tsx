@@ -6,11 +6,10 @@
    above the taskbar (macOS dock inset is restored on unmount). */
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { AppWindow, LayoutGrid, Minimize2, Maximize2 } from "lucide-react";
+import { LayoutGrid, Minimize2, Maximize2 } from "lucide-react";
 import { useWindowOrder, useWindowsMap } from "../../../hooks/use-shell";
 import { useOverviewKey } from "../../../hooks/use-overview-key";
 import { Slot } from "../../../registry/feature-registry";
-import { registerShell } from "../../../registry/shells";
 import { useShellAppearance } from "../../../registry/capabilities";
 import { shellStore, stackByZ, minimizeAll, restoreWindow, applyChromeInsets } from "../../../lib/store";
 import { Window } from "../../window";
@@ -97,16 +96,5 @@ function WindowsShell() {
     </>
   );
 }
-
-registerShell({
-  id: "windows",
-  label: "Windows",
-  icon: AppWindow,
-  surface: "desktop",
-  group: "Desktop",
-  windowed: true,
-  wallpaper: "win11",
-  render: WindowsShell,
-});
 
 export { WindowsShell };

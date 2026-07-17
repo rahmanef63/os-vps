@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { Suspense, useEffect, useMemo, useState, type ComponentType } from "react";
 import { Monitor, Smartphone, Grid3x3, Minimize2, Maximize2, X } from "lucide-react";
 import { useResponsive } from "../responsive/use-responsive";
 import { useWindowOrder, useWindowsMap } from "../hooks/use-shell";
@@ -26,9 +26,8 @@ import { ShellContextMenu, useShellContextMenu, type MenuItem } from "./shells/c
 import { registerShell, resolveShell, useShellPrefs, ActiveShellProvider } from "../registry/shells";
 import { useShellAppearance } from "../registry/capabilities";
 import { cn } from "@/lib/utils";
-// side-effects: shell + palette-command registrations
-import "./shells/windows/windows-shell";
-import "./shells/android/android-shell";
+// side-effects: shell registrations (windows/android/dashboard lazy) + palette commands
+import "../registry/register-shells";
 import "../lib/window-commands";
 import "../lib/spaces";
 import "../lib/window-tabs";
@@ -68,7 +67,9 @@ function Surface() {
     <ActiveShellProvider id={desc.id} surface={surface}>
       <div id="main-content" data-shell={desc.id} className="relative h-dvh w-screen overflow-hidden">
         <Wallpaper shellDefault={desc.wallpaper} />
-        {framed ? <PhoneFrame Comp={Comp} /> : <Comp />}
+        <Suspense fallback={null}>
+          {framed ? <PhoneFrame Comp={Comp} /> : <Comp />}
+        </Suspense>
         <Slot region="overlay" />
         <Slot region="notifications" />
       </div>
