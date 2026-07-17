@@ -16,10 +16,23 @@ const SECRET_VARS = new Set([
   "ANTHROPIC_API_KEY",
 ]);
 
+// Non-secret app config a spawned shell may legitimately keep (the FS-jail roots).
+const SAFE_OS_VARS = new Set(["OS_FS_READ_ROOTS", "OS_FS_WRITE_ROOTS"]);
+
+// Deny by SHAPE, not just an explicit list, so a newly-added secret (a new BYOK
+// provider key, OS_UNSPLASH_ACCESS_KEY, MODELS_LIVE_*_KEY, an encryption key…)
+// doesn't silently leak into every terminal/exec child: strip every app var
+// (OS_* except the FS-root config) plus any name ending in a secret-shaped suffix.
+function isSecretVar(k: string): boolean {
+  if (SECRET_VARS.has(k)) return true;
+  if (k.startsWith("OS_") && !SAFE_OS_VARS.has(k)) return true;
+  return /(_SECRET|_TOKEN|_PASSWORD|_KEY)$/i.test(k);
+}
+
 export function childEnv(): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(process.env)) {
-    if (v !== undefined && !SECRET_VARS.has(k)) env[k] = v;
+    if (v !== undefined && !isSecretVar(k)) env[k] = v;
   }
   return env;
 }

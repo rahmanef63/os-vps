@@ -10,7 +10,7 @@ import {
 import os from "node:os";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { assertNotRoot, isUnderRoot, resolveReadable, safeWritePath } from "./paths";
+import { assertNotRoot, assertUploadTarget, isUnderRoot, resolveReadable, safeWritePath } from "./paths";
 
 // Real temp tree (realpath runs on every request, so files must exist):
 //   base/read/            ← read root
@@ -36,6 +36,7 @@ beforeAll(() => {
   writeFileSync(path.join(outside, "secret.txt"), "nope");
   symlinkSync(path.join(outside, "secret.txt"), path.join(readRoot, "sneaky"));
   symlinkSync(path.join(outside, "secret.txt"), path.join(writeRoot, "wlink"));
+  symlinkSync(outside, path.join(writeRoot, "wdirlink"), "dir");
 });
 
 afterAll(() => rmSync(base, { recursive: true, force: true }));
@@ -103,6 +104,21 @@ describe("credential denylist (read root = / so only the denylist gates)", () =>
   it.skipIf(!existsSync(envExample))("still allows .env.example (no secrets)", async () => {
     useRoots("/", writeRoot);
     await expect(resolveReadable(envExample)).resolves.toBe(realpathSync(envExample));
+  });
+});
+
+describe("assertUploadTarget (upload jail — same denylist + realpath bounds as writes)", () => {
+  it("allows a normal file and a nested new path inside the dest", async () => {
+    await expect(assertUploadTarget(path.join(writeRoot, "up.txt"), writeRoot)).resolves.toBeUndefined();
+    await expect(assertUploadTarget(path.join(writeRoot, "sub/dir/up.txt"), writeRoot)).resolves.toBeUndefined();
+  });
+
+  it("rejects a lexical escape (..)", async () => {
+    await expect(assertUploadTarget(path.join(writeRoot, "../escape.txt"), writeRoot)).rejects.toThrow(/escapes/i);
+  });
+
+  it("rejects a write through a symlinked intermediate dir pointing outside the dest", async () => {
+    await expect(assertUploadTarget(path.join(writeRoot, "wdirlink", "x.txt"), writeRoot)).rejects.toThrow(/escapes|symlink/i);
   });
 });
 

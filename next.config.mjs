@@ -6,6 +6,9 @@ const BUILD_ID =
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Don't advertise the framework/version — the shell is now public; minimize
+  // the fingerprint an unauthenticated visitor can use for CVE matching.
+  poweredByHeader: false,
   // Cache Components off: os-vps is a fully dynamic app (auth-gated OS shell,
   // no SSG marketing pages), so static prerendering adds no value and conflicts
   // with the auth provider's cookie reads. Re-enable only if static routes land.
@@ -81,6 +84,14 @@ const nextConfig = {
           },
         ],
       },
+      // Private API responses must never be cached by any intermediary — they
+      // carry host bytes (fs/read), auth state, and per-session data.
+      { source: "/api/:path*", headers: [{ key: "Cache-Control", value: "no-store" }] },
+      // Named brand/wallpaper assets are effectively immutable but, unlike
+      // /_next chunks, are NOT content-hashed — rename or add ?v= if ever redrawn.
+      { source: "/wallpapers/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      { source: "/icon.svg", headers: [{ key: "Cache-Control", value: "public, max-age=604800" }] },
+      { source: "/icon-maskable.svg", headers: [{ key: "Cache-Control", value: "public, max-age=604800" }] },
     ];
   },
 };

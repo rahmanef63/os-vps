@@ -73,6 +73,8 @@ const SENSITIVE_HOME = [
   // cloud / infra credentials
   ".aws", ".config/gcloud", ".kube", ".docker", ".config/rclone",
   ".git-credentials", ".netrc", ".config/git/credentials",
+  // AI/dev-tool + OS keyring credentials (account tokens = full account access)
+  ".claude", ".claude.json", ".config/gh", ".config/anthropic", ".local/share/keyrings",
   // database creds + password-manager CLIs
   ".pgpass", ".config/op", ".config/lpass",
   // loose private keys saved outside ~/.ssh (heredoc dumps, exports, etc.)
@@ -98,6 +100,32 @@ function isCredentialPath(real: string): boolean {
 
 function assertNotCredential(real: string): void {
   if (isCredentialPath(real)) throw new HostError("Access to credential/sensitive files is blocked");
+}
+
+// Upload target guard — the write-side equivalent of safeWritePath for a file
+// that will land at `full` inside the already-resolved `destReal`. Upload writers
+// create intermediate dirs, so we can't realpath the (not-yet-existing) parent as
+// safeWritePath does; instead: (1) `full` is lexically under destReal, (2) the
+// DEEPEST EXISTING ancestor realpaths to still-under destReal (a symlinked
+// intermediate dir can't redirect the write outside), and (3) `full` is not a
+// credential/sensitive file — the same denylist writeFile/move/copy enforce but
+// the upload path was skipping (a session could otherwise drop
+// ~/.ssh/authorized_keys or ~/.os-vps/auth-devices.json via /api/v1/fs/upload).
+export async function assertUploadTarget(full: string, destReal: string): Promise<void> {
+  if (!isUnderRoot(full, destReal)) throw new HostError("Upload path escapes destination");
+  for (let anc = path.dirname(full); ; ) {
+    try {
+      const real = await fs.realpath(anc);
+      if (!isUnderRoot(real, destReal)) throw new HostError("Upload path escapes destination via symlink");
+      break;
+    } catch (e) {
+      if (e instanceof HostError) throw e;
+      const parent = path.dirname(anc);
+      if (parent === anc) break; // walked to the fs root; nothing existed
+      anc = parent;
+    }
+  }
+  assertNotCredential(full);
 }
 
 async function realRoots(list: string[]): Promise<string[]> {

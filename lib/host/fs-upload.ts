@@ -1,11 +1,13 @@
 // SERVER-ONLY. Upload writers behind /api/v1/fs/upload. Writes follow WRITE
-// roots (see paths.ts) and stay within the resolved dest via realpath bounds.
-// Split out of fs.ts so each module keeps a single responsibility.
+// roots (see paths.ts); each part is validated by assertUploadTarget, which
+// enforces the SAME credential/sensitive denylist + realpath-bounds as
+// writeFile/move/copy (so an upload can't write ~/.ssh/authorized_keys or escape
+// the dest through a symlinked subdir). Split out of fs.ts for single responsibility.
 import { promises as fs, createWriteStream } from "fs";
 import { once } from "events";
 import path from "path";
 import { HostError } from "./host-error";
-import { isUnderRoot, safeWritePath } from "./paths";
+import { assertUploadTarget, safeWritePath } from "./paths";
 
 const MAX_UPLOAD = 100 * 1024 * 1024; // 100 MiB per file
 
@@ -25,7 +27,12 @@ export async function uploadInto(
     if (!segs.length) { failed.push(relPath); continue; }
     if (data.byteLength > MAX_UPLOAD) { failed.push(`${relPath} (too large)`); continue; }
     const full = path.join(destReal, ...segs);
-    if (!isUnderRoot(full, destReal)) { failed.push(relPath); continue; }
+    try {
+      await assertUploadTarget(full, destReal);
+    } catch {
+      failed.push(relPath);
+      continue;
+    }
     try {
       await fs.mkdir(path.dirname(full), { recursive: true });
       const tmp = `${full}.tmp-${process.pid}`;
@@ -62,7 +69,12 @@ export async function streamFileInto(
   const segs = sanitiseSegments(relPath);
   if (!segs.length) { await drain(body); return "bad-path"; }
   const full = path.join(destReal, ...segs);
-  if (!isUnderRoot(full, destReal)) { await drain(body); return "bad-path"; }
+  try {
+    await assertUploadTarget(full, destReal);
+  } catch {
+    await drain(body);
+    return "bad-path";
+  }
 
   await fs.mkdir(path.dirname(full), { recursive: true });
   const tmp = `${full}.tmp-${process.pid}-${Date.now()}`;
