@@ -109,9 +109,18 @@ export function MobileHome({
         </Page>
       </div>
 
-      <div className="flex justify-center gap-1.5 pb-2 pt-1.5">
+      <div className="flex justify-center gap-0.5 pb-1.5 pt-1">
         {[0, 1, 2].map((i) => (
-          <span key={i} className={cn("size-[7px] rounded-full", i === page ? "bg-white/90" : "bg-white/40")} />
+          <button
+            key={i}
+            type="button"
+            aria-label={`Go to page ${i + 1}`}
+            aria-current={i === page}
+            onClick={() => pagerRef.current?.scrollTo({ left: i * pagerRef.current.clientWidth, behavior: "smooth" })}
+            className="grid place-items-center p-1.5"
+          >
+            <span className={cn("size-[7px] rounded-full transition-colors", i === page ? "bg-white/90" : "bg-white/40")} />
+          </button>
         ))}
       </div>
 

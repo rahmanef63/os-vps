@@ -59,16 +59,20 @@ function LockCurtain() {
 
   return (
     <div
-      className="absolute inset-0 z-[var(--z-lock-screen)] flex cursor-pointer flex-col items-center justify-center gap-3 bg-background/35 backdrop-blur-2xl"
+      className="absolute inset-0 z-[var(--z-lock-screen)] flex cursor-pointer flex-col items-center justify-between bg-background/35 px-6 backdrop-blur-2xl"
+      style={{ paddingTop: "calc(14vh + var(--sai-top, 0px))", paddingBottom: "calc(10vh + var(--sai-bottom, 0px))" }}
       onClick={() => void requestUnlock()}
     >
-      <div className="text-6xl font-light tracking-tight">
-        {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+      {/* Clock near the top (iPhone-style) rather than dead-center. */}
+      <div className="flex flex-col items-center gap-1">
+        <div className="text-6xl font-light tracking-tight">
+          {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })}
+        </div>
       </div>
-      <div className="text-sm text-muted-foreground">
-        {now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })}
-      </div>
-      <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Lock className="size-3.5" /> Click to unlock
       </div>
     </div>

@@ -117,12 +117,13 @@ export function AppsGrid({
   };
 
   return (
-    // Scrolls vertically so every app + quicklink is reachable (the grid used to
-    // be clipped by the page's overflow-hidden, hiding the trailing quicklinks).
-    // touch-action:pan-y keeps horizontal swipes free for the home pager.
+    // Scrolls vertically so every app + quicklink is reachable. touch-action is
+    // left AUTO (was pan-y, which BLOCKED the home pager's horizontal swipe when a
+    // touch started on the grid): the browser direction-locks — a vertical drag
+    // scrolls this grid, a horizontal drag pages the pager.
     <div
       onPointerDown={onPointerDown}
-      className="grid h-full grid-cols-4 content-start gap-x-3.5 gap-y-[22px] overflow-y-auto px-6 pt-[18px] pb-6 [touch-action:pan-y] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="grid h-full grid-cols-4 content-start gap-x-3.5 gap-y-[22px] overflow-y-auto px-6 pt-[18px] pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {apps.map((app) => (
         <Button
