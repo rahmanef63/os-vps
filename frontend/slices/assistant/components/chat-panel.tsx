@@ -27,8 +27,10 @@ const SUGGESTED = ["Show system stats", "List ~/projects", "Create notes.txt in 
 
 function errText(err: unknown): string {
   const code = err instanceof Error ? err.message : "";
-  if (code === "no_api_key")
-    return "No Anthropic API key set. Add one in Settings → AI, or set ANTHROPIC_API_KEY on the server.";
+  if (code.startsWith("no_api_key")) {
+    const provider = code.split(":")[1] || "selected provider";
+    return `No API key set for ${provider}. Add it in Settings → AI, then save and test that provider.`;
+  }
   if (code === "unauthorized") return "Session expired — sign in again.";
   return "Couldn't reach the assistant. Try again.";
 }

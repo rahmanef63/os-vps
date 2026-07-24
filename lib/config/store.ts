@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
 import { envCredentialStore, PROVIDERS } from "@/lib/models";
+import { DEFAULT_PROVIDER, defaultModelFor } from "@/lib/models/defaults";
 
 // Owner config (BYOK keys + selected provider/model), replacing the Convex
 // `appConfig` table. A host JSON file (chmod 600) read server-side only — raw keys
@@ -51,8 +52,8 @@ export interface OsConfig {
 const CONFIG_PATH =
   process.env.OS_CONFIG_STORE ?? path.join(os.homedir(), ".os-vps", "config.json");
 
-export const DEFAULT_MODEL = "claude-opus-4-8";
-export const DEFAULT_PROVIDER = "anthropic";
+export const DEFAULT_MODEL = defaultModelFor(DEFAULT_PROVIDER);
+export { DEFAULT_PROVIDER };
 
 export async function readConfig(): Promise<OsConfig> {
   try {
@@ -80,7 +81,8 @@ export async function resolveApiKey(): Promise<string> {
 // The selected model as a "provider/model" ref for @rahmanef/models resolveModel().
 export async function resolveModelRef(): Promise<string> {
   const c = await readConfig();
-  return `${c.provider || DEFAULT_PROVIDER}/${c.model || DEFAULT_MODEL}`;
+  const provider = c.provider || DEFAULT_PROVIDER;
+  return `${provider}/${c.model || defaultModelFor(provider)}`;
 }
 
 // A @rahmanef/models CredentialStore over the 0600 host config file, per-provider,

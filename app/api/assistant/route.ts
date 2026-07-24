@@ -17,10 +17,9 @@ import { recall } from "@/lib/ai/memory";
 import { rateLimited } from "@/lib/host/rate-limit";
 import { IS_DEMO } from "@/lib/demo";
 
-// SSE streaming chat for the "Alfa" assistant. BYOK: the Anthropic key comes
-// from the owner's host config file, falling back to the server env. Auth-gated
-// by the signed-cookie session (same gate as /api/v1). Node runtime — the
-// Anthropic SDK isn't edge-compatible.
+// SSE streaming chat for the "Alfa" assistant. BYOK provider/model/key come from
+// Settings → AI, falling back to that provider's server env var. Auth-gated by
+// the signed-cookie session (same gate as /api/v1).
 //
 // Tool-calling: the caller may pass `tools` (Anthropic input_schema shape). The
 // model's tool_use blocks are streamed back as `tool_use` events; the CLIENT
@@ -143,13 +142,14 @@ export async function POST(req: Request) {
   // OpenAI "Codex" is an OAuth subscription provider: no BYOK key + a non-standard
   // ChatGPT-backend endpoint, so it bypasses resolveModel and streams via streamCodex.
   const cfg = await readConfig();
-  const isCodex = (cfg.provider || DEFAULT_PROVIDER) === "openai-codex";
+  const selectedProvider = cfg.provider || DEFAULT_PROVIDER;
+  const isCodex = selectedProvider === "openai-codex";
   const codexModel = cfg.model || "gpt-5-codex";
   let resolved: Awaited<ReturnType<typeof resolveModel>> | null = null;
   let codexBundle: Awaited<ReturnType<typeof readOAuthBundle>> = null;
   if (isCodex) {
     const b = await readOAuthBundle("openai-codex");
-    if (!b) return Response.json({ error: "no_api_key" }, { status: 501 });
+    if (!b) return Response.json({ error: `no_api_key:${selectedProvider}` }, { status: 501 });
     try {
       codexBundle = await ensureFreshCodex(b);
       if (codexBundle !== b) await writeOAuthBundle("openai-codex", codexBundle);
@@ -168,7 +168,7 @@ export async function POST(req: Request) {
       });
     } catch {
       // resolveModel throws when no BYOK key is set for the selected provider.
-      return Response.json({ error: "no_api_key" }, { status: 501 });
+      return Response.json({ error: `no_api_key:${selectedProvider}` }, { status: 501 });
     }
   }
   // Anthropic streams via its SDK; openai-protocol providers via our adapter; Codex

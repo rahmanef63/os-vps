@@ -102,6 +102,16 @@ describe("/api/assistant rate limit", () => {
     expect(res.status).toBe(401);
   });
 
+  it("reports the selected provider when its API key is missing", async () => {
+    const cfg = await import("@/lib/config/store");
+    vi.mocked(cfg.readConfig).mockResolvedValueOnce({ provider: "openai", model: "gpt-4o" });
+    vi.mocked(cfg.resolveModelRef).mockResolvedValueOnce("openai/gpt-4o");
+    const { POST } = await import("./route");
+    const res = await POST(makeReq());
+    expect(res.status).toBe(501);
+    await expect(res.json()).resolves.toMatchObject({ error: "no_api_key:openai" });
+  });
+
   it("streams a canned mock response in demo builds", async () => {
     vi.stubEnv("NEXT_PUBLIC_OS_DEMO", "1");
     const { POST } = await import("./route");

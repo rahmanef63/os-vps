@@ -12,6 +12,7 @@ import {
   removeCustomProvider,
   removeOAuthBundle,
 } from "@/lib/config/store";
+import { defaultModelFor } from "@/lib/models/defaults";
 import { assertSafeUrl } from "@/lib/host/ssrf";
 
 export const runtime = "nodejs";
@@ -52,7 +53,7 @@ export async function GET() {
 
   return NextResponse.json({
     provider,
-    model: cfg.model || DEFAULT_MODEL,
+    model: cfg.model || defaultModelFor(provider),
     hasApiKey: key.length > 0,
     apiKeyMasked: stored ? mask(stored) : "",
     providers,

@@ -33,7 +33,7 @@ export default function OsSettings() {
     if (IS_DEMO) return;
     fetch("/api/config", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((c) => c?.model && setModel(c.model as string))
+      .then((c) => c?.model && setModel(`${c.provider ?? "provider"}/${c.model}`))
       .catch(() => toast("Failed to load AI config", { tone: "error" }));
   }, []);
 

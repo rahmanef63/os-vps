@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { SettingsSection, SettingsRow, SettingsBlock } from "@/features/shell-settings";
+import { DEFAULT_MODELS } from "@/lib/models/defaults";
 import { type ConnectedProvider } from "./provider-list";
 import { ProviderManage } from "./provider-manage";
 import { ModelCatalog } from "./model-catalog";
@@ -32,12 +33,6 @@ const BUILTINS: { slug: string; label: string; keyHint: string }[] = [
 
 // Sensible default model per built-in so switching provider never leaves a stale
 // cross-provider model id (e.g. anthropic's default paired with openai).
-const DEFAULT_MODEL: Record<string, string> = {
-  anthropic: "claude-opus-4-8", openai: "gpt-4o", openrouter: "openai/gpt-4o",
-  google: "gemini-2.0-flash", groq: "llama-3.3-70b-versatile", xai: "grok-2-latest",
-  deepseek: "deepseek-chat", mistral: "mistral-large-latest",
-};
-
 // BYOK config for the Alfa assistant. Raw keys are write-only from here — GET
 // /api/config returns only masked previews. Empty key on save keeps the stored one.
 export function AiSection() {
@@ -62,6 +57,7 @@ export function AiSection() {
   const applyCfg = useCallback((c: Cfg) => {
     setCfg(c);
     setProvider(c.provider || "anthropic");
+    setModel(c.model || DEFAULT_MODELS[c.provider || "anthropic"] || "");
   }, []);
   const load = useCallback(async () => {
     const c = await fetchCfg();
@@ -155,7 +151,7 @@ export function AiSection() {
           value={provider}
           onValueChange={(v) => {
             setProvider(v);
-            setModel(DEFAULT_MODEL[v] ?? "");
+            setModel(DEFAULT_MODELS[v] ?? "");
             setTest(null); // drop any stale connection-test result for the old provider
           }}
         >
@@ -200,7 +196,7 @@ export function AiSection() {
             list="ai-model-suggestions"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            placeholder={(onSavedProvider && cfg?.model) || DEFAULT_MODEL[provider] || "model id"}
+            placeholder={(onSavedProvider && cfg?.model) || DEFAULT_MODELS[provider] || "model id"}
             className="sm:w-56"
           />
           <ModelCatalog provider={provider} value={model} onPick={setModel} />

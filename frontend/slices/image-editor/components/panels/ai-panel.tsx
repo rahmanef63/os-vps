@@ -56,7 +56,12 @@ export function AiPanel() {
       setItems((p) => p.filter((it) => !(it.kind === "assistant" && it.text === "")));
     } catch (e) {
       const m = e instanceof Error ? e.message : "failed";
-      setErr(m === "no_api_key" ? "No Anthropic key — add one in Settings → Server." : m);
+      if (m.startsWith("no_api_key")) {
+        const provider = m.split(":")[1] || "selected provider";
+        setErr(`No API key for ${provider} — add it in Settings → AI.`);
+      } else {
+        setErr(m);
+      }
       setItems((p) => p.filter((it) => !(it.kind === "assistant" && it.text === "")));
     } finally {
       setBusy(false);

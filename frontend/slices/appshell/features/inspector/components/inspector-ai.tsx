@@ -9,7 +9,10 @@ import { useShellChat, type InspectorInfo, type ChatMessage } from "@/features/a
 
 function errText(err: unknown): string {
   const code = err instanceof Error ? err.message : "";
-  if (code === "no_api_key") return "No Anthropic key — add one in Settings → AI.";
+  if (code.startsWith("no_api_key")) {
+    const provider = code.split(":")[1] || "selected provider";
+    return `No API key for ${provider} — add it in Settings → AI.`;
+  }
   if (code === "unauthorized") return "Session expired — sign in again.";
   return "Couldn't reach Alfa. Try again.";
 }
