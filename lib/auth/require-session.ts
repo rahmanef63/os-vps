@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { verifySession, type SessionPayload } from "./session";
 import { isApproved } from "./device-store";
+import { IS_DEMO } from "@/lib/demo";
 
 export const SESSION_COOKIE = "session";
 
@@ -17,6 +18,7 @@ function secret(): string {
 // (the very case revoke exists for). A session carrying no device_id is also
 // rejected (login always stamps one; a payload without it is legacy/forged).
 export async function getSession(): Promise<SessionPayload | null> {
+  if (IS_DEMO) return null;
   const cookie = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!cookie) return null;
   const payload = verifySession(cookie, secret());

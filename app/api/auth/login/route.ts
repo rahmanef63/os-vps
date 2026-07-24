@@ -3,13 +3,14 @@ import { constantTimeEq, MIN_SECRET_LEN, signSession, type SessionPayload } from
 import { SESSION_COOKIE } from "@/lib/auth/require-session";
 import { isApproved, isValidDeviceId, recordPending, touchApproved } from "@/lib/auth/device-store";
 import { audit } from "@/lib/host";
+import { IS_DEMO } from "@/lib/demo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Password-only + device-approval login, ported from the VPS Control Room.
-//   factor 1 = shared password (OS_LOGIN_PASSWORD)
-//   factor 2 = device id pre-approved in the device store
+// Password + device-approval login, ported from the VPS Control Room.
+//   gate 1 = shared password (OS_LOGIN_PASSWORD)
+//   gate 2 = device id pre-approved in the device store
 // Correct password on an un-approved device → recorded pending, 403, NO cookie.
 
 const MAX_ATTEMPTS = 5;
@@ -71,10 +72,13 @@ function rateLimited(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  if (IS_DEMO) {
+    return NextResponse.json({ error: "login_disabled_in_demo" }, { status: 403 });
+  }
+
   const sessionSecret = process.env.OS_SESSION_SECRET ?? "";
   const password = process.env.OS_LOGIN_PASSWORD ?? "";
-  // Signing key must be strong; the password may be memorable (device is the
-  // strong factor). Fail-closed if either is unset/too-weak to be safe.
+  // Signing key must be strong. Fail-closed if either secret is unset/too weak.
   if (sessionSecret.length < MIN_SECRET_LEN || password.length < 6) {
     return NextResponse.json({ error: "not_configured" }, { status: 500 });
   }

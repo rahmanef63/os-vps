@@ -1,11 +1,16 @@
 // Liveness probe contract: 200 + required shape + no-store. The endpoint
 // is unauthenticated by design — external monitors need to hit it without
 // session credentials.
-import { describe, expect, it } from "vitest";
-import { GET } from "./route";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+afterEach(() => {
+  vi.resetModules();
+  vi.unstubAllEnvs();
+});
 
 describe("/api/health", () => {
   it("returns 200 with status/buildId/uptime/version", async () => {
+    const { GET } = await import("./route");
     const res = await GET();
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, unknown>;
@@ -18,7 +23,17 @@ describe("/api/health", () => {
   });
 
   it("sets Cache-Control: no-store", async () => {
+    const { GET } = await import("./route");
     const res = await GET();
     expect(res.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("does not expose host uptime in demo builds", async () => {
+    vi.stubEnv("NEXT_PUBLIC_OS_DEMO", "1");
+    const { GET } = await import("./route");
+    const res = await GET();
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.demo).toBe(true);
+    expect(body.uptime).toBeUndefined();
   });
 });
