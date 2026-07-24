@@ -18,13 +18,36 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return (
       <>
         {children}
-        <span className="pointer-events-none fixed bottom-2 right-2 z-[60] rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-primary-foreground shadow">
-          DEMO
-        </span>
+        <DemoModeOverlay />
       </>
     );
   }
   return <GatedOS>{children}</GatedOS>;
+}
+
+function DemoModeOverlay() {
+  const tasks = [
+    "Open System Monitor",
+    "Browse a sample project",
+    "Open Terminal",
+    "Switch to mobile view",
+    "Ask Alfa about a mock server warning",
+  ];
+  return (
+    <>
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] bg-amber-500 px-3 py-1.5 text-center text-xs font-bold text-amber-950 shadow">
+        Demo Mode — Mock data only. No real server is connected.
+      </div>
+      <div className="pointer-events-none fixed bottom-3 left-3 z-[60] max-w-[min(22rem,calc(100vw-1.5rem))] rounded-lg border border-border/70 bg-popover/95 p-3 text-xs text-popover-foreground shadow-lg backdrop-blur">
+        <div className="mb-1 font-semibold">Guided demo</div>
+        <ol className="space-y-0.5">
+          {tasks.map((task, i) => (
+            <li key={task}>{i + 1}. {task}</li>
+          ))}
+        </ol>
+      </div>
+    </>
+  );
 }
 
 function GatedOS({ children }: { children: ReactNode }) {

@@ -21,15 +21,13 @@ export type Quicklink = { id: string; title: string; url: string };
 const KEY = "os-vps:quicklinks";
 
 // Seed for a fresh visitor (localStorage/server-synced edits win once present).
-// The public demo has no stored links, so these are what people see — point them
-// at the owner's real profiles so the demo showcases Rahman. Socials are added
-// once their handles are provided.
+// Keep defaults generic: the public demo should not look connected to a real
+// personal account or private server.
 const DEFAULTS: Quicklink[] = [
-  { id: "gh", title: "GitHub", url: "https://github.com/rahmanef63" },
-  { id: "site", title: "rahmanef.com", url: "https://rahmanef.com" },
-  { id: "shell", title: "Rahman OS", url: "https://shell.rahmanef.com" },
-  { id: "res", title: "Resources", url: "https://resource.rahmanef.com" },
-  { id: "learn", title: "Learn with Rahman", url: "https://study-with.rahmanef.com" },
+  { id: "repo", title: "MSO GitHub", url: "https://github.com/rahmanef63/os-vps" },
+  { id: "docs", title: "Install docs", url: "https://github.com/rahmanef63/os-vps/blob/main/docs/INSTALL.md" },
+  { id: "demo", title: "Demo script", url: "https://github.com/rahmanef63/os-vps/blob/main/docs/DEMO-SCRIPT.md" },
+  { id: "security", title: "Security policy", url: "https://github.com/rahmanef63/os-vps/blob/main/SECURITY.md" },
 ];
 
 type Ctx = {

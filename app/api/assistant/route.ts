@@ -15,6 +15,7 @@ import { ensureFreshCodex } from "@/lib/ai/oauth/codex";
 import { streamCodex } from "@/lib/ai/codex-stream";
 import { recall } from "@/lib/ai/memory";
 import { rateLimited } from "@/lib/host/rate-limit";
+import { IS_DEMO } from "@/lib/demo";
 
 // SSE streaming chat for the "Alfa" assistant. BYOK: the Anthropic key comes
 // from the owner's host config file, falling back to the server env. Auth-gated
@@ -87,6 +88,33 @@ function toAnthropic(messages: InMsg[]): Anthropic.MessageParam[] {
 }
 
 export async function POST(req: Request) {
+  if (IS_DEMO) {
+    const encoder = new TextEncoder();
+    const chunks = [
+      "This is a demo response using mock data only. ",
+      "The sample warning says the background worker restarted 2 minutes ago. ",
+      "Check System Monitor, then inspect `/Projects/example-next-app/logs/worker.log` in Files. ",
+      "In a live deployment, use Terminal after signing in behind Tailscale or a protected proxy.",
+    ];
+    return new Response(
+      new ReadableStream({
+        start(controller) {
+          for (const chunk of chunks) {
+            controller.enqueue(encoder.encode(`event: delta\ndata: ${JSON.stringify(chunk)}\n\n`));
+          }
+          controller.enqueue(encoder.encode(`event: done\ndata: {"stopReason":"demo"}\n\n`));
+          controller.close();
+        },
+      }),
+      {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-store",
+        },
+      },
+    );
+  }
+
   const session = await getSession();
   if (!session) return Response.json({ error: "unauthorized" }, { status: 401 });
 

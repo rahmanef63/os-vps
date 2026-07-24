@@ -20,7 +20,11 @@ export function MockAdapter(): OsApi {
     exec: {
       run: (cmd) =>
         delay({
-          stdout: `$ ${cmd}\n(mock shell — switch Settings → Server → Live to run on the VPS)`,
+          stdout: [
+            `$ ${cmd}`,
+            "demo-server: mock shell only — no command ran on a real host.",
+            "warning: background worker restarted 2 minutes ago",
+          ].join("\n"),
           stderr: "",
           code: 0,
         }),
@@ -29,26 +33,26 @@ export function MockAdapter(): OsApi {
       stats: () =>
         delay(
           {
-            cpu: { pct: 20 + Math.random() * 60, cores: 8 },
-            mem: { used: 9 * GiB + Math.random() * 4 * GiB, total: 31 * GiB },
-            disk: { used: 88 * GiB, total: 200 * GiB },
-            net: { rx: Math.random() * 70, tx: Math.random() * 20 },
-            uptime: 14 * 864e5,
+            cpu: { pct: 32, cores: 2 },
+            mem: { used: 1.4 * GiB, total: 4 * GiB },
+            disk: { used: 41 * GiB, total: 100 * GiB },
+            net: { rx: 12, tx: 3 },
+            uptime: 2 * 864e5 + 4 * 3600e3,
           },
           60,
         ),
       statsStream: (onEvent) => {
         const iv = setInterval(
-          () => onEvent({ cpu: { pct: 20 + Math.random() * 60, cores: 8 } }),
+          () => onEvent({ cpu: { pct: 32, cores: 2 } }),
           900,
         );
         return () => clearInterval(iv);
       },
       processes: () =>
         delay([
-          { pid: 142, name: "next-server", status: "running", cpu: 12, mem: 540 },
-          { pid: 201, name: "convex-backend", status: "running", cpu: 7, mem: 142 },
-          { pid: 318, name: "dockerd", status: "running", cpu: 3, mem: 88 },
+          { pid: 142, name: "demo-server", status: "running", cpu: 12, mem: 540 },
+          { pid: 201, name: "background-worker", status: "restarted 2m ago", cpu: 7, mem: 142 },
+          { pid: 318, name: "preview-proxy", status: "running", cpu: 3, mem: 88 },
         ]),
     },
     apps: {

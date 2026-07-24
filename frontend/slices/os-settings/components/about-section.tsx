@@ -9,9 +9,10 @@ import { useAppearance, effectiveServerTarget } from "@/lib/appearance";
 import { IS_DEMO } from "@/lib/demo";
 import { SettingsSection, SettingsValueRow, SettingsActionRow } from "@/features/shell-settings";
 import { MsoMark } from "@/components/shared/mso-mark";
+import pkg from "../../../../package.json";
 
 const APP_NAME = "Manef Shell OS";
-const APP_TAGLINE = "VPS cockpit";
+const APP_TAGLINE = "Browser-based visual shell";
 
 // Wipes appearance + device identity, then reloads fresh. Storage keys keep the
 // historical "os-vps" prefix (changing them would orphan existing device ids).
@@ -54,6 +55,11 @@ export function AboutSection() {
   }, [api]);
 
   const rows: [string, string][] = [
+    ["Status", "Public Alpha"],
+    ["Version", pkg.version ?? "0.0.0"],
+    ["Build ID", process.env.NEXT_PUBLIC_BUILD_ID || "dev"],
+    ["Commit", process.env.NEXT_PUBLIC_COMMIT_SHA || "not set"],
+    ["Runtime mode", IS_DEMO ? "Demo — mock data only" : "Live-capable"],
     ["Cores", stats ? String(stats.cpu.cores) : "—"],
     ["Memory", stats ? fmtGiB(stats.mem.total) : "—"],
     ["Disk", stats ? fmtGiB(stats.disk.total) : "—"],

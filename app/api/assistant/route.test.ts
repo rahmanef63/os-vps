@@ -74,6 +74,7 @@ describe("/api/assistant rate limit", () => {
   });
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllEnvs();
   });
 
   it("returns 429 with Retry-After once burst is exceeded inside the window", async () => {
@@ -99,5 +100,16 @@ describe("/api/assistant rate limit", () => {
     const { POST } = await import("./route");
     const res = await POST(makeReq());
     expect(res.status).toBe(401);
+  });
+
+  it("streams a canned mock response in demo builds", async () => {
+    vi.stubEnv("NEXT_PUBLIC_OS_DEMO", "1");
+    const { POST } = await import("./route");
+    const res = await POST(makeReq());
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/event-stream");
+    const text = await res.text();
+    expect(text).toContain("mock data only");
+    expect(text).toContain("background worker restarted");
   });
 });
