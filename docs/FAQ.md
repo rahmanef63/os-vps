@@ -4,24 +4,25 @@
 
 No. It's a single Next.js app with a desktop-style UI metaphor. The value is
 utility — terminal, files, monitor, media, a real remote browser — in one
-mobile-first pane. See [What this is — and is NOT](../README.md#what-this-is--and-is-not).
+mobile-first pane. See the [README](../README.md) for the current positioning.
 
 ### Is it safe to expose to the public internet?
 
 Treat an authenticated session like an SSH login: the owner can read files
-(within roots) and run shell commands. The app ships device-approval 2FA,
-signed cookies, rate limits, an FS jail and an audit log — but it has **not**
-had a third-party security audit. Recommended posture: Tailscale/VPN, or a
-TLS reverse proxy + IP allowlist. Public exposure is for the
+(within roots) and run shell commands. The app ships signed cookies, device
+approval as a browser allowlist, rate limits, an FS jail and an audit log —
+but it has **not** had a third-party security audit. Recommended posture:
+Tailscale/VPN, or a TLS reverse proxy + IP allowlist. Public exposure is for the
 [demo build](./INSTALL.md#8-optional--public-demo-mode) (no auth, no host
 access), not the real thing.
 
 ### Why a password AND device approval?
 
-The password is the memorable factor; the device allowlist is the strong one.
-A leaked password alone gets an attacker a *pending* device and nothing else.
-You approve devices from an already-approved device, or from the server with
-`node scripts/approve-device.js <deviceId> "label"`.
+The password protects login, and the device allowlist prevents a new browser
+from receiving a session until you approve it. A leaked password alone gets an
+attacker a *pending* device and nothing else. You approve devices from an
+already-approved device, or from the server with `node scripts/approve-device.js
+<deviceId> "label"`.
 
 ### I lost all my approved devices. How do I get back in?
 

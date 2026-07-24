@@ -24,8 +24,8 @@ pnpm install
 
 ## 2. Credentials — read this section carefully
 
-os-vps is single-owner. Two secrets gate everything, and a device allowlist
-is the strong second factor. All of it lives in two places:
+os-vps is single-owner. A password, signed session cookie, and device allowlist
+gate owner access. All of it lives in two places:
 
 | What | Where | Committed? |
 |---|---|---|
@@ -39,17 +39,16 @@ cp .env.example .env.local
 Edit `.env.local`:
 
 ```bash
-# Factor 1 — a memorable password (min 6 chars). It does NOT need to be a
-# 40-char monster: the device allowlist below is the strong factor.
-OS_LOGIN_PASSWORD=pick-something-memorable
+# Owner password (min 6 chars). Use a strong password for any exposed host.
+OS_LOGIN_PASSWORD=pick-something-strong
 
 # The HMAC key that signs session cookies. MUST be strong and random:
 OS_SESSION_SECRET=$(openssl rand -hex 32)   # paste the output, don't keep the $( )
 ```
 
-**Device approval (the strong factor).** The first time a browser logs in
-with the right password it does NOT get a session — it lands *pending*.
-Promote it once, from the server:
+**Device approval.** The first time a browser logs in with the right password
+it does NOT get a session — it lands *pending*. Promote it once, from the
+server. This is a local browser allowlist, not standards-based 2FA:
 
 ```bash
 # the device id is shown on that browser's login screen
