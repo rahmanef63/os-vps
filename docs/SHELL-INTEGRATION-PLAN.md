@@ -1,7 +1,7 @@
 # Shell → os-vps Integration Plan
 
 > **Goal:** pull the good parts of the sibling repo **shell.rahmanef.com**
-> (portfolio/CMS desktop OS) into **os-vps (Topside)** — widgets, context-menu
+> (portfolio/CMS desktop OS) into **os-vps (MSO)** — widgets, context-menu
 > polish, desktop UX — *without* diluting os-vps's essence as a **VPS control
 > surface** and *without* touching the file-explorer.
 >
@@ -19,7 +19,7 @@
 
 These are non-negotiable. Every task below is checked against them.
 
-1. **Keep os-vps's essence.** Topside is a *web cockpit for a headless VPS* —
+1. **Keep os-vps's essence.** MSO is a *web cockpit for a headless VPS* —
    value is **utility** (terminal / files / monitor / browser), not "an OS".
    Self-contained single Next.js app, **no Convex, no database, no external
    agent**, HMAC signed-cookie device-approval auth, host access via `lib/host`.
@@ -45,7 +45,7 @@ These are non-negotiable. Every task below is checked against them.
 Legend — **Better**: which repo's implementation is stronger today.
 **Action**: what os-vps should do (✅ already ahead / ↔ parity / ⬇ port from shell / ⛔ out of scope).
 
-| # | Feature area | shell.rahmanef.com | os-vps (Topside) | Better | Action for os-vps |
+| # | Feature area | shell.rahmanef.com | os-vps (MSO) | Better | Action for os-vps |
 |---|---|---|---|---|---|
 | 1 | **Window mgmt** (open/close/snap/drag/tiling) | thirds-tiling presets, tab groups, Spaces, pinned PiP, chrome-inset re-tile, animated exits | halves+maximize snap, drag-edge preview, tabs, Spaces, close-guards, **section-relative coords + host-aware** | ↔ tie | ✅ Keep. Optional: port **thirds-tiling presets** (`l13/l23/r13/r23`) — pure geometry, low risk |
 | 2 | **Desktop & shells** | 6 shells (macOS/Win/iOS/Android/Dashboard/mobile-Dashboard) | 5 shells (macOS/Win/iOS/Android/Dashboard) + **URL-synced windows** | ↔ tie | ✅ Keep. os-vps's routing is a genuine advantage |
@@ -213,7 +213,7 @@ systemd on deploy; ≤200 lines/file.
 
 ## 4. Explicitly OUT OF SCOPE (would break essence)
 
-Porting these would turn Topside back into a portfolio site and violate constraint #1:
+Porting these would turn MSO back into a portfolio site and violate constraint #1:
 
 - **Convex / any cloud DB** (#13) — os-vps is self-contained by design.
 - **CMS / résumé / projects / portfolio admin** (#15) — os-vps is a VPS cockpit.

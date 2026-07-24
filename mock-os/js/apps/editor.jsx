@@ -63,7 +63,7 @@ function highlight(code, ext){ const fam=edLangOf(ext);
 
 /* ---------------- seed contents for existing mock files ---------------- */
 const ED_SEED = {
-  '/readme.md':'# os-rr\n\nA cloud desktop OS that runs your VPS from the browser.\n\n- **Files** — manage your storage\n- **Reel Editor** — Remotion-style video\n- **Media Studio** — social image design\n- **Alfa** — AI agents that operate the whole OS\n\nConnect a VPS in Settings → Server to go live.\n',
+  '/readme.md':'# os-rr\n\nA browser workspace that runs your VPS from the browser.\n\n- **Files** — manage your storage\n- **Reel Editor** — Remotion-style video\n- **Media Studio** — social image design\n- **Alfa** — AI agents that operate the whole OS\n\nConnect a VPS in Settings → Server to go live.\n',
   '/Documents/roadmap.md':'# Roadmap\n\n## Now\n- [x] Browser app\n- [x] Alfa AI mode + tools\n- [x] Code editor\n\n## Next\n- [ ] Live VPS daemon\n- [ ] Collaborative editing\n',
   '/Projects/remotion.config.ts':"import { Config } from 'remotion';\n\nConfig.setVideoImageFormat('jpeg');\nConfig.setOverwriteOutput(true);\nConfig.setConcurrency(8);\n\nexport const FPS = 30;\nexport const DURATION = 300; // frames\n",
   '/Projects/launch-promo/Root.tsx':"import { Composition } from 'remotion';\nimport { Promo } from './Promo';\n\nexport const Root = () => {\n  return (\n    <Composition\n      id=\"Promo\"\n      component={Promo}\n      durationInFrames={270}\n      fps={30}\n      width={1920}\n      height={1080}\n    />\n  );\n};\n",

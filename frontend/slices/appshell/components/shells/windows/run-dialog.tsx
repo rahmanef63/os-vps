@@ -1,6 +1,6 @@
 "use client";
 /* Windows Run dialog (Win+R) — the little "Run" box that opens a program by name.
-   ponytail: a web OS has no real shell PATH, so this launches REGISTERED apps by
+   ponytail: a browser shell has no real shell PATH, so this launches REGISTERED apps by
    name (id or title), NOT arbitrary executables — and never eval()s the input.
    It resolves a single registered app and opens it through the shared store. */
 import { useEffect, useRef, useState } from "react";

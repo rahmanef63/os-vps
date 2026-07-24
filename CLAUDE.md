@@ -1,8 +1,8 @@
-# os-vps (product name: **Topside**)
+# os-vps (product name: **MSO**)
 
 Mobile-first web cockpit for a headless VPS, from any browser. Desktop-style UI
 metaphor over a vertical-slice stack; value is utility (terminal/files/monitor/
-browser), not an OS. Repo/service/domain keep the `os-vps` slug; "Topside" is the
+browser), not an OS. Repo/service/domain keep the `os-vps` slug; "MSO" is the
 UI brand. **Self-contained**: a single Next.js app, no database, no external
 agent — it runs AS a host process and controls its own machine.
 
@@ -56,7 +56,7 @@ to `resources/` (rr) and drive any project from one manifest:
   `features: DEFAULT_FEATURES`); the barrel re-exports it LAST so the `defineFeature`
   ES-cycle resolves. Buses live in core so apps fire them without depending on a feature
   slice. (`shell-settings` stays a flat UI-primitives slice — not a feature unit.)
-- `os-shell` — the thin os-vps **consumer**: `shell.manifest.ts` (Topside brand + app
+- `os-shell` — the thin os-vps **consumer**: `shell.manifest.ts` (MSO brand + app
   list + slugs + features) + `capabilities.ts` (adapts `@/lib/appearance`+`os-api`+
   `ai/stream` to `ShellCapabilities`) + a re-export barrel (`@/features/os-shell`
   re-exports appshell verbatim, so all app slices stay unedited).

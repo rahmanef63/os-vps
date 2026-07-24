@@ -15,7 +15,7 @@ import { matchDestructive } from "./destructive-patterns";
 const TIMEOUT_MS = 30_000;
 const MAX_OUTPUT = 1_000_000; // 1 MiB per stream
 
-// Live exec runs on whatever host serves Topside: bash on the Linux VPS (or
+// Live exec runs on whatever host serves MSO: bash on the Linux VPS (or
 // macOS), the platform shell on Windows (local dev). Hardcoding /bin/bash broke
 // EVERY command when the cockpit ran on a non-Linux host — so the shell tracks
 // the actual server connection (vps vs local).

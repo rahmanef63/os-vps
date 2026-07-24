@@ -8,7 +8,7 @@
 > directly, signed-cookie auth). For the current system read `ARCHITECTURE.md`.
 > The "Revised architecture" diagram below is kept only as a record of the old plan.
 
-The uploaded `mock-os/` is **os-rr**: a macOS-style web OS prototype that is
+The uploaded `mock-os/` is **os-rr**: a macOS-style browser shell prototype that is
 *explicitly a VPS front-end*. It is not just a visual reference — it ships a
 defined **Cloud API contract** (`mock-os/js/core/api.jsx` + `os-rr API.html`)
 that is the single boundary between the desktop and a VPS daemon. This matches

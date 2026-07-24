@@ -1,4 +1,4 @@
-# os-vps (Topside) — Master Plan
+# os-vps (MSO) — Master Plan
 
 > **os.rahmanef.com** — a mobile-first web cockpit for a single headless VPS,
 > from any browser (especially a phone). Desktop/iOS-style UI metaphor over an
@@ -9,7 +9,7 @@
 
 Status: **LIVE** — https://os.rahmanef.com (prod :4005) + demo (:4006). Repo:
 `git@github.com:rahmanef63/os-vps.git`. Phases 0–14 done (see `PROGRESS.md`).
-Brand: UI = **Topside**; repo/service/domain slug stays `os-vps`.
+Brand: UI = **MSO**; repo/service/domain slug stays `os-vps`.
 
 > **Architecture note (2026-05):** the original design (Convex self-hosted +
 > Control-Room host-agent bridge) was **removed**. os-vps is now self-contained:
@@ -40,7 +40,7 @@ where each capability is a self-contained slice. Goals:
 
 ## 2. Relationship to Control Room
 
-| | VPS Control Room (`vps-rahmanef`) | os-vps / Topside (this project) |
+| | VPS Control Room (`vps-rahmanef`) | os-vps / MSO (this project) |
 |---|---|---|
 | Metaphor | Termux dashboard | desktop/iOS surface (windows · dock · home) |
 | Backend | Node host agent (HTTP/SSE) | none — the Next.js app **is** the host process |
@@ -72,11 +72,11 @@ Every app lifted to ~full parity; **live host bridge** then **self-contained
 host layer** (`lib/host` fs-write + exec + real telemetry); **real headless
 browser** (Playwright `os-browser`) replacing the iframe proxy.
 
-### Phase 15 — Self-contained + hardening + Topside ✅ (this era)
+### Phase 15 — Self-contained + hardening + MSO ✅ (this era)
 Convex + the external agent **removed** → single self-contained app
 (`lib/host` + `lib/auth` signed-cookie). Security pass: audit log, exec
 destructive-guard, tight FS scope, 24h sessions, threat-model README. UI
-rebranded **os-vps → Topside** (dropped the "OS" overclaim). Files app: DnD
+rebranded **os-vps → MSO** (dropped the "OS" overclaim). Files app: DnD
 upload (files + folders, binary-safe), one-action New Folder, Spotlight folder
 search, demo localStorage persistence, whole-window drop zone.
 

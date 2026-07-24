@@ -30,7 +30,7 @@
 
 | # | Reported issue | Verdict | Root cause | Phase |
 |---|---|---|---|---|
-| 1 | `document.title` stuck on "Settings — Topside" | CONFIRMED — no title sync anywhere | framework gap (`use-url-sync.tsx` never touches title) | P1 |
+| 1 | `document.title` stuck on "Settings — MSO" | CONFIRMED — no title sync anywhere | framework gap (`use-url-sync.tsx` never touches title) | P1 |
 | 2 | Deep links (/settings, /files) don't open apps | NOT REPRODUCIBLE IN CODE — `app/[[...slug]]/page.tsx` + `use-url-sync.tsx:93-107` explicitly `openWindow()` on pathname | needs runtime repro; possibly conflated with browser-service outage | P0 (repro task) |
 | 3a | Uptime shows 7889d | CONFIRMED BUG — `lib/host/sys.ts:43` returns `os.uptime() * 1000` (seconds→ms, UI divides by 86400) | os-vps host lib | P0 |
 | 3b | About 34 GB vs Monitor 31 GB RAM | CONFIRMED — About uses decimal GB (`/1e9`), Monitor uses binary GiB (`1024**3`); same API, different formatters | os-vps consumer | P0 |

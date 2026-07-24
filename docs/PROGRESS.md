@@ -328,7 +328,7 @@ lib + security done by hand. Prod rebuilt + restarted.
     app-store, media-viewer, system-monitor, image-picker (incl. the CSS-escape
     security fix), code-editor.
   - **3 new lifts**: media-studio 1.0.0, quicklinks 1.0.0, shell-settings 1.0.0
-    (+ catalog entries, previews, agent.md). Skipped: os-settings (Topside-
+    (+ catalog entries, previews, agent.md). Skipped: os-settings (MSO-
     specific), create-app (already bundled in rr app-store).
   - rr gates all green: tsc · eslint 0 · vitest 448 · slices:check 68 slices.
 - **Backported here from rr's lint-zero sweep** (keeps the trees
@@ -406,7 +406,7 @@ matrix) drove this round; every gap found was built, not just listed.
   `sv:shell` via the registry SSOT (`getShellPrefs`); `MOBILE_W` deduped;
   appearance/quicklinks context values memoized; phantom `"mobile"` ShellId
   deleted; mobile dock ids moved from a hardcode in generic appshell to
-  `AppDescriptor.pinned` set by the Topside manifest.
+  `AppDescriptor.pinned` set by the MSO manifest.
 
 ---
 
@@ -516,7 +516,7 @@ multi-window OS; URL just mirrors the focused app).
   ⌘/middle-click opens an app in a new tab (deep link); plain left-click stays an
   in-place window open (preventDefault → openWindow, URL synced by UrlSync).
 - **Per-route metadata** — `generateMetadata` derives `<title>` from the slug
-  ("Code — Topside"), verified server-side via curl.
+  ("Code — MSO"), verified server-side via curl.
 - **next/Image** for browser favicons (fixed Google s2 host in `images.remotePatterns`).
   Host-fs images + the live Playwright screenshot stream stay raw `<img>` on purpose
   — dynamic/auth'd bytes the optimizer can't help with (documented in next.config).
@@ -549,7 +549,7 @@ framework + pluggable feature slices. **Pure restructure — zero frontend chang
   (rightPanel + AI), `shell-notifications` (toast + Dynamic Island), `shell-control-center`,
   `shell-widgets` (Today). Mobile features read surface state via a `ShellUI`
   context instead of props. Buses stay in core so apps don't depend on feature
-  slices. `os-shell` is now a thin consumer: `shell.manifest.ts` (Topside brand +
+  slices. `os-shell` is now a thin consumer: `shell.manifest.ts` (MSO brand +
   app list + features) + a re-export barrel, so all app slices stay untouched.
 - Shipped per phase (A `7be0491` · B `7be0491` · C `08ed734` · D `cd716ab`),
   typecheck + build green each, prod :4005 + demo :4006 verified 200.
@@ -605,7 +605,7 @@ brought current. `MOBILE-RESPONSIVE-PLAN` flagged as not-yet-built (DRY primitiv
 
 ---
 
-## 2026-05-30 — Phase 15: Self-contained pivot + security + Topside rebrand (DONE)
+## 2026-05-30 — Phase 15: Self-contained pivot + security + MSO rebrand (DONE)
 
 The big architecture change: **dropped Convex + the external Control-Room agent.**
 os-vps now runs AS a host process and controls its own machine directly.
@@ -618,7 +618,7 @@ os-vps now runs AS a host process and controls its own machine directly.
   `~/.os-vps/audit.log`); exec destructive-command guard (`rm -rf /`, mkfs, dd,
   fork bomb…) bypass via `OS_EXEC_ALLOW_DESTRUCTIVE`; exec rate-limit; tight default
   FS scope (read+write = home + ~/projects); 24h sessions; README threat model.
-- **Rebrand os-vps → Topside** (`56b3707`) — dropped the "OS" overclaim in all
+- **Rebrand os-vps → MSO** (`56b3707`) — dropped the "OS" overclaim in all
   user-facing strings (it's a cockpit/utility, not an OS). Repo/service/domain slug
   unchanged.
 - **os-browser to loopback** — Playwright service rebound 127.0.0.1:4002 (was 0.0.0.0);
@@ -690,7 +690,7 @@ the CLI, with a persistent session/cache so logins stick + no per-site API neede
   still constrained.)
 - **`/os` skill** (`~/.claude/skills/os/`): playbook + `os.sh` to drive the VPS via
   the agent endpoints (ls/cat/write/mkdir/rm/mv/cp/exec/usage) — same bridge the
-  web OS uses. Smoke-tested.
+  browser shell uses. Smoke-tested.
 
 ---
 

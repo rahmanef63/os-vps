@@ -1,7 +1,7 @@
 // SERVER-ONLY. Path resolution + bounds for host filesystem access. os-vps runs
 // as a host process, so /api/v1 talks to the FS directly (no agent). READ and
 // WRITE roots are separate: reads can be wide (browse), writes are narrow so the
-// web OS can't clobber system files. Symlinks are realpath-resolved BEFORE the
+// browser shell can't clobber system files. Symlinks are realpath-resolved BEFORE the
 // bounds check so a link can't escape a root. Configure with OS_FS_READ_ROOTS /
 // OS_FS_WRITE_ROOTS (colon-separated; "~" = home, "/" = whole filesystem).
 import { promises as fs, realpathSync } from "fs";

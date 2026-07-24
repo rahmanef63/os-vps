@@ -15,7 +15,7 @@ function buildSystemPrompt(agent, skills, tools){
   const skillText = (agent.allTools ? [] : (agent.skills||[]).map(id=>skills.find(s=>s.id===id)).filter(Boolean))
     .map(s=>`• ${s.name}: ${s.instructions||''}`).join('\n');
   return [
-    `You are ${agent.name}, an AI agent living inside os-rr — a cloud desktop OS that runs a user's VPS.`,
+    `You are ${agent.name}, an AI agent living inside os-rr — a browser workspace that runs a user's VPS.`,
     agent.persona ? agent.persona : 'You are concise, friendly and action-oriented.',
     skillText ? `Your skills:\n${skillText}` : '',
     `You operate the OS ONLY by calling tools. You cannot do anything except via tools.`,

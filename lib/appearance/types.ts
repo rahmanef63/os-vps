@@ -19,7 +19,7 @@ export type LocalServerTarget = {
   id: string;
   kind: "local";
   label: string;
-  /** Same-origin URL for the running Topside service; empty means current origin. */
+  /** Same-origin URL for the running MSO service; empty means current origin. */
   url: string;
 };
 
