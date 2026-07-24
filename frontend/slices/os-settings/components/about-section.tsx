@@ -10,6 +10,7 @@ import { IS_DEMO } from "@/lib/demo";
 import { SettingsSection, SettingsValueRow, SettingsActionRow } from "@/features/shell-settings";
 import { MsoMark } from "@/components/shared/mso-mark";
 import pkg from "../../../../package.json";
+import { openOnboarding } from "@/features/auth";
 
 const APP_NAME = "Manef Shell OS";
 const APP_TAGLINE = "Browser-based visual shell";
@@ -89,6 +90,11 @@ export function AboutSection() {
       </SettingsSection>
 
       <SettingsSection icon={<RotateCcw />} title="Reset">
+        <SettingsActionRow
+          label="Open onboarding"
+          icon={<Info />}
+          onClick={openOnboarding}
+        />
         <SettingsActionRow
           label="Reset MSO"
           tone="destructive"

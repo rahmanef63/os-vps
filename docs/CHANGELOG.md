@@ -26,6 +26,8 @@ Phase entries map to `docs/PROGRESS.md`; git SHAs cross-reference each section.
 - Public GitHub Actions CI for install, typecheck, lint, tests, architecture
   checks, and production build.
 - Root `SECURITY.md` with responsible disclosure flow and deployment warning.
+- First-login onboarding with security posture, filesystem roots, device
+  approval reminder, and optional AI setup.
 - Product Hunt launch copy in `docs/PRODUCT_HUNT.md`.
 - 60-second demo script in `docs/DEMO-SCRIPT.md`.
 - GitHub issue templates for bug reports and feature requests.

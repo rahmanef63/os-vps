@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { useAppearance } from "@/lib/appearance";
 import { IS_DEMO } from "@/lib/demo";
@@ -53,7 +53,12 @@ function DemoModeOverlay() {
 function GatedOS({ children }: { children: ReactNode }) {
   const { status } = useSession();
   if (status === "loading") return <Splash />;
-  return <>{children}</>; // signed-in AND signed-out → the shell (mock when out)
+  return (
+    <>
+      {children}
+      {status === "in" && <FirstLoginOnboarding />}
+    </>
+  ); // signed-in AND signed-out → the shell (mock when out)
 }
 
 function Splash() {
@@ -67,4 +72,123 @@ function Splash() {
       <Loader2 className="size-6 animate-spin text-white drop-shadow" />
     </div>
   );
+}
+
+const ONBOARDING_KEY = "os-vps:onboarding:v1";
+const ONBOARDING_OPEN = "os-vps:onboarding:open";
+
+type StatusInfo = {
+  linuxUser: string;
+  readRoots: string[];
+  writeRoots: string[];
+  currentAccess: string;
+  publicExposureWarning: string | null;
+};
+
+function FirstLoginOnboarding() {
+  const [open, setOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(ONBOARDING_KEY) !== "done";
+  });
+  const [info, setInfo] = useState<StatusInfo | null>(null);
+
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener(ONBOARDING_OPEN, onOpen);
+    return () => window.removeEventListener(ONBOARDING_OPEN, onOpen);
+  }, []);
+
+  useEffect(() => {
+    if (!open || info) return;
+    let alive = true;
+    fetch("/api/status", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: StatusInfo | null) => {
+        if (alive && body) setInfo(body);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [open, info]);
+
+  function close() {
+    localStorage.setItem(ONBOARDING_KEY, "done");
+    setOpen(false);
+  }
+
+  if (!open) return null;
+
+  const steps = [
+    "Welcome to MSO",
+    "Confirm security posture",
+    "Check filesystem roots",
+    "Check device approval",
+    "Open System Monitor",
+    "Open Files",
+    "Launch Terminal",
+    "Configure AI optionally",
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-background/65 p-4 backdrop-blur-sm">
+      <div className="max-h-[min(42rem,calc(100dvh-2rem))] w-full max-w-xl overflow-auto rounded-xl border border-border bg-popover p-5 text-popover-foreground shadow-xl">
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold">Welcome to MSO</h2>
+          <p className="text-sm text-muted-foreground">
+            MSO gives this browser terminal and file access as the Linux user below. Review this before using live mode.
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-2 rounded-lg border border-border/70 bg-muted/35 p-3 text-sm">
+          <InfoRow label="MSO is running as" value={info?.linuxUser ?? "Loading..."} />
+          <InfoRow label="Read roots" value={info?.readRoots?.join(":") ?? "Loading..."} />
+          <InfoRow label="Write roots" value={info?.writeRoots?.join(":") ?? "Loading..."} />
+          <InfoRow label="Current access" value={info?.currentAccess ?? "Loading..."} />
+          {info?.publicExposureWarning && (
+            <p className="rounded-md bg-amber-500/15 p-2 text-xs font-medium text-amber-700 dark:text-amber-300">
+              {info.publicExposureWarning}
+            </p>
+          )}
+        </div>
+
+        <ol className="mt-4 grid gap-2 text-sm">
+          {steps.map((step, i) => (
+            <li key={step} className="flex gap-2">
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                {i + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          AI setup is optional. This onboarding does not change security settings.
+        </p>
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={close} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+            Skip
+          </button>
+          <button type="button" onClick={close} className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-1 sm:grid-cols-[11rem_1fr]">
+      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+      <span className="break-words font-mono text-xs">{value}</span>
+    </div>
+  );
+}
+
+export function openOnboarding() {
+  window.dispatchEvent(new Event(ONBOARDING_OPEN));
 }
