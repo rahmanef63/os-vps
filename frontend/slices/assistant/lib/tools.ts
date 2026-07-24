@@ -17,6 +17,7 @@ export const GROUP_META: Record<
   browser: { label: "Browser", icon: "globe" },
   settings: { label: "Settings", icon: "settings" },
   video: { label: "Video", icon: "film" },
+  agent: { label: "Agent harness", icon: "sparkles" },
 };
 
 export const GROUP_ORDER: ToolGroup[] = [
@@ -30,6 +31,7 @@ export const GROUP_ORDER: ToolGroup[] = [
   "browser",
   "settings",
   "video",
+  "agent",
 ];
 
 const T = (
@@ -90,6 +92,12 @@ export const OS_TOOLS: Tool[] = [
   T("video.split", "video", "Split", "Split at the playhead."),
   T("video.effect", "video", "Effect", "Add a motion effect.", ["effect"]),
   T("video.render", "video", "Render", "Render the reel."),
+
+  T("agent.skills_list", "agent", "List skills", "List local OpenClaw/Codex/MSO skills."),
+  T("agent.skills_read", "agent", "Read skill", "Read a selected skill instruction file.", ["name"]),
+  T("agent.spawn_task", "agent", "Spawn task", "Start a delegated task through approved shell tooling.", ["task"]),
+  T("agent.remember", "agent", "Remember", "Store a durable Alfa memory.", ["text"]),
+  T("agent.forget", "agent", "Forget", "Remove a matching Alfa memory.", ["query"]),
 ];
 
 const BY_ID = new Map(OS_TOOLS.map((t) => [t.id, t]));

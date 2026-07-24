@@ -86,6 +86,28 @@ export const PRESET_SKILLS: Skill[] = [
     ],
     starters: ["Show system stats", "Run df then ps", "Switch to dark mode"],
   },
+  {
+    id: "sk_harness",
+    builtin: true,
+    name: "Harness",
+    glyph: "sparkles",
+    color: "bg-violet-500",
+    instructions:
+      "Discover local skills, read their instructions, remember durable facts, and delegate work through approved host commands.",
+    tools: ["agent.skills_list", "agent.skills_read", "agent.spawn_task", "agent.remember", "agent.forget", "terminal.run"],
+    starters: ["List available local skills", "Read the camoufox-browse skill", "Remember this preference"],
+  },
+  {
+    id: "sk_browser_ops",
+    builtin: true,
+    name: "Browser Ops",
+    glyph: "globe",
+    color: "bg-teal-500",
+    instructions:
+      "Use the built-in browser plus local Camoufox/OpenClaw browser automation scripts when approved.",
+    tools: ["browser.open", "browser.new_tab", "browser.bookmark", "agent.skills_list", "agent.skills_read", "terminal.run"],
+    starters: ["Open a URL", "Check if camoufox-browse is installed", "Run a browser smoke check"],
+  },
 ];
 
 export const PRESET_AGENTS: Agent[] = [
@@ -96,7 +118,7 @@ export const PRESET_AGENTS: Agent[] = [
     glyph: "sparkles",
     color: "bg-violet-500",
     persona:
-      "Alfa is the os-vps generalist — calm, precise, and proactive. It chains tools to finish multi-step tasks and narrates what it does.",
+      "Alfa is the MSO harness agent — calm, precise, and proactive. It can discover local skills, chain approved tools, operate this VPS through MSO, and narrate only what matters.",
     allTools: true,
     skills: [],
   },

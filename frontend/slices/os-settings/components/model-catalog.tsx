@@ -4,18 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormDrawer } from "@/features/os-shell";
-
-type CatModel = {
-  ref: string;
-  id: string;
-  name?: string;
-  context?: number;
-  inputCost?: number;
-  outputCost?: number;
-  tools?: boolean;
-  reasoning?: boolean;
-  vision?: boolean;
-};
+import { filterAndSortModels, type CatModel, type ModelFilters, type ModelSort } from "./model-catalog-utils";
 
 const fmtCtx = (n?: number) => (!n ? "—" : n >= 1e6 ? `${n / 1e6}M` : n >= 1e3 ? `${Math.round(n / 1e3)}K` : `${n}`);
 const fmtCost = (n?: number) => (n == null ? "—" : `$${n}`);
@@ -27,6 +16,8 @@ export function ModelCatalog({ provider, value, onPick }: { provider: string; va
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [models, setModels] = useState<CatModel[]>([]);
+  const [sort, setSort] = useState<ModelSort>("best");
+  const [filters, setFilters] = useState<ModelFilters>({ tools: false, reasoning: false, vision: false, minContext: 0 });
 
   useEffect(() => {
     if (!open) return;
@@ -40,10 +31,8 @@ export function ModelCatalog({ provider, value, onPick }: { provider: string; va
     };
   }, [open, provider]);
 
-  const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    return s ? models.filter((m) => m.id.toLowerCase().includes(s) || (m.name ?? "").toLowerCase().includes(s)) : models;
-  }, [models, q]);
+  const filtered = useMemo(() => filterAndSortModels(models, q, filters, sort), [models, q, filters, sort]);
+  const toggle = (key: "tools" | "reasoning" | "vision") => setFilters((f) => ({ ...f, [key]: !f[key] }));
 
   return (
     <>
@@ -54,6 +43,23 @@ export function ModelCatalog({ provider, value, onPick }: { provider: string; va
         </FormDrawer.Header>
         <FormDrawer.Body className="space-y-3">
           <Input autoFocus placeholder="Search models…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <select className="h-8 rounded-md border border-border bg-background px-2" value={sort} onChange={(e) => setSort(e.target.value as ModelSort)} aria-label="Sort models">
+              <option value="best">Sort: most worth</option>
+              <option value="price">Sort: lowest price</option>
+              <option value="capability">Sort: capability</option>
+              <option value="context">Sort: context length</option>
+            </select>
+            <select className="h-8 rounded-md border border-border bg-background px-2" value={filters.minContext} onChange={(e) => setFilters((f) => ({ ...f, minContext: Number(e.target.value) }))} aria-label="Minimum context length">
+              <option value={0}>Any context</option>
+              <option value={32000}>32K+ context</option>
+              <option value={128000}>128K+ context</option>
+              <option value={1000000}>1M+ context</option>
+            </select>
+            <Filter checked={filters.tools} label="Tools" onChange={() => toggle("tools")} />
+            <Filter checked={filters.reasoning} label="Reasoning" onChange={() => toggle("reasoning")} />
+            <Filter checked={filters.vision} label="Vision" onChange={() => toggle("vision")} />
+          </div>
           {filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No catalog for this provider.</p>
           ) : (
@@ -92,4 +98,13 @@ export function ModelCatalog({ provider, value, onPick }: { provider: string; va
 
 function Badge({ children }: { children: React.ReactNode }) {
   return <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{children}</span>;
+}
+
+function Filter({ checked, label, onChange }: { checked: boolean; label: string; onChange: () => void }) {
+  return (
+    <label className="flex h-8 items-center gap-1.5 rounded-md border border-border px-2">
+      <input type="checkbox" checked={checked} onChange={onChange} />
+      {label}
+    </label>
+  );
 }

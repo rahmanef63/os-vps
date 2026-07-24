@@ -15,16 +15,22 @@ const KEYS = {
 
 const uid = () => crypto.randomUUID().slice(0, 8);
 
-function load<T>(key: string, fallback: T[]): T[] {
+function load<T extends { id?: string; builtin?: boolean }>(key: string, fallback: T[]): T[] {
   if (typeof window === "undefined") return fallback.map((p) => ({ ...p }));
   try {
     const raw = window.localStorage.getItem(key);
     const parsed = raw ? (JSON.parse(raw) as T[]) : null;
-    if (Array.isArray(parsed) && parsed.length) return parsed;
+    if (Array.isArray(parsed) && parsed.length) return mergeBuiltins(parsed, fallback);
   } catch {
     /* ignore corrupt storage */
   }
   return fallback.map((p) => ({ ...p }));
+}
+
+function mergeBuiltins<T extends { id?: string; builtin?: boolean }>(saved: T[], fallback: T[]): T[] {
+  const byId = new Map(saved.map((x) => [x.id, x]));
+  const missing = fallback.filter((x) => x.builtin && x.id && !byId.has(x.id));
+  return [...saved, ...missing.map((p) => ({ ...p }))];
 }
 
 function loadActive(): string {

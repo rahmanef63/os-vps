@@ -11,7 +11,8 @@ export type ToolGroup =
   | "terminal"
   | "browser"
   | "settings"
-  | "video";
+  | "video"
+  | "agent";
 
 export type Tool = {
   id: string;

@@ -17,7 +17,7 @@ export type HostToolUi = {
 
 // "Allow this exact call again" is offered only for low-blast-radius mutations —
 // never exec.run (arbitrary RCE) or a delete. Exact-signature scoped, never a glob.
-const REMEMBERABLE = new Set(["fs.write", "fs.mkdir", "fs.move"]);
+const REMEMBERABLE = new Set(["fs.write", "fs.mkdir", "fs.move", "fs.copy"]);
 
 // Stable signature for the remember/auto-deny sets: name + key-sorted input.
 function signature(name: string, input: Record<string, unknown>): string {

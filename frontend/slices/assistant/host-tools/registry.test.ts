@@ -7,12 +7,12 @@ import { findHostTool, HOST_AI_TOOLS } from "./registry";
 describe("host-tools registry", () => {
   it("classifies reads as read; fs mutations + exec as mutate", () => {
     const eff = (n: string) => findHostTool(n)?.effect;
-    for (const n of ["fs.list", "fs.read", "fs.search", "sys.stats", "apps.list", "memory.remember", "memory.forget"]) expect(eff(n)).toBe("read");
-    for (const n of ["fs.write", "fs.mkdir", "fs.move", "exec.run"]) expect(eff(n)).toBe("mutate");
+    for (const n of ["fs.list", "fs.read", "fs.search", "fs.usage", "sys.stats", "sys.processes", "apps.list", "skills.list", "skills.read", "memory.remember", "memory.forget"]) expect(eff(n)).toBe("read");
+    for (const n of ["fs.write", "fs.mkdir", "fs.move", "fs.copy", "fs.delete", "exec.run"]) expect(eff(n)).toBe("mutate");
   });
 
-  it("does NOT expose delete/copy/upload/browser/pty in v1", () => {
-    for (const n of ["fs.remove", "fs.delete", "fs.copy", "fs.upload", "browser.act", "pty.open", "apps.start"])
+  it("does NOT expose upload/browser/pty/app lifecycle in v1", () => {
+    for (const n of ["fs.remove", "fs.upload", "browser.act", "pty.open", "apps.start", "apps.stop"])
       expect(findHostTool(n)).toBeUndefined();
   });
 

@@ -1,17 +1,10 @@
 import { obj, str } from "./schema";
 import type { HostTool } from "./types";
 
-// The v1 host-tool catalog Alfa can call. READ tools run immediately; MUTATE
-// tools are gated behind per-call human approval (see use-host-commands). Each
-// `run` receives the live OsApi port + the model's args and returns a short,
-// model-readable summary. Deliberately small — fs + shell; delete/copy/upload,
-// browser, apps.start/stop and PTY are out of v1 (see the plan doc).
-
 const CAP = 4000;
 const clip = (s: string) => (s.length > CAP ? `${s.slice(0, CAP)}\n… (truncated, ${s.length} chars)` : s);
 
 export const HOST_TOOLS: HostTool[] = [
-  // ── READ (auto-run) ──────────────────────────────────────────────────────
   {
     name: "fs.list",
     effect: "read",
@@ -52,6 +45,26 @@ export const HOST_TOOLS: HostTool[] = [
     },
   },
   {
+    name: "sys.processes",
+    effect: "read",
+    description: "List running host processes with pid, name, status, CPU and memory.",
+    parameters: obj({}),
+    run: async (api) => {
+      const ps = await api.sys.processes();
+      return ps.length ? ps.slice(0, 30).map((p) => `${p.pid} ${p.name} ${p.status} cpu=${p.cpu} mem=${p.mem}`).join("\n") : "no process data";
+    },
+  },
+  {
+    name: "fs.usage",
+    effect: "read",
+    description: "Show writable filesystem roots and current usage.",
+    parameters: obj({}),
+    run: async (api) => {
+      const u = await api.fs.usage();
+      return `${Math.round(u.used / 1024 ** 2)}MiB used / ${Math.round(u.total / 1024 ** 2)}MiB total`;
+    },
+  },
+  {
     name: "apps.list",
     effect: "read",
     description: "List installed host apps (name + slug).",
@@ -59,6 +72,33 @@ export const HOST_TOOLS: HostTool[] = [
     run: async (api) => {
       const apps = await api.apps.list();
       return apps.length ? apps.map((x) => `${x.name} (${x.slug})`).join("\n") : "no apps installed";
+    },
+  },
+  {
+    name: "skills.list",
+    effect: "read",
+    description: "List local MSO/OpenClaw/Codex skills available on this VPS. Use before asking to run a specialized skill such as camoufox.",
+    parameters: obj({}),
+    run: async () => {
+      const data = (await fetch("/api/skills", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : { skills: [] }))
+        .catch(() => ({ skills: [] }))) as { skills?: { name: string; description?: string }[] };
+      const skills = data.skills ?? [];
+      return skills.length ? skills.map((s) => `${s.name}${s.description ? ` — ${s.description}` : ""}`).join("\n") : "no local skills found";
+    },
+  },
+  {
+    name: "skills.read",
+    effect: "read",
+    description: "Read one local skill's SKILL.md instructions by exact skill name.",
+    parameters: obj({ "name!": str("Exact skill name from skills.list") }),
+    run: async (_api, a) => {
+      const name = String(a.name ?? "").trim();
+      if (!name) return "missing skill name";
+      const r = await fetch(`/api/skills?name=${encodeURIComponent(name)}`, { cache: "no-store" });
+      if (!r.ok) return `couldn't read skill ${name}`;
+      const d = (await r.json()) as { content?: string; truncated?: boolean };
+      return clip(`${d.content ?? ""}${d.truncated ? "\n… (truncated)" : ""}`);
     },
   },
   {
@@ -96,7 +136,6 @@ export const HOST_TOOLS: HostTool[] = [
       return `forgot ${hits.length}: ${hits.map((m) => m.text).join("; ")}`;
     },
   },
-  // ── MUTATE (approve-per-call) ────────────────────────────────────────────
   {
     name: "fs.write",
     effect: "mutate",
@@ -126,6 +165,26 @@ export const HOST_TOOLS: HostTool[] = [
     run: async (api, a) => {
       await api.fs.move(String(a.from), String(a.to));
       return `moved ${a.from} → ${a.to}`;
+    },
+  },
+  {
+    name: "fs.copy",
+    effect: "mutate",
+    description: "Copy a file/dir to a full destination path. Read first if unsure.",
+    parameters: obj({ "from!": str("Source path"), "to!": str("Destination path (full path, not just a dir)") }),
+    run: async (api, a) => {
+      await api.fs.copy(String(a.from), String(a.to));
+      return `copied ${a.from} → ${a.to}`;
+    },
+  },
+  {
+    name: "fs.delete",
+    effect: "mutate",
+    description: "Delete a file/dir recursively within writable roots. High risk: inspect first.",
+    parameters: obj({ "path!": str("Absolute file or directory path") }),
+    run: async (api, a) => {
+      await api.fs.remove(String(a.path));
+      return `deleted ${a.path}`;
     },
   },
   {
