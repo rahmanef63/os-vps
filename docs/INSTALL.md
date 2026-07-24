@@ -1,14 +1,14 @@
 # Installing os-vps (Manef Shell OS) on your VPS
 
-Step-by-step production setup. For a 2-minute local try-out, see
-[Quickstart](../README.md#quickstart) — this guide is the real thing:
-credentials, systemd, TLS, the optional browser service, and updating.
+Step-by-step setup for a server you own. For the short path, see
+[Install](../README.md#install). This guide covers credentials, systemd, TLS,
+the optional browser service, demo mode, updating, and rollback.
 
 ## 0. Requirements
 
 - A Linux VPS (any distro with systemd; 1 vCPU / 2 GB RAM works, build wants
-  ≥2 GB free — see [Troubleshooting](./TROUBLESHOOTING.md#build-runs-out-of-memory)).
-- **Node.js 20+** (22 recommended) and **pnpm** (`corepack enable`).
+  ≥2 GB free — see [Troubleshooting](./TROUBLESHOOTING.md)).
+- **Node.js 20.9+** (22 recommended) and **pnpm 10.32.1** via corepack.
 - A **non-root user** that owns the install. Never run os-vps as root —
   an authenticated session can run shell commands as the process user.
 - Optional: a domain + reverse proxy (Caddy/nginx/Traefik) **or** Tailscale.
@@ -101,7 +101,7 @@ Open it, note the device id on the login screen, approve it (step 2), log in.
 
 ```ini
 [Unit]
-Description=Manef Shell OS (os-vps) — browser-based server shell
+Description=Manef Shell OS — browser-based visual shell for a Linux server
 After=network.target
 
 [Service]
@@ -203,20 +203,27 @@ Settings → AI (stored in `~/.os-vps/config.json`, never in the repo). Unset
 NEXT_PUBLIC_OS_DEMO=1 pnpm build && pnpm start
 ```
 
-Demo builds have **no login, no host access and make no `/api` calls** —
-forced mock data only — so they are safe to expose publicly as a showcase.
-Use a separate checkout/service for the demo; the flag is baked at build time.
+Demo builds have **no real login, no host access, no PTY, no shell command
+execution, no live host API, and no API-key storage**. They use mock data only
+and show a permanent demo banner. Use a separate checkout/service for the demo;
+the flag is baked at build time.
 
 ## 9. Updating
 
 ```bash
 cd ~/os-vps
-git pull
-pnpm install                # only when package.json changed
+git status --short          # must be clean before updating
+git fetch origin main
+git merge --ff-only FETCH_HEAD
+pnpm install --frozen-lockfile
 pnpm build                  # ALWAYS build before restarting
 sudo systemctl restart os-vps.service
 ./scripts/post-deploy-smoke.sh   # catches the chunk/MIME drift the README warns about
 ```
+
+The installer follows the same rule: it shows the old and new commit, refuses
+dirty worktrees, exits non-zero if the target ref cannot be fetched, builds only
+after a successful update, and restarts only after a successful build.
 
 Build **then** restart, never the reverse — `next start` loads the build
 manifest at boot, and mismatched on-disk chunks cause every CSS/JS request to
@@ -227,15 +234,15 @@ manifest at boot, and mismatched on-disk chunks cause every CSS/JS request to
 If a deploy breaks production:
 
 1. Find the prior good commit: `git log --oneline -10`
-2. Reset: `git reset --hard <good-sha>`
+2. Check out the known-good commit: `git switch --detach <good-sha>`
 3. Rebuild: `pnpm build`
 4. Restart: `sudo systemctl restart os-vps.service`
 5. Verify: `curl -s http://localhost:4005/api/health | jq .buildId`
 
-If the build itself broke (TypeScript or compile error), `git stash` any
-local changes first. If chunks are 404ing after restart (build/run version
-mismatch): `rm -rf .next && pnpm build && sudo systemctl restart os-vps.service`
-— clean rebuild always wins.
+If the build itself broke (TypeScript or compile error), leave the running
+service alone, fix the checkout, and rebuild before restarting. If chunks are
+404ing after restart (build/run version mismatch): stop the service, remove
+`.next`, rebuild, then start it again.
 
 ## 9c. Healthcheck
 

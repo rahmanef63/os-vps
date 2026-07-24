@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest a focused improvement for MSO
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        MSO is Public Alpha and single-owner. Please keep requests focused on server-owner workflows.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What server task is hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Control
+        - Work
+        - Extend
+        - Security/deployment
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

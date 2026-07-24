@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Topside (repo: `os-vps`) are documented here.
+All notable changes to Manef Shell OS (MSO, repo: `os-vps`) are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Phase entries map to `docs/PROGRESS.md`; git SHAs cross-reference each section.
 
@@ -8,11 +8,50 @@ Phase entries map to `docs/PROGRESS.md`; git SHAs cross-reference each section.
 
 ## [Unreleased]
 
+- Product Hunt launch prep: README positioning, public CI, security policy,
+  issue templates, safer demo-mode communication, Product Hunt copy, and demo
+  script.
 - Shell fidelity Phases D-F (per-shell signature behaviours: macOS Spaces strip,
   Win11 snap-layouts popup + Alt-Tab, iOS zoom-from-icon, Android notification
   shade + ripple) not yet started.
 - `MOBILE-RESPONSIVE-PLAN.md` Phase E full adoption across all app UIs deferred
   (primitives built in `appshell/primitives/`, rollout not yet done).
+
+---
+
+## 2026-07-24 — v0.1.0 Public Alpha preparation
+
+### Added
+
+- Public GitHub Actions CI for install, typecheck, lint, tests, architecture
+  checks, and production build.
+- Root `SECURITY.md` with responsible disclosure flow and deployment warning.
+- Product Hunt launch copy in `docs/PRODUCT_HUNT.md`.
+- 60-second demo script in `docs/DEMO-SCRIPT.md`.
+- GitHub issue templates for bug reports and feature requests.
+
+### Changed
+
+- README now positions MSO as an open-source, mobile-friendly visual shell for a
+  Linux server you own.
+- Demo mode is documented as mock-data-only and separate from real owner
+  deployments.
+- Installer generates a stronger default login password and fails clearly on
+  dirty or failed updates.
+
+### Known limitations
+
+- Public Alpha / Developer Preview.
+- Single-owner only; no multi-user RBAC.
+- No third-party security audit.
+- Real deployments should stay behind Tailscale, VPN, or protected HTTPS.
+- Some apps remain optional or experimental.
+
+### Upgrade / rollback
+
+- Update: fetch, fast-forward, `pnpm install --frozen-lockfile`, build, restart.
+- Rollback: check out a known-good commit, rebuild, restart, verify
+  `/api/health`.
 
 ---
 
@@ -248,7 +287,7 @@ Eight-tick cleanup over `AUDIT-2026-06-11.md`. Gates green at every tick
   dock hover window preview, `useOverviewKey`, `usePullDown`, `HomeIndicator`,
   shared `Clock`.
 - `5e5479f` 5 new shell feature slices; Today widgets + Spotlight search upgrades.
-- `c62889a` All 1.3.0 features wired into Topside (`os-shell`).
+- `c62889a` All 1.3.0 features wired into MSO (`os-shell`).
 - `0c67e50` vitest infra + headless e2e harness (7 checks green).
 - `8f489ad` Browser live CDP screencast stream (JPEG frames over SSE,
   heartbeat, crash-guard).
@@ -264,10 +303,10 @@ Eight-tick cleanup over `AUDIT-2026-06-11.md`. Gates green at every tick
 
 ---
 
-## 2026-06-06 — v0.1: Topside multi-shell OS
+## 2026-06-06 — v0.1: MSO multi-shell OS
 
 ### Added
-- `0460606` **Topside v0.1** initial commit. Next 16 + React 19 + Tailwind 4 +
+- `0460606` **MSO v0.1** initial commit. Next 16 + React 19 + Tailwind 4 +
   shadcn/ui. Signed-cookie HMAC auth (password + device approval). `lib/host/`
   (fs/exec/sys) as the single facade for all `/api/v1` routes. Window manager
   with snap/maximize, glass dock, Spotlight (Cmd+K), 12 built-in apps (Files,
@@ -320,7 +359,7 @@ Eight-tick cleanup over `AUDIT-2026-06-11.md`. Gates green at every tick
   (`os-browser` service, loopback :4002, persistent Chrome profile).
 - **Phase 15** (2026-05-30) **Architecture pivot**: dropped Convex + external
   agent. `lib/host/` is the direct host facade. Signed-cookie HMAC auth.
-  Topside rebrand. os-browser rebound to loopback 127.0.0.1.
+  MSO rebrand. os-browser rebound to loopback 127.0.0.1.
 - **Phase 16** (2026-05-30/31) Files CRUD + DnD upload: binary-safe DnD,
   one-action New Folder, Spotlight folder search, demo FS persists to
   localStorage, whole-window drop zone.

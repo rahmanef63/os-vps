@@ -1,0 +1,82 @@
+name: Bug report
+description: Report a reproducible MSO bug
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste passwords, session secrets, API keys, private file contents, or full environment files.
+  - type: input
+    id: version
+    attributes:
+      label: MSO version
+      placeholder: "0.1.0 or commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Linux distro
+      placeholder: "Ubuntu 24.04"
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      placeholder: "node -v"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install method
+      options:
+        - scripts/install.sh
+        - Manual clone
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser/device
+      placeholder: "Chrome on Android, Safari on iPhone, Firefox desktop"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Runtime mode
+      options:
+        - Live
+        - Demo
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: "1. Open...\n2. Click...\n3. See..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs with secrets removed
+      description: Remove passwords, session secrets, API keys, private paths, and private file contents.
+      render: text

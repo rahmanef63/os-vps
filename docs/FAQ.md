@@ -13,7 +13,7 @@ Treat an authenticated session like an SSH login: the owner can read files
 approval as a browser allowlist, rate limits, an FS jail and an audit log —
 but it has **not** had a third-party security audit. Recommended posture:
 Tailscale/VPN, or a TLS reverse proxy + IP allowlist. Public exposure is for the
-[demo build](./INSTALL.md#8-optional--public-demo-mode) (no auth, no host
+[demo build](./INSTALL.md#8-optional-public-demo-mode) (no auth, no host
 access), not the real thing.
 
 ### Why a password AND device approval?
@@ -52,7 +52,7 @@ what the process user can do — that's the point.
 
 Every app works against an in-browser mock by default (zero risk, great for
 trying the UI). Settings → Server flips an app to the live host API. The
-public demo build is mock-only with no `/api` calls at all.
+public demo build is mock-only and does not call live host APIs.
 
 ### How do I add my own app? (the modular part)
 

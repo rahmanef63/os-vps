@@ -15,6 +15,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/rahmanef63/os-vps/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/rahmanef63/os-vps/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="Open Source" src="https://img.shields.io/badge/Open%20Source-MIT-green" />
   <img alt="Self-hosted" src="https://img.shields.io/badge/Self--hosted-yes-2f7bf6" />
   <img alt="Public Alpha" src="https://img.shields.io/badge/Public%20Alpha-Developer%20Preview-f59e0b" />
@@ -46,17 +47,34 @@ For a real deployment, put MSO behind **Tailscale, a VPN, or a TLS reverse proxy
 
 ## What you can do
 
+**Control** — terminal, files, and system monitor for the server you own.
+
 - **Open a real terminal** — interactive PTY support for tools like `vim`, `top`, and `ssh`.
 - **Manage files** — browse, upload, search, preview, rename, move, copy, zip, and delete within configured filesystem roots.
 - **Inspect system health** — view live CPU, memory, disk, network, process, and uptime signals.
-- **Use AI with your own keys** — Alfa uses BYOK credentials stored on your server, not committed to the repo.
-- **Work from phone or laptop** — browser UI with desktop, tablet, and mobile shell layouts.
 
-## Three real use cases
+**Work** — code/text editor, browser, and media tools in the same workspace.
 
-- **Emergency phone admin** — restart a service, inspect logs, or edit a config when SSH on mobile is painful.
-- **Personal VPS cockpit** — keep terminal, files, metrics, and quick links together for the one server you own.
-- **Private AI-assisted ops** — ask an assistant for help while host actions stay gated by your own login and keys.
+- **Edit project files** — open text/code files from the file manager without context switching.
+- **Preview media** — inspect images, audio, video, PDFs, and sample demo assets in the browser.
+- **Keep admin context together** — move between terminal, files, metrics, and browser views.
+
+**Extend** — Alfa AI, modular slices, and custom apps.
+
+- **Use BYOK AI** — Alfa uses credentials stored on your server, not committed to the repo.
+- **Add app slices** — features are modular under `frontend/slices/<slug>/`.
+- **Personalize the interface** — macOS, Windows, iOS, and Android shell layouts are UI preferences, not the core product.
+
+## What can you do with MSO?
+
+**Fix a server issue from your phone**  
+Check system health, open a real terminal, inspect logs, and restart a service without opening a laptop.
+
+**Manage project files visually**  
+Browse, upload, rename, preview, and edit files without remembering every shell command.
+
+**Work with your server in one workspace**  
+Move between terminal, files, metrics, browser, and AI without switching between several admin tools.
 
 ## Live demo
 
@@ -66,9 +84,9 @@ The public demo should be deployed from a separate checkout with:
 NEXT_PUBLIC_OS_DEMO=1 pnpm build && pnpm start
 ```
 
-Demo mode skips login, forces mock data, and blocks live host API access. Use it for Product Hunt traffic. A real owner deployment should stay behind Tailscale/VPN or a protected HTTPS proxy.
+Demo mode skips real login, forces mock data, blocks live host API access, and shows a permanent demo banner. Use it for Product Hunt traffic. A real owner deployment should stay behind Tailscale/VPN or a protected HTTPS proxy.
 
-- Live demo: <https://os.rahmanef.com>
+- Live demo URL: <https://os.rahmanef.com> (deploy this URL with `NEXT_PUBLIC_OS_DEMO=1` before launch)
 - Watch demo: [docs/media/demo.gif](./docs/media/demo.gif)
 
 ## Install
@@ -128,17 +146,20 @@ Deep dive: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ## Comparison
 
-Each tool below solves one part of headless-server admin. MSO combines the common owner workflows into one mobile-friendly browser workspace.
+The tools below have different scopes. This comparison is intended to explain where MSO fits, not to claim it replaces every specialized server administration tool.
 
 | | **MSO** | Cockpit | ttyd | FileBrowser | Netdata | Tailscale SSH |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Real PTY terminal | yes | yes | yes | no | no | yes |
-| File manager | yes | partial | no | yes | no | no |
-| Live system metrics | yes | yes | no | no | yes | no |
-| Built-in BYOK AI | yes | no | no | no | no | no |
-| Mobile-friendly workspace | yes | partial | partial | partial | partial | no |
-| No full remote desktop | yes | yes | yes | yes | yes | yes |
-| One-command install | yes | partial | yes | yes | partial | yes |
+| Product maturity | Early alpha | Mature | Varies | Mature | Mature | Mature |
+| Third-party security audit | No | Varies | Varies | Varies | Varies | Yes |
+| Multi-user support | No | Yes | Varies | Yes | Yes | Yes |
+| Mobile-first interface | Yes | Partial | Varies | Partial | Partial | Not a focus |
+| Real PTY | Yes | Yes | Yes | No | No | Yes |
+| File manager | Yes | Partial | No | Yes | No | No |
+| Metrics | Yes | Yes | No | No | Yes | No |
+| Built-in AI | Yes, BYOK | No | No | No | No | No |
+| Setup complexity | One script | Varies | Low | Low | Varies | Low |
+| Service/package administration | Basic | Strong | Not a focus | Not a focus | Metrics focus | SSH only |
 
 ## Development
 
@@ -156,11 +177,33 @@ pnpm lint
 pnpm test
 pnpm check
 pnpm build
+bash -n scripts/install.sh
 ```
 
 The package manager is pinned in `package.json` as `pnpm@10.32.1`. Use pnpm so the lockfile and native `node-pty` build path stay predictable.
 
 Full guide: [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md).
+
+## Tested platforms
+
+Not yet formally tested across a full distro matrix.
+
+Tested:
+
+- Ubuntu 22.04
+- Ubuntu 24.04
+
+Expected to work:
+
+- Debian 12
+- Other systemd-based Linux distributions with Node.js 20.9+ and build tools
+
+Not currently supported:
+
+- Windows host
+- macOS host
+- Automatic service install on non-systemd hosts
+- Root deployment
 
 ## Documentation
 
@@ -172,6 +215,9 @@ Full guide: [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md).
 | [docs/MODELS-INTEGRATION.md](./docs/MODELS-INTEGRATION.md) | Alfa AI and BYOK model providers |
 | [docs/FAQ.md](./docs/FAQ.md) | Security posture, device approval, costs, product boundaries |
 | [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) | Common install, build, and deployment failures |
+| [SECURITY.md](./SECURITY.md) | Responsible disclosure and deployment warnings |
+| [docs/PRODUCT_HUNT.md](./docs/PRODUCT_HUNT.md) | Product Hunt launch copy and feedback prompts |
+| [docs/DEMO-SCRIPT.md](./docs/DEMO-SCRIPT.md) | 60-second demo video script |
 
 ## Status
 

@@ -1,101 +1,73 @@
 # Security Policy
 
-os-vps (Manef Shell OS) is a **personal, single-owner tool, alpha quality**. It has had
-internal adversarial review but **no third-party security audit**. Read the
-[Threat model](./README.md#threat-model) and
-[Security model](./README.md#security-model-mechanics) in the README before
-deploying — an authenticated session is an effective remote shell on your box,
-by design.
-
-## Supported versions
-
-Only the latest commit on `main` is supported. There are no release branches.
+Manef Shell OS is Public Alpha / Developer Preview software. It has not had a
+third-party security audit. Only the latest commit on `main` is supported; there
+are no release branches yet.
 
 ## Reporting a vulnerability
 
-- **Preferred:** open a [GitHub Security Advisory](https://github.com/rahmanef63/os-vps/security/advisories/new)
-  (private disclosure).
-- Or email **casadezian@gmail.com** with subject `os-vps security`.
+Please do not open a public issue for security vulnerabilities.
 
-Please include reproduction steps and which part of the documented threat model
-the issue violates. Expect a reply within a week (solo maintainer).
+Use GitHub's private vulnerability reporting flow for this repository:
+
+1. Open the repository on GitHub.
+2. Go to **Security** → **Report a vulnerability**.
+3. Include the affected version or commit, reproduction steps, impact, and any
+   logs with secrets removed.
+
+If private vulnerability reporting is unavailable, open a minimal public issue
+asking the maintainer to enable private advisory intake. Do not include exploit
+details, passwords, session secrets, API keys, private file contents, or full
+environment files in that public issue.
+
+## Deployment warning
+
+An authenticated MSO session can run commands and access files as the Linux user
+that owns the process. Treat it like SSH in a browser.
+
+- Run MSO as a dedicated non-root user.
+- Prefer Tailscale or another VPN for real deployments.
+- If using a public domain, put HTTPS, firewall rules, and strict access control
+  in front of the app.
+- Do not expose the raw app port directly to the public internet.
+- Do not commit `.env.local`, API keys, or data from `~/.os-vps`.
+- Use demo mode (`NEXT_PUBLIC_OS_DEMO=1`) for public showcases.
+
+## In scope
+
+- Auth bypass: session forgery without `OS_SESSION_SECRET`, device-approval
+  bypass, or rate-limit defeat that enables practical brute force.
+- Filesystem jail escape: reading or writing outside `OS_FS_READ_ROOTS` /
+  `OS_FS_WRITE_ROOTS`, or reaching denied credential material such as `.env*` or
+  `~/.os-vps/*` through the file APIs.
+- Unauthenticated access to live host routes such as `/api/v1/*`,
+  `/api/assistant`, `/api/config`, or `/api/auth/devices`.
+- CSRF or clickjacking that triggers host actions cross-origin.
 
 ## Out of scope
 
-- Anything requiring an already-authenticated session to do what the README
-  says a session can do (run commands, read/write inside configured roots) —
-  that is the product, not a vulnerability.
-- The destructive-command guard in `lib/host/exec.ts` is an **accident
-  tripwire, not a sandbox** — bypassing it with shell tricks is expected and
-  documented.
-- Spawned shells (exec + PTY) run with the app's own secrets stripped from their
-  environment (`lib/host/child-env.ts`), so a casual `printenv` in the terminal
-  won't reveal `OS_SESSION_SECRET` / `OS_LOGIN_PASSWORD` / the BYOK key. This is
-  defense-in-depth, **not** a boundary: a same-UID process can still read
-  `/proc/<pid>/environ` of the os-vps process itself. The real boundary is the
-  OS user the app runs as — keep it unprivileged and dedicated.
-- User-pasted **live wallpaper HTML** (Settings → Wallpaper → Custom HTML) runs
-  in an iframe sandboxed with `allow-scripts` ONLY — no `allow-same-origin`, so
-  it executes in an opaque origin: it cannot read the OS cookies/localStorage,
-  reach the parent DOM, or call `/api/*` as the signed-in user. It is never
-  injected into the OS DOM. The value is size-capped and shape-validated on
-  every hydrate/sync path (`lib/appearance/wallpapers.ts`).
-- Deployments that ignore the minimum security checklist (no TLS/VPN, `/` as a
-  read root on a public box, weak `OS_SESSION_SECRET`).
+- An already-authenticated owner session doing documented owner actions such as
+  running commands or accessing files within configured roots.
+- Bypassing the destructive-command guard with shell tricks. It is an accident
+  tripwire, not a sandbox.
+- Deployments that ignore the minimum posture: non-root user, strong secrets,
+  Tailscale/VPN or protected HTTPS, and narrow filesystem roots.
 
-## In scope (examples)
+## Key rotation
 
-- Auth bypass: session forgery without `OS_SESSION_SECRET`, device-approval
-  bypass, rate-limit defeat that enables practical brute force.
-- Filesystem jail escape: reading/writing outside `OS_FS_READ_ROOTS` /
-  `OS_FS_WRITE_ROOTS`, or reaching the credential denylist
-  (`.env*`, `~/.os-vps/*`) through the FS API.
-- Unauthenticated access to any `/api/v1`, `/api/assistant`, `/api/config` or
-  `/api/auth/devices` route.
-- CSRF/clickjacking that triggers exec/fs actions cross-origin despite the
-  `SameSite=Strict` cookie + `Sec-Fetch-Site` proxy check + `frame-ancestors`.
+BYOK AI credentials are stored server-side in `~/.os-vps/config.json`, never in
+the client bundle. To rotate a key, stop MSO, edit the config file or remove the
+provider from Settings → AI, then restart/sign in again.
 
-## Rotating the BYOK Anthropic key
+To rotate auth secrets:
 
-The Anthropic API key for the Alfa assistant is owner-supplied (BYOK) and lives
-**only** on the server in `~/.os-vps/config.json` — it is never embedded in the
-client bundle and never returned by any `/api` route. To rotate:
-
-1. Stop the app (`systemctl stop os-vps` or your runner equivalent).
-2. Edit `~/.os-vps/config.json` and replace the `anthropicApiKey` value.
-3. Restart. The next assistant request picks up the new key on its first call
-   to `resolveApiKey()` — no client-side cache to clear.
+- Change `OS_SESSION_SECRET` and restart to invalidate sessions.
+- Change `OS_LOGIN_PASSWORD` and restart to require the new password.
+- Remove entries from `~/.os-vps/auth-devices.json` to revoke devices.
 
 ## Audit log retention
 
-The append-only JSONL trail at `~/.os-vps/audit.log` (or `$OS_AUDIT_LOG`) grows
-unbounded. Operators handling regulated data (e.g. GDPR data-minimisation
-duties) should rotate it. Example `logrotate(8)` snippet:
-
-```
-/home/<user>/.os-vps/audit.log {
-  size 1M
-  rotate 4
-  compress
-  missingok
-  copytruncate
-}
-```
-
-`copytruncate` is required because the app keeps the file open via the
-append chain in `lib/host/audit.ts`.
-
-## HSTS
-
-The app does **not** emit `Strict-Transport-Security` itself — app-layer HSTS
-is redundant with proxy HSTS and dangerous to misconfigure (a stale
-`max-age` from the app can outlive a deployment change). The operator MUST
-set HSTS at the reverse-proxy / TLS-terminator layer:
-
-- **Caddy:** `header { Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" }`
-- **nginx:** `add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;`
-
-Why it matters: the session cookie is `Secure` + `SameSite=Strict`, so it
-already refuses to ride plain HTTP. HSTS pins the browser to HTTPS on every
-subsequent visit, blocking downgrade attacks (sslstrip) on the first hop
-and on any subdomain that could be tricked into serving HTTP.
+The JSONL audit trail defaults to `~/.os-vps/audit.log` and can grow over time.
+Use logrotate or your normal host log retention system. Do not publish audit
+logs without checking for private paths, command names, or other sensitive
+context.
