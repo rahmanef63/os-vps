@@ -1,6 +1,6 @@
 "use client";
 
-// Topside's registrations into the appshell runtime registries (lock guard,
+// MSO's registrations into the appshell runtime registries (lock guard,
 // Quick Look previewer, cross-app drop routing). Side-effect module imported
 // once from os-root INSIDE the auth boundary — registries are module-level, so
 // this runs exactly once per page.
@@ -47,7 +47,7 @@ registerPreviewer({
   render: (t) => createElement(AppHost, { app: "media-viewer", payload: t }),
 });
 
-// Topside's dynamic right-click items — merged AFTER each shell's built-ins by
+// MSO's dynamic right-click items — merged AFTER each shell's built-ins by
 // the context-menu registry. One provider for every shell ("*", surface-aware)
 // plus a dashboard-specific group; providers run at open time so disabled
 // states / labels can read live data.

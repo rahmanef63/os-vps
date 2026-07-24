@@ -1,4 +1,4 @@
-// Topside's shell manifest — the os-vps-specific config that drives the generic
+// MSO's shell manifest — the os-vps-specific config that drives the generic
 // AppShell. This is the ONE place brand + the built-in app set + shell features
 // are declared; appshell core imports none of it. Runtime-installed apps are
 // merged on top in os-root (they come from a hook, not static config).

@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { registerCommands, toast } from "@/features/appshell";
 import { FONT_SCALES, useAppearance } from "@/lib/appearance";
 
-// Accessibility palette commands over the Topside appearance store — text-size
+// Accessibility palette commands over the MSO appearance store — text-size
 // steps + high contrast + reduce transparency. Rendered (not imported for side
 // effects) because the store is React context; a ref keeps the command
 // closures reading the latest tweaks without re-registering.

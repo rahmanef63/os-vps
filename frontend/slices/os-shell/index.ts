@@ -1,4 +1,4 @@
-// os-shell — the os-vps ("Topside") consumer of the generic AppShell framework.
+// os-shell — the os-vps (MSO) consumer of the generic AppShell framework.
 //
 // The shell runtime, registries, responsive provider, chrome and primitives now
 // live in the brand-free `appshell` slice (lift-ready for rr). This barrel stays

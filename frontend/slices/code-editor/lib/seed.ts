@@ -4,9 +4,9 @@
 
 export const SEED_FILES: Record<string, string> = {
   "/readme.md":
-    "# os-vps\n\nA cloud desktop OS that drives your VPS from the browser.\n\n" +
+    "# Manef Shell OS\n\nA mobile-friendly visual shell for a Linux server you own.\n\n" +
     "- **Files** — manage your storage\n- **Code** — this editor\n" +
-    "- **Alfa** — AI agents that operate the whole OS\n\n" +
+    "- **Alfa** — BYOK AI assistance inside the browser workspace\n\n" +
     "Connect a VPS in Settings → Server to go live.\n",
   "/Documents/roadmap.md":
     "# Roadmap\n\n## Now\n- [x] Browser shell\n- [x] Code editor\n\n" +

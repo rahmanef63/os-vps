@@ -1,5 +1,5 @@
 "use client";
-/* Topside's built-in LIVE wallpapers — TSX components registered into the
+/* MSO's built-in LIVE wallpapers — TSX components registered into the
    appshell wallpaper registry (Settings → Wallpaper → Live). These are the
    code-defined ("from code") flavor; user-pasted HTML is the other flavor and
    renders sandboxed in components/wallpaper.tsx. Side-effect module imported
