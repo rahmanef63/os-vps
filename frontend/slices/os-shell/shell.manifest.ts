@@ -15,6 +15,7 @@ import { appStoreApp } from "@/features/app-store";
 import { createAppApp } from "@/features/create-app";
 import { systemMonitorApp } from "@/features/system-monitor";
 import { assistantApp } from "@/features/assistant";
+import { managedApplicationsApp, hermesApp, openclawApp } from "@/features/managed-apps";
 import { osSettingsApp } from "@/features/os-settings";
 import { quicklinksApp } from "@/features/quicklinks";
 import { themeQuickPickerFeature } from "./theme-quick-picker";
@@ -49,6 +50,9 @@ export const BUILTIN_APPS: AppDescriptor[] = [
   withSlug(createAppApp, "create"),
   pin(withSlug(systemMonitorApp, "monitor")),
   withSlug(assistantApp, "assistant"),
+  pin(withSlug(managedApplicationsApp, "applications")),
+  withSlug(hermesApp, "hermes"),
+  withSlug(openclawApp, "openclaw"),
   withSlug(quicklinksApp, "links"),
   pin(withSlug(osSettingsApp, "settings")),
 ];

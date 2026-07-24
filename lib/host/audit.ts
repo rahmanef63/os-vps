@@ -22,6 +22,7 @@ export type AuditAction =
   | "fs.upload"
   | "fs.zip"
   | "sys.cleanup"
+  | "managed-app.action"
   | "auth.login"
   | "auth.pending"
   | "auth.denied"
